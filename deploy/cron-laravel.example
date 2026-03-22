@@ -1,0 +1,4 @@
+# Laravel scheduler — add to crontab for the deploy user (often www-data):
+#   sudo crontab -e -u www-data
+#
+# * * * * * cd /var/www/barangay-paguiruan && php artisan schedule:run >> /dev/null 2>&1

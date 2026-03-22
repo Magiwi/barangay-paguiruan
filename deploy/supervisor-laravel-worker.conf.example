@@ -1,0 +1,19 @@
+# Laravel queue worker — install to /etc/supervisor/conf.d/laravel-worker.conf
+# Adjust paths and user to match your server.
+#
+# sudo supervisorctl reread
+# sudo supervisorctl update
+# sudo supervisorctl start laravel-worker:*
+
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/barangay-paguiruan/artisan queue:work database --sleep=3 --tries=3 --max-time=3600 --timeout=120
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/www/barangay-paguiruan/storage/logs/worker.log
+stopwaitsecs=3600
