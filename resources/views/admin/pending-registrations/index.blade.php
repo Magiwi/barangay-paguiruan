@@ -192,13 +192,11 @@
                                             @if ($user->government_id_path)
                                                 <span class="text-green-700">uploaded</span>
                                                 @php
-                                                    $idPreviewUrl = \Illuminate\Support\Facades\Storage::url($user->government_id_path);
-                                                    $idExt = strtolower(pathinfo((string) $user->government_id_path, PATHINFO_EXTENSION));
-                                                    $idIsImage = in_array($idExt, ['jpg', 'jpeg', 'png', 'webp'], true);
+                                                    $idStoragePath = ltrim((string) $user->government_id_path, '/');
                                                 @endphp
                                                 <button type="button"
                                                         class="ml-2 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-100"
-                                                        onclick="openIdPreview('{{ e($idPreviewUrl) }}', {{ $idIsImage ? 'true' : 'false' }}, '{{ e($user->full_name) }}')">
+                                                        onclick="openIdPreview('{{ e($idStoragePath) }}', '{{ e($user->full_name) }}')">
                                                     View ID
                                                 </button>
                                             @else
@@ -406,25 +404,28 @@
 </div>
 
 <script>
-function openIdPreview(url, isImage, fullName) {
+function openIdPreview(governmentIdPath, fullName) {
     var modal = document.getElementById('idPreviewModal');
     var title = document.getElementById('idPreviewTitle');
     var img = document.getElementById('idPreviewImage');
     var pdf = document.getElementById('idPreviewPdf');
     if (!modal || !img || !pdf || !title) return;
 
-    title.textContent = 'Government ID Preview - ' + fullName;
-    if (isImage) {
-        img.src = url;
-        img.classList.remove('hidden');
-        pdf.src = '';
-        pdf.classList.add('hidden');
-    } else {
-        pdf.src = url;
-        pdf.classList.remove('hidden');
-        img.src = '';
-        img.classList.add('hidden');
+    var normalizedPath = String(governmentIdPath || '').replace(/^\/+/, '');
+    if (!normalizedPath) return;
+    var fileUrl = '/storage/' + normalizedPath;
+    var lowerPath = normalizedPath.toLowerCase();
+
+    if (lowerPath.endsWith('.pdf')) {
+        window.open(fileUrl, '_blank');
+        return;
     }
+
+    title.textContent = 'Government ID Preview - ' + fullName;
+    img.src = fileUrl;
+    img.classList.remove('hidden');
+    pdf.src = '';
+    pdf.classList.add('hidden');
 
     modal.classList.remove('hidden');
     modal.setAttribute('aria-hidden', 'false');
