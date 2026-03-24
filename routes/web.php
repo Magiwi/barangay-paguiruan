@@ -42,7 +42,25 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FamilyMemberController;
 
 Route::get('/', function () {
-    return view('welcome');
+    $communityStats = [
+        'residents_served' => \App\Models\User::countable()
+            ->where('status', \App\Models\User::STATUS_APPROVED)
+            ->count(),
+        'certificates_issued' => \App\Models\CertificateRequest::query()
+            ->where('status', 'released')
+            ->count(),
+        'complaints_resolved' => \App\Models\IssueReport::query()
+            ->whereIn('status', [
+                \App\Models\IssueReport::STATUS_RESOLVED,
+                \App\Models\IssueReport::STATUS_CLOSED,
+            ])
+            ->count(),
+        'announcements_published' => \App\Models\Announcement::query()
+            ->where('status', \App\Models\Announcement::STATUS_APPROVED)
+            ->count(),
+    ];
+
+    return view('welcome', compact('communityStats'));
 });
 
 // Authentication Routes

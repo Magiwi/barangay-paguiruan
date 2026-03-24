@@ -27,7 +27,7 @@
     <nav class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
         <a href="/" class="flex items-center gap-2.5 group">
             <img src="{{ asset('images/logo1.png') }}" alt="Logo" class="h-9 w-auto shrink-0 object-contain">
-            <span class="text-base font-bold tracking-tight text-gray-800 group-hover:text-blue-600 transition">e-Governance</span>
+            <span class="text-sm md:text-base font-semibold tracking-tight text-gray-800 group-hover:text-blue-600 transition">Barangay Paguiruan, Floridablanca</span>
         </a>
 
         <div class="hidden md:flex items-center gap-1">
@@ -275,10 +275,10 @@
             <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
                 @php
                     $stats = [
-                        ['value' => '2,540+', 'label' => 'Residents Served'],
-                        ['value' => '1,200+', 'label' => 'Certificates Issued'],
-                        ['value' => '350+', 'label' => 'Complaints Resolved'],
-                        ['value' => '50+', 'label' => 'Announcements Published'],
+                        ['value' => number_format((int) ($communityStats['residents_served'] ?? 0)), 'label' => 'Residents Served'],
+                        ['value' => number_format((int) ($communityStats['certificates_issued'] ?? 0)), 'label' => 'Certificates Issued'],
+                        ['value' => number_format((int) ($communityStats['complaints_resolved'] ?? 0)), 'label' => 'Complaints Resolved'],
+                        ['value' => number_format((int) ($communityStats['announcements_published'] ?? 0)), 'label' => 'Announcements Published'],
                     ];
                 @endphp
                 @foreach ($stats as $i => $stat)
