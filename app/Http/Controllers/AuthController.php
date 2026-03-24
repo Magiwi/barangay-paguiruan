@@ -243,7 +243,7 @@ class AuthController extends Controller
             'pwd_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'senior_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'government_id_type' => ['nullable', 'string', 'in:national_id,passport,drivers_license,umid,philhealth,postal_id,voters_id'],
-            'government_id_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'government_id_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
             // Account Information
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', Password::min(8), 'confirmed'],
@@ -297,10 +297,10 @@ class AuthController extends Controller
 
         if ($requestedIsPwd || $requestedIsSenior) {
             $rules['government_id_type'] = ['nullable', 'string', 'in:national_id,passport,drivers_license,umid,philhealth,postal_id,voters_id'];
-            $rules['government_id_proof'] = ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:5120'];
+            $rules['government_id_proof'] = ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'];
         } else {
             $rules['government_id_type'] = ['required', 'string', 'in:national_id,passport,drivers_license,umid,philhealth,postal_id,voters_id'];
-            $rules['government_id_proof'] = ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120'];
+            $rules['government_id_proof'] = ['required', 'file', 'mimes:jpg,jpeg,png', 'max:2048'];
         }
 
         $validated = $request->validate($rules, [
@@ -333,7 +333,10 @@ class AuthController extends Controller
             'government_id_type.in' => 'The selected government ID type is invalid.',
             'government_id_proof.required' => 'Government ID upload is required.',
             'government_id_proof.mimes' => 'Government ID proof must be a JPG or PNG file.',
-            'government_id_proof.max' => 'Government ID proof must not exceed 5MB.',
+            'government_id_proof.max' => 'Government ID proof must not exceed 2MB.',
+            'government_id_proof.uploaded' => 'Government ID upload failed. Please use a smaller image (max 2MB) and try again.',
+            'pwd_proof.uploaded' => 'PWD proof upload failed. Please use a smaller file (max 2MB) and try again.',
+            'senior_proof.uploaded' => 'Senior proof upload failed. Please use a smaller file (max 2MB) and try again.',
             'household_connection_type.required' => 'Please select your household connection type.',
             'household_connection_type.in' => 'The selected household connection type is invalid.',
             'relationship_to_head.required' => 'Please select your relationship to the household head.',

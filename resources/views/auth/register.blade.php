@@ -390,7 +390,7 @@
                             <label for="pwd_proof" class="block text-sm font-medium text-gray-700 mb-1">
                                 PWD ID / Supporting Document <span class="text-red-600">*</span>
                             </label>
-                            <input type="file" name="pwd_proof" id="pwd_proof" accept=".jpg,.jpeg,.png,.pdf"
+                            <input type="file" name="pwd_proof" id="pwd_proof" accept=".jpg,.jpeg,.png,.pdf" data-auto-compress="true"
                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                             <p class="mt-1 text-xs text-gray-500">Accepted: JPG, PNG, PDF (max 2MB)</p>
                             @error('pwd_proof')
@@ -418,7 +418,7 @@
                             <label for="senior_proof" class="block text-sm font-medium text-gray-700 mb-1">
                                 Senior Citizen ID / Supporting Document <span class="text-red-600">*</span>
                             </label>
-                            <input type="file" name="senior_proof" id="senior_proof" accept=".jpg,.jpeg,.png,.pdf"
+                            <input type="file" name="senior_proof" id="senior_proof" accept=".jpg,.jpeg,.png,.pdf" data-auto-compress="true"
                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                             <p class="mt-1 text-xs text-gray-500">Accepted: JPG, PNG, PDF (max 2MB)</p>
                             @error('senior_proof')
@@ -456,8 +456,9 @@
                                required
                                accept=".jpg,.jpeg,.png"
                                capture="environment"
+                               data-auto-compress="true"
                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-800 hover:file:bg-blue-200 @error('government_id_proof') border-red-500 @enderror">
-                        <p class="mt-1 text-xs text-gray-500">Capture from camera (mobile) or upload JPG/PNG image. Max file size: 5MB.</p>
+                        <p class="mt-1 text-xs text-gray-500">Capture from camera (mobile) or upload JPG/PNG image. Max file size: 2MB.</p>
                         @error('government_id_proof')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -617,6 +618,112 @@
     var classificationProofNote = document.getElementById('classification-proof-note');
     var governmentIdType = document.getElementById('government_id_type');
     var governmentIdProof = document.getElementById('government_id_proof');
+    var autoCompressInputs = document.querySelectorAll('input[type="file"][data-auto-compress="true"]');
+
+    function dataUrlToFile(dataUrl, originalName) {
+        var parts = dataUrl.split(',');
+        var mimeMatch = parts[0].match(/:(.*?);/);
+        var mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+        var binary = atob(parts[1]);
+        var length = binary.length;
+        var bytes = new Uint8Array(length);
+
+        while (length--) {
+            bytes[length] = binary.charCodeAt(length);
+        }
+
+        var baseName = (originalName || 'upload').replace(/\.[^.]+$/, '');
+
+        return new File([bytes], baseName + '.jpg', {
+            type: mime,
+            lastModified: Date.now(),
+        });
+    }
+
+    function setCompressedFile(input, file) {
+        var transfer = new DataTransfer();
+        transfer.items.add(file);
+        input.files = transfer.files;
+    }
+
+    function compressImageFile(file, options) {
+        options = options || {};
+
+        return new Promise(function (resolve, reject) {
+            if (!file.type || file.type.indexOf('image/') !== 0) {
+                resolve(file);
+                return;
+            }
+
+            var reader = new FileReader();
+
+            reader.onload = function (event) {
+                var img = new Image();
+
+                img.onload = function () {
+                    var maxDimension = options.maxDimension || 1600;
+                    var quality = options.quality || 0.82;
+                    var width = img.width;
+                    var height = img.height;
+
+                    if (width > height && width > maxDimension) {
+                        height = Math.round(height * (maxDimension / width));
+                        width = maxDimension;
+                    } else if (height >= width && height > maxDimension) {
+                        width = Math.round(width * (maxDimension / height));
+                        height = maxDimension;
+                    }
+
+                    var canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    var context = canvas.getContext('2d');
+                    if (!context) {
+                        resolve(file);
+                        return;
+                    }
+
+                    context.drawImage(img, 0, 0, width, height);
+
+                    resolve(dataUrlToFile(canvas.toDataURL('image/jpeg', quality), file.name));
+                };
+
+                img.onerror = function () {
+                    reject(new Error('Image load failed.'));
+                };
+
+                img.src = event.target.result;
+            };
+
+            reader.onerror = function () {
+                reject(new Error('File read failed.'));
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function attachAutoCompression() {
+        autoCompressInputs.forEach(function (input) {
+            input.addEventListener('change', function () {
+                var file = input.files && input.files[0];
+                if (!file) return;
+
+                if (file.type === 'application/pdf' || file.size <= (1800 * 1024)) {
+                    return;
+                }
+
+                compressImageFile(file).then(function (compressedFile) {
+                    if (compressedFile.size < file.size) {
+                        setCompressedFile(input, compressedFile);
+                    }
+                }).catch(function () {
+                    // Keep the original file if compression is not available.
+                });
+            });
+        });
+    }
 
     function toggleHeadOfFamilyFields() {
         var show = headOfFamilySelect.value === 'no';
@@ -1144,6 +1251,7 @@
     });
     toggleSeniorProofField();
     toggleGovernmentIdFields();
+    attachAutoCompression();
     // === Auto age calculation + birthdate validation ===
     var birthdateInput = document.getElementById('birthdate');
     var ageDisplay = document.getElementById('age_display');
