@@ -10,7 +10,7 @@
         <img src="{{ asset('images/logo1.png') }}"
              alt="Barangay Paguiruan"
              class="h-20 md:h-24 w-auto object-contain mb-3">
-        <h1 class="text-xl font-semibold tracking-tight text-gray-800">e-Governance System</h1>
+        <h1 class="text-xl font-semibold tracking-tight text-gray-800">Barangay Paguiruan, Floridablanca</h1>
         <p class="mt-1 text-sm text-gray-500">Resident Registration</p>
     </div>
 
@@ -322,7 +322,7 @@
                             <label for="permanent_region" class="block text-sm font-medium text-gray-700 mb-1">Region <span class="text-red-600">*</span></label>
                             <select name="permanent_region" id="permanent_region"
                                     class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('permanent_region') border-red-500 @else border-gray-300 @enderror">
-                                <option value="{{ old('permanent_region') }}">{{ old('permanent_region') ?: 'Select region' }}</option>
+                                <option value="">Select region</option>
                             </select>
                             @error('permanent_region')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -332,7 +332,7 @@
                             <label for="permanent_barangay" class="block text-sm font-medium text-gray-700 mb-1">Barangay <span class="text-red-600">*</span></label>
                             <select name="permanent_barangay" id="permanent_barangay"
                                     class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('permanent_barangay') border-red-500 @else border-gray-300 @enderror">
-                                <option value="{{ old('permanent_barangay') }}">{{ old('permanent_barangay') ?: 'Select barangay' }}</option>
+                                <option value="">Select barangay</option>
                             </select>
                             @error('permanent_barangay')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -342,7 +342,7 @@
                             <label for="permanent_city" class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-600">*</span></label>
                             <select name="permanent_city" id="permanent_city"
                                     class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('permanent_city') border-red-500 @else border-gray-300 @enderror">
-                                <option value="{{ old('permanent_city') }}">{{ old('permanent_city') ?: 'Select city / municipality' }}</option>
+                                <option value="">Select city / municipality</option>
                             </select>
                             @error('permanent_city')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -352,7 +352,7 @@
                             <label for="permanent_province" class="block text-sm font-medium text-gray-700 mb-1">Province <span class="text-red-600">*</span></label>
                             <select name="permanent_province" id="permanent_province"
                                     class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('permanent_province') border-red-500 @else border-gray-300 @enderror">
-                                <option value="{{ old('permanent_province') }}">{{ old('permanent_province') ?: 'Select province' }}</option>
+                                <option value="">Select province</option>
                             </select>
                             @error('permanent_province')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -454,10 +454,10 @@
                                name="government_id_proof"
                                id="government_id_proof"
                                required
-                               accept="image/*,.pdf"
+                               accept=".jpg,.jpeg,.png"
                                capture="environment"
                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-800 hover:file:bg-blue-200 @error('government_id_proof') border-red-500 @enderror">
-                        <p class="mt-1 text-xs text-gray-500">Capture from camera (mobile) or upload existing image/PDF. Max file size: 10MB.</p>
+                        <p class="mt-1 text-xs text-gray-500">Capture from camera (mobile) or upload JPG/PNG image. Max file size: 5MB.</p>
                         @error('government_id_proof')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -874,13 +874,14 @@
         if (region.code === NCR_REGION_CODE) {
             var ncrProvince = [{
                 code: region.code,
-                name: 'NCR (No province)',
-                value: 'NCR (No province)',
-                label: 'NCR (No province)',
+                name: 'NCR',
+                value: 'NCR',
+                label: 'NCR',
                 source: 'region',
             }];
-            setSelectOptions(provinceSelect, ncrProvince, selectedProvince || 'NCR (No province)', 'Select province');
-            provinceSelect.disabled = true;
+            setSelectOptions(provinceSelect, ncrProvince, selectedProvince || 'NCR', 'Select province');
+            provinceSelect.value = 'NCR';
+            provinceSelect.disabled = false;
             return Promise.resolve(ncrProvince);
         }
 

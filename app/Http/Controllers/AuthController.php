@@ -243,7 +243,7 @@ class AuthController extends Controller
             'pwd_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'senior_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'government_id_type' => ['nullable', 'string', 'in:national_id,passport,drivers_license,umid,philhealth,postal_id,voters_id'],
-            'government_id_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
+            'government_id_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
             // Account Information
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', Password::min(8), 'confirmed'],
@@ -295,9 +295,12 @@ class AuthController extends Controller
             $rules['senior_proof'] = ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'];
         }
 
-        if ($requiresGovernmentId) {
+        if ($requestedIsPwd || $requestedIsSenior) {
+            $rules['government_id_type'] = ['nullable', 'string', 'in:national_id,passport,drivers_license,umid,philhealth,postal_id,voters_id'];
+            $rules['government_id_proof'] = ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:5120'];
+        } else {
             $rules['government_id_type'] = ['required', 'string', 'in:national_id,passport,drivers_license,umid,philhealth,postal_id,voters_id'];
-            $rules['government_id_proof'] = ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'];
+            $rules['government_id_proof'] = ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120'];
         }
 
         $validated = $request->validate($rules, [
@@ -329,14 +332,17 @@ class AuthController extends Controller
             'government_id_type.required' => 'Please select a government ID type.',
             'government_id_type.in' => 'The selected government ID type is invalid.',
             'government_id_proof.required' => 'Government ID upload is required.',
-            'government_id_proof.mimes' => 'Government ID proof must be a JPG, PNG, or PDF file.',
-            'government_id_proof.max' => 'Government ID proof must not exceed 10MB.',
+            'government_id_proof.mimes' => 'Government ID proof must be a JPG or PNG file.',
+            'government_id_proof.max' => 'Government ID proof must not exceed 5MB.',
             'household_connection_type.required' => 'Please select your household connection type.',
             'household_connection_type.in' => 'The selected household connection type is invalid.',
             'relationship_to_head.required' => 'Please select your relationship to the household head.',
             'relationship_to_head.in' => 'The selected relationship to head is invalid.',
             'connection_note.required' => 'Please provide details when connection type is Other.',
             'permanent_region.required' => 'Permanent region is required for non-permanent residents.',
+            'permanent_province.required' => 'Permanent province is required for non-permanent residents.',
+            'permanent_city.required' => 'Permanent city is required for non-permanent residents.',
+            'permanent_barangay.required' => 'Permanent barangay is required for non-permanent residents.',
         ]);
 
         // Calculate age from birthdate
@@ -410,8 +416,6 @@ class AuthController extends Controller
         }
         unset($validated['senior_proof']);
 
-        // Government ID is required only when both PWD and Senior are "no".
-        // Otherwise, classification proofs serve as primary supporting documents.
         if (! $isPwd && ! $isSenior) {
             if ($request->hasFile('government_id_proof')) {
                 $validated['government_id_path'] = $request->file('government_id_proof')->store('id-proofs/government', 'public');

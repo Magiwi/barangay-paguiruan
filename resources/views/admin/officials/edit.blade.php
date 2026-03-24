@@ -61,21 +61,6 @@
                         <input type="date" name="term_end" id="term_end" value="{{ old('term_end', optional($official->term_end)->toDateString()) }}" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                 </div>
-                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3">
-                    <label for="term_template" class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">Quick Term Template</label>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <select id="term_template" class="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700">
-                            <option value="">Select template...</option>
-                            <option value="6m">6 months</option>
-                            <option value="1y">1 year</option>
-                            <option value="3y">3 years</option>
-                        </select>
-                        <button type="button" id="apply_term_template" class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-100">
-                            Apply
-                        </button>
-                        <span class="text-xs text-gray-500">Uses selected term start date.</span>
-                    </div>
-                </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Photo</label>
@@ -106,49 +91,4 @@
         </div>
     </div>
 </section>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const templateSelect = document.getElementById('term_template');
-    const applyButton = document.getElementById('apply_term_template');
-    const termStartInput = document.getElementById('term_start');
-    const termEndInput = document.getElementById('term_end');
-
-    function toDateInputValue(date) {
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-
-        return `${yyyy}-${mm}-${dd}`;
-    }
-
-    function parseOrToday(value) {
-        if (!value) {
-            return new Date();
-        }
-        const parsed = new Date(value + 'T00:00:00');
-        return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-    }
-
-    applyButton.addEventListener('click', function () {
-        const template = templateSelect.value;
-        if (!template) {
-            return;
-        }
-
-        const start = parseOrToday(termStartInput.value);
-        const end = new Date(start.getTime());
-
-        if (template === '6m') {
-            end.setMonth(end.getMonth() + 6);
-        } else if (template === '1y') {
-            end.setFullYear(end.getFullYear() + 1);
-        } else if (template === '3y') {
-            end.setFullYear(end.getFullYear() + 3);
-        }
-
-        termStartInput.value = toDateInputValue(start);
-        termEndInput.value = toDateInputValue(end);
-    });
-});
-</script>
 @endsection

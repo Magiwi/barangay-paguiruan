@@ -55,21 +55,6 @@
                         <input type="date" name="term_end" id="term_end" value="{{ old('term_end') }}" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                 </div>
-                <div class="rounded-lg border border-gray-200 bg-gray-50 p-3">
-                    <label for="term_template" class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">Quick Term Template</label>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <select id="term_template" class="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700">
-                            <option value="">Select template...</option>
-                            <option value="6m">6 months</option>
-                            <option value="1y">1 year</option>
-                            <option value="3y">3 years</option>
-                        </select>
-                        <button type="button" id="apply_term_template" class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-100">
-                            Apply
-                        </button>
-                        <span class="text-xs text-gray-500">Uses selected start date (or today if empty).</span>
-                    </div>
-                </div>
 
                 <div>
                     <label for="photo" class="block text-sm font-medium text-gray-700 mb-1">Photo <span class="text-gray-400">(optional)</span></label>

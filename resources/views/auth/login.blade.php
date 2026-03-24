@@ -10,7 +10,7 @@
         <img src="{{ asset('images/logo1.png') }}"
              alt="Barangay Paguiruan"
              class="h-20 md:h-24 w-auto object-contain mb-3">
-        <h1 class="text-xl font-semibold tracking-tight text-gray-800">e-Governance System</h1>
+        <h1 class="text-xl font-semibold tracking-tight text-gray-800">Barangay Paguiruan, Floridablanca</h1>
         <p class="mt-1 text-sm text-gray-500">Barangay Management Portal</p>
     </div>
 
