@@ -507,7 +507,7 @@
                     </div>
                     <div>
                         <h3 class="text-sm font-semibold text-gray-900">Phone</h3>
-                        <p class="mt-1 text-sm text-gray-600">(045) 000-0000</p>
+                        <p class="mt-1 text-sm text-gray-600">(096) 1254-9690</p>
                     </div>
                 </div>
                 {{-- Email --}}
@@ -519,7 +519,7 @@
                     </div>
                     <div>
                         <h3 class="text-sm font-semibold text-gray-900">Email</h3>
-                        <p class="mt-1 text-sm text-gray-600">barangay.paguiruan@email.com</p>
+                        <p class="mt-1 text-sm text-gray-600">barangaypaguiruan2024@gmail.com</p>
                     </div>
                 </div>
             </div>

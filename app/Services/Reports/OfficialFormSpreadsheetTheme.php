@@ -233,9 +233,9 @@ class OfficialFormSpreadsheetTheme
             $leftLogo->setName('Barangay Logo');
             $leftLogo->setPath($logo1Path);
             $leftLogo->setCoordinates('A1');
-            $leftLogo->setOffsetX(8);
-            $leftLogo->setOffsetY(2);
-            $leftLogo->setHeight(60);
+            $leftLogo->setOffsetX(26);
+            $leftLogo->setOffsetY(7);
+            $leftLogo->setHeight(80);
             $leftLogo->setWorksheet($sheet);
         }
 
@@ -248,9 +248,9 @@ class OfficialFormSpreadsheetTheme
             $rightOne->setName('Municipal Seal');
             $rightOne->setPath($logo2Path);
             $rightOne->setCoordinates($rightOneColumn . '1');
-            $rightOne->setOffsetX(6);
-            $rightOne->setOffsetY(2);
-            $rightOne->setHeight(60);
+            $rightOne->setOffsetX(-61);
+            $rightOne->setOffsetY(9);
+            $rightOne->setHeight(80);
             $rightOne->setWorksheet($sheet);
         }
 
@@ -260,9 +260,9 @@ class OfficialFormSpreadsheetTheme
             $rightTwo->setName('Provincial Seal');
             $rightTwo->setPath($logo3Path);
             $rightTwo->setCoordinates($rightTwoColumn . '1');
-            $rightTwo->setOffsetX(2);
-            $rightTwo->setOffsetY(2);
-            $rightTwo->setHeight(60);
+            $rightTwo->setOffsetX(-45);
+            $rightTwo->setOffsetY(-7);
+            $rightTwo->setHeight(130);
             $rightTwo->setWorksheet($sheet);
         }
     }

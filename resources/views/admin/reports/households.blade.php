@@ -331,23 +331,9 @@
             </x-ui.summary-card>
         </div>
 
-        <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
-            <x-ui.chart-panel title="Households vs Residents per Purok" wrapper-class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm xl:col-span-2">
-                <canvas id="householdPurokChart"></canvas>
-            </x-ui.chart-panel>
-            <x-ui.chart-panel title="Head Status Distribution">
-                <canvas id="householdStatusChart"></canvas>
-            </x-ui.chart-panel>
-        </div>
-
-        <x-ui.chart-panel title="Household Size Distribution">
-            <canvas id="householdSizeChart"></canvas>
-        </x-ui.chart-panel>
     </div>
 </section>
 @endsection
-
-<x-ui.chart-script />
 
 @push('scripts')
     <script>
@@ -605,70 +591,5 @@
                 }
             });
         })();
-    </script>
-    <script>
-        const purokLabels = @json($purokLabels);
-        const purokHouseholdSeries = @json($purokHouseholdSeries);
-        const purokMemberSeries = @json($purokMemberSeries);
-        const sizeBands = @json($sizeBands);
-        const statusDistribution = @json($statusDistribution);
-
-        window.reportCreateChart('householdPurokChart', {
-            type: 'bar',
-            data: {
-                labels: purokLabels,
-                datasets: [
-                    {
-                        label: 'Households',
-                        data: purokHouseholdSeries,
-                        backgroundColor: '#f59e0b'
-                    },
-                    {
-                        label: 'Residents',
-                        data: purokMemberSeries,
-                        backgroundColor: '#2563eb'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-
-        window.reportCreateChart('householdStatusChart', {
-            type: 'pie',
-            data: {
-                labels: ['Active', 'Pending', 'Suspended'],
-                datasets: [{
-                    data: [statusDistribution.active, statusDistribution.pending, statusDistribution.suspended],
-                    backgroundColor: ['#16a34a', '#f59e0b', '#dc2626']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-
-        window.reportCreateChart('householdSizeChart', {
-            type: 'line',
-            data: {
-                labels: Object.keys(sizeBands),
-                datasets: [{
-                    label: 'Households',
-                    data: Object.values(sizeBands),
-                    borderColor: '#2563eb',
-                    backgroundColor: 'rgba(37, 99, 235, 0.15)',
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
-            }
-        });
     </script>
 @endpush

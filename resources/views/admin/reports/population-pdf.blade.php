@@ -13,6 +13,8 @@
         'leftMeta' => [
             'Report Name: Population',
             'Purok Filter: ' . ($filters['purok'] ?? 'All Puroks'),
+            'Age Range: ' . ($filters['age_range'] ?? 'All Ages'),
+            'Gender: ' . ($filters['gender'] ?? 'All'),
         ],
         'rightMeta' => [
             'Total Records: ' . count($records),

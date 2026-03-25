@@ -93,16 +93,23 @@ class ReportController extends Controller
     /**
      * Display population reports with optional purok filter.
      */
-    public function population()
+    public function population(Request $request)
     {
         $today = Carbon::today()->toDateString();
-        $purokId = request('purok') ? (int) request('purok') : null;
+        $purokInput = (string) $request->query('purok', 'all');
+        $purokId = ctype_digit($purokInput) ? (int) $purokInput : null;
+        $ageRange = $this->normalizePopulationAgeRange((string) $request->query('age_range', 'all'));
+        $gender = $this->normalizePopulationGender((string) $request->query('gender', 'all'));
         $allPuroks = Purok::orderBy('name')->get();
+        if ($purokId !== null && ! $allPuroks->contains('id', $purokId)) {
+            $purokId = null;
+        }
         $puroks = $purokId
             ? Purok::where('id', $purokId)->orderBy('name')->get()
             : Purok::orderBy('name')->get();
 
         $populationBase = $this->populationPeopleBaseQuery($purokId);
+        $this->applyPopulationBaseFilters($populationBase, $today, $ageRange, $gender);
 
         $demographicsRows = (clone $populationBase)
             ->selectRaw('purok_id, COUNT(*) as total_residents')
@@ -144,6 +151,9 @@ class ReportController extends Controller
             ->where('status', User::STATUS_APPROVED)
             ->where('is_suspended', true);
 
+        $this->applyPopulationUserFilters($activeQuery, $today, $ageRange, $gender);
+        $this->applyPopulationUserFilters($inactiveQuery, $today, $ageRange, $gender);
+
         if ($purokId) {
             $activeQuery->where('purok_id', $purokId);
             $inactiveQuery->where('purok_id', $purokId);
@@ -158,6 +168,7 @@ class ReportController extends Controller
             ->where('status', User::STATUS_APPROVED)
             ->where('is_suspended', false)
             ->whereNotNull('purok_id');
+        $this->applyPopulationUserFilters($activePerPurokQuery, $today, $ageRange, $gender);
 
         if ($purokId) {
             $activePerPurokQuery->where('purok_id', $purokId);
@@ -203,6 +214,11 @@ class ReportController extends Controller
             ];
         });
 
+        $purokLabel = $this->resolvePurokLabel($purokId);
+        $ageRangeLabel = $this->resolvePopulationAgeRangeLabel($ageRange);
+        $genderLabel = $this->resolvePopulationGenderLabel($gender);
+        $activePopulationFilterLabel = "Purok: {$purokLabel} | Age: {$ageRangeLabel} | Gender: {$genderLabel}";
+
         return view('admin.reports.population', compact(
             'residentsPerPurok',
             'residentTypePerPurok',
@@ -214,7 +230,10 @@ class ReportController extends Controller
             'demographicsPerPurok',
             'puroks',
             'allPuroks',
-            'purokId'
+            'purokId',
+            'ageRange',
+            'gender',
+            'activePopulationFilterLabel'
         ));
     }
 
@@ -377,12 +396,17 @@ class ReportController extends Controller
     public function populationExportPdf(Request $request)
     {
         $records = $this->buildPopulationExportRows($request);
-        $purokLabel = $this->resolvePurokLabel($request->get('purok'));
+        $purokInput = (string) $request->query('purok', 'all');
+        $purokId = ctype_digit($purokInput) ? (int) $purokInput : null;
+        $ageRange = $this->normalizePopulationAgeRange((string) $request->query('age_range', 'all'));
+        $gender = $this->normalizePopulationGender((string) $request->query('gender', 'all'));
 
         $pdf = Pdf::loadView('admin.reports.population-pdf', [
             'records' => $records,
             'filters' => [
-                'purok' => $purokLabel,
+                'purok' => $this->resolvePurokLabel($purokId),
+                'age_range' => $this->resolvePopulationAgeRangeLabel($ageRange),
+                'gender' => $this->resolvePopulationGenderLabel($gender),
             ],
         ])->setPaper('a4', 'landscape');
 
@@ -396,13 +420,18 @@ class ReportController extends Controller
     {
         $records = $this->buildPopulationExportRows($request);
         $filename = 'population_report_' . now()->format('Ymd_His') . '.csv';
-        $purokLabel = $this->resolvePurokLabel($request->get('purok'));
+        $purokInput = (string) $request->query('purok', 'all');
+        $purokId = ctype_digit($purokInput) ? (int) $purokInput : null;
+        $ageRange = $this->normalizePopulationAgeRange((string) $request->query('age_range', 'all'));
+        $gender = $this->normalizePopulationGender((string) $request->query('gender', 'all'));
 
         return $this->streamOfficialCsvResponse(
             $filename,
             'Population Report',
             [
-                ['Scope', $purokLabel],
+                ['Purok', $this->resolvePurokLabel($purokId)],
+                ['Age Range', $this->resolvePopulationAgeRangeLabel($ageRange)],
+                ['Gender', $this->resolvePopulationGenderLabel($gender)],
                 ['Total Rows', (string) count($records)],
             ],
             ['Purok', 'Total Residents', 'Active Residents', 'Permanent', 'Non-Permanent', 'Minors', 'Adults', 'Seniors', 'Male', 'Female'],
@@ -428,13 +457,19 @@ class ReportController extends Controller
     public function populationExportExcel(Request $request)
     {
         $records = $this->buildPopulationExportRows($request);
-        $purokLabel = $this->resolvePurokLabel($request->get('purok'));
+        $purokInput = (string) $request->query('purok', 'all');
+        $purokId = ctype_digit($purokInput) ? (int) $purokInput : null;
+        $ageRange = $this->normalizePopulationAgeRange((string) $request->query('age_range', 'all'));
+        $gender = $this->normalizePopulationGender((string) $request->query('gender', 'all'));
+        $scopeLabel = 'Purok: ' . $this->resolvePurokLabel($purokId)
+            . ' | Age: ' . $this->resolvePopulationAgeRangeLabel($ageRange)
+            . ' | Gender: ' . $this->resolvePopulationGenderLabel($gender);
 
         return $this->createOfficialExcelResponse(
             filename: 'population_report_' . now()->format('Ymd_His') . '.xlsx',
             sheetName: 'Population Report',
             reportTitle: 'Population Report',
-            scope: $purokLabel,
+            scope: $scopeLabel,
             headers: ['Purok', 'Total Residents', 'Active Residents', 'Permanent', 'Non-Permanent', 'Minors', 'Adults', 'Seniors', 'Male', 'Female'],
             rows: $records,
             rowMapper: fn (array $record) => [
@@ -614,7 +649,10 @@ class ReportController extends Controller
      */
     private function buildPopulationExportRows(Request $request): array
     {
-        $purokId = $request->get('purok') ? (int) $request->get('purok') : null;
+        $purokInput = (string) $request->query('purok', 'all');
+        $purokId = ctype_digit($purokInput) ? (int) $purokInput : null;
+        $ageRange = $this->normalizePopulationAgeRange((string) $request->query('age_range', 'all'));
+        $gender = $this->normalizePopulationGender((string) $request->query('gender', 'all'));
         $today = Carbon::today()->toDateString();
 
         $puroks = Purok::query()
@@ -623,6 +661,7 @@ class ReportController extends Controller
             ->get(['id', 'name']);
 
         $populationBase = $this->populationPeopleBaseQuery($purokId);
+        $this->applyPopulationBaseFilters($populationBase, $today, $ageRange, $gender);
 
         $demographicsByPurok = (clone $populationBase)
             ->selectRaw('purok_id, COUNT(*) as total_residents')
@@ -638,12 +677,14 @@ class ReportController extends Controller
             ->get()
             ->keyBy(fn ($row) => (int) $row->purok_id);
 
-        $activeResidentsByPurok = User::query()
+        $activeResidentsByPurokQuery = User::query()
             ->countable()
             ->where('status', User::STATUS_APPROVED)
             ->where('is_suspended', false)
             ->whereNotNull('purok_id')
-            ->when($purokId, fn ($q) => $q->where('purok_id', $purokId))
+            ->when($purokId, fn ($q) => $q->where('purok_id', $purokId));
+        $this->applyPopulationUserFilters($activeResidentsByPurokQuery, $today, $ageRange, $gender);
+        $activeResidentsByPurok = $activeResidentsByPurokQuery
             ->groupBy('purok_id')
             ->selectRaw('purok_id, COUNT(*) as total')
             ->pluck('total', 'purok_id');
@@ -674,6 +715,73 @@ class ReportController extends Controller
     private function populationPeopleBaseQuery(?int $purokId = null): \Illuminate\Database\Query\Builder
     {
         return $this->populationService->populationPeopleBaseQuery($purokId);
+    }
+
+    private function normalizePopulationAgeRange(string $ageRange): string
+    {
+        return in_array($ageRange, ['all', 'minors', 'adults', 'seniors'], true)
+            ? $ageRange
+            : 'all';
+    }
+
+    private function normalizePopulationGender(string $gender): string
+    {
+        return in_array($gender, ['all', 'male', 'female'], true)
+            ? $gender
+            : 'all';
+    }
+
+    private function applyPopulationBaseFilters(\Illuminate\Database\Query\Builder $query, string $today, string $ageRange, string $gender): void
+    {
+        if ($ageRange === 'minors') {
+            $query->whereNotNull('birthdate')->whereRaw("TIMESTAMPDIFF(YEAR, birthdate, ?) < 18", [$today]);
+        } elseif ($ageRange === 'adults') {
+            $query->whereNotNull('birthdate')
+                ->whereRaw("TIMESTAMPDIFF(YEAR, birthdate, ?) >= 18", [$today])
+                ->whereRaw("TIMESTAMPDIFF(YEAR, birthdate, ?) < 60", [$today]);
+        } elseif ($ageRange === 'seniors') {
+            $query->whereNotNull('birthdate')->whereRaw("TIMESTAMPDIFF(YEAR, birthdate, ?) >= 60", [$today]);
+        }
+
+        if ($gender !== 'all') {
+            $query->where('gender', $gender);
+        }
+    }
+
+    private function applyPopulationUserFilters(Builder $query, string $today, string $ageRange, string $gender): void
+    {
+        if ($ageRange === 'minors') {
+            $query->whereNotNull('birthdate')->whereRaw("TIMESTAMPDIFF(YEAR, birthdate, ?) < 18", [$today]);
+        } elseif ($ageRange === 'adults') {
+            $query->whereNotNull('birthdate')
+                ->whereRaw("TIMESTAMPDIFF(YEAR, birthdate, ?) >= 18", [$today])
+                ->whereRaw("TIMESTAMPDIFF(YEAR, birthdate, ?) < 60", [$today]);
+        } elseif ($ageRange === 'seniors') {
+            $query->whereNotNull('birthdate')->whereRaw("TIMESTAMPDIFF(YEAR, birthdate, ?) >= 60", [$today]);
+        }
+
+        if ($gender !== 'all') {
+            $query->where('gender', $gender);
+        }
+    }
+
+    private function resolvePopulationAgeRangeLabel(string $ageRange): string
+    {
+        return match ($ageRange) {
+            'minors' => 'Minors (0-17)',
+            'adults' => 'Adults (18-59)',
+            'seniors' => 'Seniors (60+)',
+            default => 'All Ages',
+        };
+    }
+
+    private function resolvePopulationGenderLabel(string $gender): string
+    {
+        return match ($gender) {
+            'male' => 'Male',
+            'female' => 'Female',
+            default => 'All',
+        };
     }
 
     /**
@@ -1855,7 +1963,6 @@ class ReportController extends Controller
         if ($afterRender !== null) {
             $afterRender($sheet, $headerRow, $lastDataRow);
         }
-
         $finalRow = $includeSignature
             ? $this->spreadsheetTheme->applySignatureFooter($sheet, $lastColumn, $lastDataRow)
             : $lastDataRow;

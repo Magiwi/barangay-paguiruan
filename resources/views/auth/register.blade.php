@@ -149,22 +149,54 @@
                         @enderror
                     </div>
 
-                    {{-- Birthdate --}}
-                    <div>
-                        <label for="birthdate" class="block text-sm font-medium text-gray-700 mb-1">Birthdate <span class="text-red-600">*</span></label>
-                        <input type="date" name="birthdate" id="birthdate" value="{{ old('birthdate') }}" required
-                               max="{{ now('Asia/Manila')->format('Y-m-d') }}"
-                               class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('birthdate') border-red-500 @else border-gray-300 @enderror">
+                    {{-- Birthdate (mobile-friendly dropdowns) --}}
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Birthdate <span class="text-red-600">*</span></label>
+                        <input type="hidden" name="birthdate" id="birthdate" value="{{ old('birthdate') }}" required>
+                        <div class="dob-grid">
+                            <div>
+                                <label for="birth_month" class="sr-only">Birth month</label>
+                                <select name="birth_month" id="birth_month" class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('birthdate') border-red-500 @else border-gray-300 @enderror">
+                                    <option value="">Month</option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="birth_day" class="sr-only">Birth day</label>
+                                <select name="birth_day" id="birth_day" class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('birthdate') border-red-500 @else border-gray-300 @enderror">
+                                    <option value="">Day</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="birth_year" class="sr-only">Birth year</label>
+                                <input
+                                    type="number"
+                                    name="birth_year"
+                                    id="birth_year"
+                                    min="1850"
+                                    max="{{ now('Asia/Manila')->format('Y') }}"
+                                    step="1"
+                                    inputmode="numeric"
+                                    placeholder="Year (1850-{{ now('Asia/Manila')->format('Y') }})"
+                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('birthdate') border-red-500 @else border-gray-300 @enderror">
+                            </div>
+                        </div>
+                        <p id="age_preview" class="mt-2 text-sm font-medium text-gray-600">Age: —</p>
+                        <p id="birthdate_live_error" class="mt-1 hidden text-xs text-red-600"></p>
                         @error('birthdate')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
-                    </div>
-
-                    {{-- Age (auto-calculated, readonly) --}}
-                    <div>
-                        <label for="age_display" class="block text-sm font-medium text-gray-700 mb-1">Age <span class="text-xs text-gray-400 font-normal">(auto-calculated)</span></label>
-                        <input type="text" id="age_display" readonly placeholder="—"
-                               class="block w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-700 cursor-not-allowed">
                     </div>
 
                     {{-- Civil Status --}}
@@ -589,6 +621,19 @@
         </div>
     </div>
 </div>
+
+<style>
+.dob-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+@media (max-width: 640px) {
+    .dob-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 
 <script>
 (function () {
@@ -1252,48 +1297,138 @@
     toggleSeniorProofField();
     toggleGovernmentIdFields();
     attachAutoCompression();
-    // === Auto age calculation + birthdate validation ===
+    // === Birthdate dropdown UX (mobile-friendly) ===
     var birthdateInput = document.getElementById('birthdate');
-    var ageDisplay = document.getElementById('age_display');
+    var birthMonthSelect = document.getElementById('birth_month');
+    var birthDaySelect = document.getElementById('birth_day');
+    var birthYearSelect = document.getElementById('birth_year');
+    var agePreview = document.getElementById('age_preview');
+    var birthdateLiveError = document.getElementById('birthdate_live_error');
 
-    function getAge(birthDate) {
+    function getAgeFromParts(year, month, day) {
         var today = new Date();
-        var birth = new Date(birthDate);
+        var birth = new Date(year, month - 1, day);
         var age = today.getFullYear() - birth.getFullYear();
         var m = today.getMonth() - birth.getMonth();
         if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) { age--; }
         return age;
     }
 
-    function handleBirthdateChange() {
-        var val = birthdateInput.value;
-        if (!val) {
-            ageDisplay.value = '';
-            showFieldError(birthdateInput, 'Birthdate is required.');
-            return;
-        }
-        var today = new Date();
-        today.setHours(0, 0, 0, 0);
-        var birth = new Date(val);
-        if (birth >= today) {
-            ageDisplay.value = '';
-            showFieldError(birthdateInput, 'Birthdate cannot be today or in the future.');
-            return;
-        }
-        var age = getAge(val);
-        ageDisplay.value = age >= 0 ? age + ' years old' : '';
-        if (age < 18) {
-            showFieldError(birthdateInput, 'You must be at least 18 years old to register.');
-            return;
-        }
-        clearFieldError(birthdateInput);
+    function getDaysInMonth(year, month) {
+        return new Date(year, month, 0).getDate();
     }
 
-    if (birthdateInput) {
-        birthdateInput.addEventListener('change', handleBirthdateChange);
-        birthdateInput.addEventListener('blur', handleBirthdateChange);
-        if (birthdateInput.value) { handleBirthdateChange(); }
+    function setBirthdateLiveError(message) {
+        if (!birthdateLiveError) return;
+        birthdateLiveError.textContent = message || '';
+        birthdateLiveError.classList.toggle('hidden', !message);
     }
+
+    function updateDayOptions(selectedDay) {
+        if (!birthDaySelect || !birthMonthSelect || !birthYearSelect) return;
+        var month = parseInt(birthMonthSelect.value, 10);
+        var year = parseInt(birthYearSelect.value, 10);
+        var maxDays = (month && year) ? getDaysInMonth(year, month) : 31;
+
+        birthDaySelect.innerHTML = '<option value="">Day</option>';
+        for (var day = 1; day <= maxDays; day++) {
+            var option = document.createElement('option');
+            option.value = String(day);
+            option.textContent = String(day);
+            if (String(day) === String(selectedDay || '')) {
+                option.selected = true;
+            }
+            birthDaySelect.appendChild(option);
+        }
+    }
+
+    function syncBirthdateInput() {
+        if (!birthdateInput || !birthMonthSelect || !birthDaySelect || !birthYearSelect) return;
+        var month = parseInt(birthMonthSelect.value, 10);
+        var day = parseInt(birthDaySelect.value, 10);
+        var year = parseInt(birthYearSelect.value, 10);
+        var currentYear = new Date().getFullYear();
+
+        if (!month || !day || !year) {
+            birthdateInput.value = '';
+            if (agePreview) agePreview.textContent = 'Age: —';
+            setBirthdateLiveError('');
+            return;
+        }
+
+        if (year < 1850 || year > currentYear) {
+            birthdateInput.value = '';
+            if (agePreview) agePreview.textContent = 'Age: —';
+            setBirthdateLiveError('Year must be between 1850 and ' + currentYear + '.');
+            return;
+        }
+
+        var birth = new Date(year, month - 1, day);
+        if (birth.getFullYear() !== year || birth.getMonth() !== (month - 1) || birth.getDate() !== day) {
+            birthdateInput.value = '';
+            if (agePreview) agePreview.textContent = 'Age: —';
+            setBirthdateLiveError('Please select a valid birthdate.');
+            return;
+        }
+
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (birth >= today) {
+            birthdateInput.value = '';
+            if (agePreview) agePreview.textContent = 'Age: —';
+            setBirthdateLiveError('Birthdate cannot be today or in the future.');
+            return;
+        }
+
+        var age = getAgeFromParts(year, month, day);
+        var monthPadded = String(month).padStart(2, '0');
+        var dayPadded = String(day).padStart(2, '0');
+        birthdateInput.value = year + '-' + monthPadded + '-' + dayPadded;
+        if (agePreview) agePreview.textContent = 'Age: ' + age + ' years old';
+
+        if (age < 18) {
+            setBirthdateLiveError('You must be at least 18 years old to register.');
+            return;
+        }
+
+        setBirthdateLiveError('');
+    }
+
+    function initializeBirthdateDropdowns() {
+        if (!birthdateInput || !birthMonthSelect || !birthDaySelect || !birthYearSelect) return;
+        var oldValue = String(birthdateInput.value || '');
+        var match = oldValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+        if (match) {
+            var oldYear = String(parseInt(match[1], 10));
+            var oldMonth = String(parseInt(match[2], 10));
+            var oldDay = String(parseInt(match[3], 10));
+
+            birthYearSelect.value = oldYear;
+            birthMonthSelect.value = oldMonth;
+            updateDayOptions(oldDay);
+            birthDaySelect.value = oldDay;
+        } else {
+            updateDayOptions('');
+        }
+
+        birthMonthSelect.addEventListener('change', function () {
+            updateDayOptions(birthDaySelect.value);
+            syncBirthdateInput();
+        });
+        birthYearSelect.addEventListener('change', function () {
+            updateDayOptions(birthDaySelect.value);
+            syncBirthdateInput();
+        });
+        birthYearSelect.addEventListener('input', function () {
+            updateDayOptions(birthDaySelect.value);
+            syncBirthdateInput();
+        });
+        birthDaySelect.addEventListener('change', syncBirthdateInput);
+
+        syncBirthdateInput();
+    }
+    initializeBirthdateDropdowns();
 
     // === Contact number: digits only ===
     var contactInput = document.getElementById('contact_number');

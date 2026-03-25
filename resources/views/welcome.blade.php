@@ -36,6 +36,7 @@
             @endphp
             <a href="#hero" class="{{ $navLink }}">Home</a>
             <a href="#services" class="{{ $navLink }}">Services</a>
+            <a href="#announcements" class="{{ $navLink }}">Announcements</a>
             <a href="#how-it-works" class="{{ $navLink }}">How It Works</a>
             <a href="#about-preview" class="{{ $navLink }}">About</a>
             <a href="#contact" class="{{ $navLink }}">Contact</a>
@@ -60,6 +61,7 @@
                 <div class="absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 bg-white py-2 shadow-lg z-50">
                     <a href="#hero" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">Home</a>
                     <a href="#services" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">Services</a>
+                    <a href="#announcements" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">Announcements</a>
                     <a href="#how-it-works" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">How It Works</a>
                     <a href="#about-preview" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">About</a>
                     <a href="#contact" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">Contact</a>
@@ -153,8 +155,8 @@
             <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-800 md:text-4xl">Core Services</h2>
             <p class="mx-auto mt-3 max-w-2xl text-gray-500">Access all essential barangay services from your device — no long lines, no wasted time.</p>
         </div>
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="fade-in fade-delay-1 group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-200">
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <a href="{{ route('login') }}" class="fade-in fade-delay-1 group block rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30">
                 <div class="mb-4 overflow-hidden rounded-xl border border-gray-100">
                     <img src="{{ asset('images/ui design/barangayhall.jpg') }}" alt="Barangay Hall Services" class="h-32 w-full object-cover transition-transform duration-300 group-hover:scale-105">
                 </div>
@@ -163,8 +165,8 @@
                 </div>
                 <h3 class="text-lg font-semibold text-gray-800">Certificate Requests</h3>
                 <p class="mt-2 text-sm text-gray-500 leading-relaxed">Request barangay clearance, indigency certificates, and more with just a few clicks.</p>
-            </div>
-            <div class="fade-in fade-delay-2 group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-green-200">
+            </a>
+            <a href="{{ route('login') }}" class="fade-in fade-delay-2 group block rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-green-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30">
                 <div class="mb-4 overflow-hidden rounded-xl border border-gray-100">
                     <img src="{{ asset('images/ui design/health center.jpg') }}" alt="Health Center Service" class="h-32 w-full object-cover transition-transform duration-300 group-hover:scale-105">
                 </div>
@@ -173,8 +175,8 @@
                 </div>
                 <h3 class="text-lg font-semibold text-gray-800">Permit Applications</h3>
                 <p class="mt-2 text-sm text-gray-500 leading-relaxed">Apply for business and construction permits online. Track status in real time.</p>
-            </div>
-            <div class="fade-in fade-delay-3 group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-amber-200">
+            </a>
+            <a href="{{ route('login') }}" class="fade-in fade-delay-3 group block rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-amber-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30">
                 <div class="mb-4 overflow-hidden rounded-xl border border-gray-100">
                     <img src="{{ asset('images/ui design/street1.jpg') }}" alt="Street Community Access" class="h-32 w-full object-cover transition-transform duration-300 group-hover:scale-105">
                 </div>
@@ -183,18 +185,40 @@
                 </div>
                 <h3 class="text-lg font-semibold text-gray-800">Complaints & Grievances</h3>
                 <p class="mt-2 text-sm text-gray-500 leading-relaxed">Report issues in your community. Every concern is tracked and resolved transparently.</p>
-            </div>
-            <div class="fade-in fade-delay-4 group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-indigo-200">
-                <div class="mb-4 overflow-hidden rounded-xl border border-gray-100">
-                    <img src="{{ asset('images/ui design/park.jpg') }}" alt="Community Announcements" class="h-32 w-full object-cover transition-transform duration-300 group-hover:scale-105">
-                </div>
-                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition-colors group-hover:bg-indigo-600 group-hover:text-white">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
-                </div>
-                <h3 class="text-lg font-semibold text-gray-800">Announcements</h3>
-                <p class="mt-2 text-sm text-gray-500 leading-relaxed">Stay informed with the latest barangay news, events, and emergency alerts.</p>
-            </div>
+            </a>
         </div>
+    </div>
+</section>
+
+{{-- ============================================================
+     ANNOUNCEMENTS
+     ============================================================ --}}
+<section id="announcements" class="scroll-mt-24 bg-gray-50 py-20 px-4 md:px-6">
+    <div class="mx-auto max-w-7xl">
+        <div class="mb-12 text-center fade-in">
+            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">Latest Updates</p>
+            <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-800 md:text-4xl">Announcements</h2>
+            <p class="mx-auto mt-3 max-w-2xl text-gray-500">See the most recent barangay announcements and community notices.</p>
+        </div>
+        @if (($latestAnnouncements ?? collect())->isEmpty())
+            <div class="fade-in rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+                <p class="text-sm text-gray-500">No announcements available yet.</p>
+            </div>
+        @else
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($latestAnnouncements as $index => $announcement)
+                    <article class="fade-in fade-delay-{{ min($index + 1, 4) }} rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                            {{ optional($announcement->published_at)->format('M d, Y') ?? $announcement->created_at->format('M d, Y') }}
+                        </p>
+                        <h3 class="mt-2 text-lg font-semibold leading-snug text-gray-800 line-clamp-2">{{ $announcement->title }}</h3>
+                        <p class="mt-3 text-sm leading-relaxed text-gray-600">
+                            {{ \Illuminate\Support\Str::limit(strip_tags((string) $announcement->content), 130) }}
+                        </p>
+                    </article>
+                @endforeach
+            </div>
+        @endif
     </div>
 </section>
 
@@ -397,7 +421,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-semibold text-gray-800">Phone</p>
-                            <p class="mt-1 text-sm text-gray-500">(045) 000-0000</p>
+                            <p class="mt-1 text-sm text-gray-500">(096) 1254-9690</p>
                         </div>
                     </div>
                 </div>
@@ -408,7 +432,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-semibold text-gray-800">Email</p>
-                            <p class="mt-1 text-sm text-gray-500">barangay.paguiruan@gmail.com</p>
+                            <p class="mt-1 text-sm text-gray-500">barangaypaguiruan2024@gmail.com</p>
                         </div>
                     </div>
                 </div>

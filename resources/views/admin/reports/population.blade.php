@@ -19,35 +19,53 @@
                     :excel-url="route($rp . '.reports.population.export.excel', request()->query())"
                     :csv-url="route($rp . '.reports.population.export.csv', request()->query())"
                     filter-label="Exports include current filters"
-                    :filter-value="$allPuroks->firstWhere('id', $purokId)?->name ?? 'All Puroks'"
+                    :filter-value="$activePopulationFilterLabel"
                     :show-print="true"
                     print-button-class="inline-flex items-center rounded-lg bg-gray-800 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-gray-900 transition"
                 />
             </x-slot:actions>
         </x-ui.report-topbar>
 
-        {{-- Purok Filter --}}
+        {{-- Multi Filter Row --}}
         <div class="mb-8 no-print">
             <x-ui.report-filter-bar
                 :action="route($rp . '.reports.population')"
                 :reset-url="route($rp . '.reports.population')"
-                fields-class="flex flex-wrap items-end gap-3"
+                fields-class="grid grid-cols-1 gap-3 md:grid-cols-5 md:items-end"
                 submit-label="Filter"
+                submit-class="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700"
                 wrapper-class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
             >
-                <div class="flex-1 min-w-[200px] max-w-xs">
-                    <label for="purok" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Filter by Purok</label>
+                <div class="min-w-[180px]">
+                    <label for="purok" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Purok</label>
                     <select name="purok" id="purok" class="block w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">All Puroks</option>
+                        <option value="all" @selected(! $purokId)>All Puroks</option>
                         @foreach($allPuroks as $p)
                             <option value="{{ $p->id }}" @selected($purokId == $p->id)>{{ $p->name }}</option>
                         @endforeach
                     </select>
                 </div>
+                <div class="min-w-[180px]">
+                    <label for="age_range" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Age Range</label>
+                    <select name="age_range" id="age_range" class="block w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="all" @selected(($ageRange ?? 'all') === 'all')>All Ages</option>
+                        <option value="minors" @selected(($ageRange ?? 'all') === 'minors')>Minors (0-17)</option>
+                        <option value="adults" @selected(($ageRange ?? 'all') === 'adults')>Adults (18-59)</option>
+                        <option value="seniors" @selected(($ageRange ?? 'all') === 'seniors')>Seniors (60+)</option>
+                    </select>
+                </div>
+                <div class="min-w-[180px]">
+                    <label for="gender" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Gender</label>
+                    <select name="gender" id="gender" class="block w-full rounded-lg border-gray-300 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="all" @selected(($gender ?? 'all') === 'all')>All</option>
+                        <option value="male" @selected(($gender ?? 'all') === 'male')>Male</option>
+                        <option value="female" @selected(($gender ?? 'all') === 'female')>Female</option>
+                    </select>
+                </div>
             </x-ui.report-filter-bar>
-            @if($purokId)
+            @if($purokId || ($ageRange ?? 'all') !== 'all' || ($gender ?? 'all') !== 'all')
                 <p class="mt-2 text-xs text-blue-600 font-medium">
-                    Showing data for: {{ $allPuroks->firstWhere('id', $purokId)?->name ?? 'Unknown Purok' }}
+                    {{ $activePopulationFilterLabel }}
                 </p>
             @endif
         </div>
@@ -269,4 +287,20 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var filterForm = document.querySelector('form[action="{{ route($rp . '.reports.population') }}"]');
+    if (!filterForm) return;
+    ['purok', 'age_range', 'gender'].forEach(function (id) {
+        var field = document.getElementById(id);
+        if (!field) return;
+        field.addEventListener('change', function () {
+            filterForm.requestSubmit();
+        });
+    });
+});
+</script>
+@endpush
 
