@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Resident\CertificateController as ResidentCertificateController;
 use App\Http\Controllers\Resident\IssueController as ResidentIssueController;
 use App\Http\Controllers\Resident\AnnouncementController as ResidentAnnouncementController;
@@ -41,27 +42,7 @@ use App\Http\Controllers\Staff\ReportController as StaffReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FamilyMemberController;
 
-Route::get('/', function () {
-    $communityStats = [
-        'residents_served' => \App\Models\User::countable()
-            ->where('status', \App\Models\User::STATUS_APPROVED)
-            ->count(),
-        'certificates_issued' => \App\Models\CertificateRequest::query()
-            ->where('status', 'released')
-            ->count(),
-        'complaints_resolved' => \App\Models\IssueReport::query()
-            ->whereIn('status', [
-                \App\Models\IssueReport::STATUS_RESOLVED,
-                \App\Models\IssueReport::STATUS_CLOSED,
-            ])
-            ->count(),
-        'announcements_published' => \App\Models\Announcement::query()
-            ->where('status', \App\Models\Announcement::STATUS_APPROVED)
-            ->count(),
-    ];
-
-    return view('welcome', compact('communityStats'));
-});
+Route::get('/', [HomeController::class, 'index']);
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {

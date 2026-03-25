@@ -92,19 +92,6 @@
             />
         </div>
 
-        <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
-            <x-ui.chart-panel title="Blotter Cases Over Time" wrapper-class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm xl:col-span-2">
-                <canvas id="monthlyCasesChart"></canvas>
-            </x-ui.chart-panel>
-            <x-ui.chart-panel title="Status Distribution">
-                <canvas id="statusChart"></canvas>
-            </x-ui.chart-panel>
-        </div>
-
-        <x-ui.chart-panel title="Complaint Categories">
-            <canvas id="categoryChart"></canvas>
-        </x-ui.chart-panel>
-
         <x-ui.report-table-card title="Filtered Case Records">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
@@ -170,69 +157,3 @@
     </div>
 </section>
 @endsection
-
-<x-ui.chart-script />
-
-@push('scripts')
-    <script>
-        const monthLabels = @json($monthLabels);
-        const monthlySeries = @json($monthlySeries);
-        const statusDistribution = @json($statusDistribution);
-        const complaintCategories = @json($complaintCategories);
-
-        window.reportCreateChart('monthlyCasesChart', {
-            type: 'line',
-            data: {
-                labels: monthLabels,
-                datasets: [{
-                    label: 'Cases',
-                    data: monthlySeries,
-                    borderColor: '#dc2626',
-                    backgroundColor: 'rgba(220, 38, 38, 0.12)',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
-            }
-        });
-
-        window.reportCreateChart('statusChart', {
-            type: 'pie',
-            data: {
-                labels: ['Pending', 'Ongoing', 'Resolved'],
-                datasets: [{
-                    data: [statusDistribution.pending, statusDistribution.ongoing, statusDistribution.resolved],
-                    backgroundColor: ['#f59e0b', '#2563eb', '#16a34a']
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        window.reportCreateChart('categoryChart', {
-            type: 'bar',
-            data: {
-                labels: ['Noise', 'Physical', 'Financial', 'Property', 'Others'],
-                datasets: [{
-                    data: [
-                        complaintCategories.noise,
-                        complaintCategories.physical,
-                        complaintCategories.financial,
-                        complaintCategories.property,
-                        complaintCategories.others
-                    ],
-                    backgroundColor: ['#ef4444', '#f97316', '#0ea5e9', '#22c55e', '#6b7280']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
-            }
-        });
-    </script>
-@endpush

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\NameFormatter;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -324,6 +325,77 @@ class User extends Authenticatable
         ], true)
             && $this->status === self::STATUS_APPROVED
             && ! (bool) ($this->is_suspended ?? false);
+    }
+
+    // ── Name formatting accessors/mutators ──
+    public function getFirstNameAttribute(?string $value): ?string
+    {
+        return NameFormatter::properCase($value);
+    }
+
+    public function setFirstNameAttribute(?string $value): void
+    {
+        $this->attributes['first_name'] = NameFormatter::properCase($value);
+    }
+
+    public function getMiddleNameAttribute(?string $value): ?string
+    {
+        return NameFormatter::properCase($value);
+    }
+
+    public function setMiddleNameAttribute(?string $value): void
+    {
+        $this->attributes['middle_name'] = NameFormatter::properCase($value);
+    }
+
+    public function getLastNameAttribute(?string $value): ?string
+    {
+        return NameFormatter::properCase($value);
+    }
+
+    public function setLastNameAttribute(?string $value): void
+    {
+        $this->attributes['last_name'] = NameFormatter::properCase($value);
+    }
+
+    public function getSuffixAttribute(?string $value): ?string
+    {
+        return NameFormatter::formatSuffix($value);
+    }
+
+    public function setSuffixAttribute(?string $value): void
+    {
+        $this->attributes['suffix'] = NameFormatter::formatSuffix($value);
+    }
+
+    public function getHeadFirstNameAttribute(?string $value): ?string
+    {
+        return NameFormatter::properCase($value);
+    }
+
+    public function setHeadFirstNameAttribute(?string $value): void
+    {
+        $this->attributes['head_first_name'] = NameFormatter::properCase($value);
+    }
+
+    public function getHeadMiddleNameAttribute(?string $value): ?string
+    {
+        return NameFormatter::properCase($value);
+    }
+
+    public function setHeadMiddleNameAttribute(?string $value): void
+    {
+        $this->attributes['head_middle_name'] = NameFormatter::properCase($value);
+    }
+
+    public function getHeadLastNameAttribute(?string $value): ?string
+    {
+        return NameFormatter::properCase($value);
+    }
+
+    public function setHeadLastNameAttribute(?string $value): void
+    {
+        $this->attributes['head_last_name'] = NameFormatter::properCase($value);
     }
 
     /**

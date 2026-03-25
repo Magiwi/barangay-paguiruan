@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\NameFormatter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -56,6 +57,46 @@ class FamilyMember extends Model
     public function purokRelation(): BelongsTo
     {
         return $this->belongsTo(Purok::class, 'purok_id');
+    }
+
+    public function getFirstNameAttribute(?string $value): ?string
+    {
+        return NameFormatter::properCase($value);
+    }
+
+    public function setFirstNameAttribute(?string $value): void
+    {
+        $this->attributes['first_name'] = NameFormatter::properCase($value);
+    }
+
+    public function getMiddleNameAttribute(?string $value): ?string
+    {
+        return NameFormatter::properCase($value);
+    }
+
+    public function setMiddleNameAttribute(?string $value): void
+    {
+        $this->attributes['middle_name'] = NameFormatter::properCase($value);
+    }
+
+    public function getLastNameAttribute(?string $value): ?string
+    {
+        return NameFormatter::properCase($value);
+    }
+
+    public function setLastNameAttribute(?string $value): void
+    {
+        $this->attributes['last_name'] = NameFormatter::properCase($value);
+    }
+
+    public function getSuffixAttribute(?string $value): ?string
+    {
+        return NameFormatter::formatSuffix($value);
+    }
+
+    public function setSuffixAttribute(?string $value): void
+    {
+        $this->attributes['suffix'] = NameFormatter::formatSuffix($value);
     }
 
     public function getFullNameAttribute(): string

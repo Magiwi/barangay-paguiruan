@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LoginActivity;
 use App\Models\Purok;
 use App\Models\User;
+use App\Support\NameFormatter;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -347,6 +348,15 @@ class AuthController extends Controller
             'permanent_city.required' => 'Permanent city is required for non-permanent residents.',
             'permanent_barangay.required' => 'Permanent barangay is required for non-permanent residents.',
         ]);
+
+        // Normalize person-name inputs for cleaner stored data.
+        $validated['first_name'] = NameFormatter::properCase($validated['first_name'] ?? null);
+        $validated['middle_name'] = NameFormatter::properCase($validated['middle_name'] ?? null);
+        $validated['last_name'] = NameFormatter::properCase($validated['last_name'] ?? null);
+        $validated['suffix'] = NameFormatter::formatSuffix($validated['suffix'] ?? null);
+        $validated['head_first_name'] = NameFormatter::properCase($validated['head_first_name'] ?? null);
+        $validated['head_middle_name'] = NameFormatter::properCase($validated['head_middle_name'] ?? null);
+        $validated['head_last_name'] = NameFormatter::properCase($validated['head_last_name'] ?? null);
 
         // Calculate age from birthdate
         $validated['age'] = \Carbon\Carbon::parse($validated['birthdate'])->age;
