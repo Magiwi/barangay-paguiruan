@@ -85,58 +85,67 @@ class SmsService
         ?string $templateKey = null,
         array $context = []
     ): array {
+        $provider = 'easysendsms';
+
         if (! config('services.sms.enabled')) {
-            self::logSms($user?->id, $rawMobile, $templateKey, $message, 'skipped', 'semaphore', 'SMS disabled in configuration.', $context);
+            self::logSms($user?->id, $rawMobile, $templateKey, $message, 'skipped', $provider, 'SMS disabled in configuration.', $context);
 
             return ['status' => 'skipped'];
         }
 
-        $mobile = self::normalizePhMobile($rawMobile);
+        $mobile = self::normalizePhMobile($rawMobile, true);
         if (! $mobile) {
             Log::warning('SMS skipped: invalid or missing mobile number.', array_merge($context, [
                 'user_id' => $user?->id,
                 'raw_contact_number' => $rawMobile,
+                'provider' => $provider,
             ]));
-            self::logSms($user?->id, $rawMobile, $templateKey, $message, 'skipped', 'semaphore', 'Invalid or missing mobile number.', $context);
+            self::logSms($user?->id, $rawMobile, $templateKey, $message, 'skipped', $provider, 'Invalid or missing mobile number.', $context);
 
             return ['status' => 'skipped'];
         }
 
         $apiKey = (string) config('services.sms.api_key');
-        $baseUrl = rtrim((string) config('services.sms.base_url', 'https://api.semaphore.co/api/v4'), '/');
+        $baseUrl = rtrim((string) config('services.sms.base_url', 'https://restapi.easysendsms.app'), '/');
         $sender = config('services.sms.sender_name');
 
         if ($apiKey === '') {
             Log::warning('SMS skipped: missing API key.', array_merge($context, ['user_id' => $user?->id]));
-            self::logSms($user?->id, $mobile, $templateKey, $message, 'skipped', 'semaphore', 'Missing API key.', $context);
+            self::logSms($user?->id, $mobile, $templateKey, $message, 'skipped', $provider, 'Missing API key.', $context);
 
             return ['status' => 'skipped'];
         }
 
-        $payload = [
-            // Semaphore expects "apikey" (without underscore)
-            'apikey' => $apiKey,
-            'number' => $mobile,
-            'message' => $message,
-        ];
-
-        if (is_string($sender) && trim($sender) !== '') {
-            $payload['sendername'] = trim($sender);
-        }
-
         try {
-            $response = Http::asForm()
-                ->timeout(15)
-                ->post($baseUrl . '/messages', $payload);
+            $client = Http::timeout(15);
+            $payload = [
+                'to' => $mobile,
+                'text' => $message,
+                'type' => '0',
+            ];
+            if (is_string($sender) && trim($sender) !== '') {
+                $payload['from'] = trim($sender);
+            }
+
+            $endpoint = str_ends_with($baseUrl, '/sms/send')
+                ? $baseUrl
+                : $baseUrl . '/v1/rest/sms/send';
+
+            $response = $client
+                ->acceptJson()
+                ->withHeaders(['apikey' => $apiKey])
+                ->asJson()
+                ->post($endpoint, $payload);
 
             if (! $response->successful()) {
                 Log::warning('SMS send failed.', array_merge($context, [
                     'user_id' => $user?->id,
                     'mobile' => $mobile,
+                    'provider' => $provider,
                     'http_status' => $response->status(),
                     'response' => $response->body(),
                 ]));
-                self::logSms($user?->id, $mobile, $templateKey, $message, 'failed', 'semaphore', "HTTP {$response->status()}: {$response->body()}", $context);
+                self::logSms($user?->id, $mobile, $templateKey, $message, 'failed', $provider, "HTTP {$response->status()}: {$response->body()}", $context);
 
                 return ['status' => 'failed'];
             }
@@ -149,24 +158,26 @@ class SmsService
                 Log::warning('SMS provider returned error payload.', array_merge($context, [
                     'user_id' => $user?->id,
                     'mobile' => $mobile,
+                    'provider' => $provider,
                     'response' => $responseJson,
                 ]));
 
-                self::logSms($user?->id, $mobile, $templateKey, $message, 'failed', 'semaphore', $errorMessage, $context);
+                self::logSms($user?->id, $mobile, $templateKey, $message, 'failed', $provider, $errorMessage, $context);
 
                 return ['status' => 'failed'];
             }
 
-            self::logSms($user?->id, $mobile, $templateKey, $message, 'sent', 'semaphore', $response->body(), $context);
+            self::logSms($user?->id, $mobile, $templateKey, $message, 'sent', $provider, $response->body(), $context);
 
             return ['status' => 'sent'];
         } catch (\Throwable $e) {
             Log::error('SMS send exception.', array_merge($context, [
                 'user_id' => $user?->id,
                 'mobile' => $mobile,
+                'provider' => $provider,
                 'error' => $e->getMessage(),
             ]));
-            self::logSms($user?->id, $mobile, $templateKey, $message, 'failed', 'semaphore', $e->getMessage(), $context);
+            self::logSms($user?->id, $mobile, $templateKey, $message, 'failed', $provider, $e->getMessage(), $context);
 
             return ['status' => 'failed'];
         }
@@ -174,15 +185,21 @@ class SmsService
 
     private static function hasProviderError(array $payload): bool
     {
-        // Semaphore commonly returns:
-        // { "error": "..."} or { "apikey": ["The apikey field is required."] }
+        // EasySendSMS commonly returns:
+        // { "error": 4012, "description": "..."} or {"status":"error","message":"..."}.
         if (array_key_exists('error', $payload)) {
             return true;
         }
 
-        return array_key_exists('apikey', $payload)
-            || array_key_exists('number', $payload)
-            || array_key_exists('message', $payload);
+        if (
+            isset($payload['status'])
+            && is_string($payload['status'])
+            && strtolower($payload['status']) === 'error'
+        ) {
+            return true;
+        }
+
+        return array_key_exists('description', $payload);
     }
 
     private static function extractProviderErrorMessage(array $payload): ?string
@@ -191,8 +208,12 @@ class SmsService
             return $payload['error'];
         }
 
+        if (isset($payload['description']) && is_string($payload['description']) && trim($payload['description']) !== '') {
+            return $payload['description'];
+        }
+
         $parts = [];
-        foreach (['apikey', 'number', 'message'] as $field) {
+        foreach (['description', 'message'] as $field) {
             if (! array_key_exists($field, $payload)) {
                 continue;
             }
@@ -264,7 +285,7 @@ class SmsService
         return self::normalizePhMobile($value);
     }
 
-    private static function normalizePhMobile(string $value): ?string
+    private static function normalizePhMobile(string $value, bool $international = false): ?string
     {
         $trimmed = trim($value);
         if ($trimmed === '') {
@@ -283,6 +304,10 @@ class SmsService
 
         if (preg_match('/^09\d{9}$/', $digits) !== 1) {
             return null;
+        }
+
+        if ($international) {
+            return '63' . substr($digits, 1);
         }
 
         return $digits;

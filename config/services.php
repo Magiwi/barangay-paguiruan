@@ -37,9 +37,10 @@ return [
 
     'sms' => [
         'enabled' => env('SMS_ENABLED', false),
-        'api_key' => env('SMS_API_KEY'),
+        'provider' => env('SMS_PROVIDER', 'easysendsms'),
+        'api_key' => env('SMS_API_KEY', env('EASYSMS_API_KEY')),
         'sender_name' => env('SMS_SENDER_NAME'),
-        'base_url' => env('SMS_BASE_URL', 'https://api.semaphore.co/api/v4'),
+        'base_url' => env('SMS_BASE_URL', env('EASYSMS_URL', 'https://restapi.easysendsms.app')),
     ],
 
 ];
