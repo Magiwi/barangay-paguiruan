@@ -6,17 +6,18 @@
 <div class="mx-auto max-w-7xl space-y-8 px-4 py-8 md:px-6">
 
     {{-- Welcome Card --}}
-    <div class="ui-surface-card overflow-hidden p-6 md:p-8">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-800 via-blue-700 to-green-600 p-6 shadow-lg ring-1 ring-blue-900/20 md:p-8">
+        <div class="absolute inset-0 opacity-[0.08]" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;40&quot; height=&quot;40&quot; viewBox=&quot;0 0 40 40&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;%23fff&quot; fill-rule=&quot;evenodd&quot;%3E%3Cpath d=&quot;M0 40L40 0H20L0 20M40 40V20L20 40&quot;/%3E%3C/g%3E%3C/svg%3E');"></div>
+        <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <p class="ui-kpi-label">Resident Dashboard</p>
-                <h1 class="mt-1 text-xl font-semibold tracking-tight text-gray-900 sm:text-2xl">
+                <p class="text-xs font-semibold uppercase tracking-widest text-blue-100">Resident Dashboard</p>
+                <h1 class="mt-1 text-xl font-semibold tracking-tight text-white sm:text-2xl">
                     Welcome back, {{ auth()->user()->first_name }}
                 </h1>
-                <p class="mt-1 text-sm text-gray-500">Your barangay services and updates in one place.</p>
+                <p class="mt-1 text-sm text-blue-100/90">Your barangay services and updates in one place.</p>
             </div>
             @if ($unreadNotifications > 0)
-                <a href="{{ route('resident.notifications.index') }}" class="ui-focus-ring inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+                <a href="{{ route('resident.notifications.index') }}" class="ui-focus-ring inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
                     {{ $unreadNotifications }} Unread
                 </a>

@@ -17,7 +17,6 @@
                 <x-ui.export-toolbar
                     :pdf-url="route($rp . '.reports.classification.export.pdf', request()->query())"
                     :excel-url="route($rp . '.reports.classification.export.excel', request()->query())"
-                    :csv-url="route($rp . '.reports.classification.export.csv', request()->query())"
                     filter-label="Exports include current filters"
                     :filter-value="$allPuroks->firstWhere('id', $purokId)?->name ?? 'All Puroks'"
                     :show-print="true"

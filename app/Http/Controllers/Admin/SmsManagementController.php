@@ -38,10 +38,23 @@ class SmsManagementController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
+        $isActive = $request->boolean('is_active');
+        $isTryingToEditLockedTemplate = $isActive
+            && (
+                $validated['title'] !== $template->title
+                || $validated['message'] !== $template->message
+            );
+
+        if ($isTryingToEditLockedTemplate) {
+            return back()
+                ->withErrors(['template' => 'Disable "Enable this template" first before editing template title or message.'])
+                ->withInput();
+        }
+
         $template->update([
             'title' => $validated['title'],
             'message' => $validated['message'],
-            'is_active' => $request->boolean('is_active'),
+            'is_active' => $isActive,
         ]);
 
         AuditService::log('sms_template_updated', $template, "Updated SMS template: {$template->key}");

@@ -6,14 +6,9 @@
 @section('content')
 <section class="px-4 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl space-y-6">
-        <div class="flex flex-wrap items-start justify-between gap-3">
-            <div>
-                <h1 class="text-xl font-semibold tracking-tight text-gray-800">SMS Messaging Module</h1>
-                <p class="text-sm text-gray-500">Manage SMS templates for pickup notices and test live delivery.</p>
-            </div>
-            <div class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-600">
-                <p><span class="font-medium">Placeholders:</span> <code>{name}</code>, <code>{request_type}</code>, <code>{reference_id}</code>, <code>{pickup_location}</code></p>
-            </div>
+        <div>
+            <h1 class="text-xl font-semibold tracking-tight text-gray-800">SMS Messaging Module</h1>
+            <p class="text-sm text-gray-500">Manage SMS templates for pickup notices and test live delivery.</p>
         </div>
 
         @if (session('success'))
@@ -34,28 +29,34 @@
                             <h2 class="text-sm font-semibold text-gray-900">{{ $template->title }}</h2>
                             <p class="mt-0.5 text-xs text-gray-500">Template Key: <code>{{ $template->key }}</code></p>
                         </div>
-                        <form method="POST" action="{{ route('admin.sms.templates.update', $template) }}" class="space-y-4 p-5">
+                        <form method="POST" action="{{ route('admin.sms.templates.update', $template) }}" class="space-y-4 p-5" data-sms-template-form>
                             @csrf
                             @method('PUT')
 
                             <div>
                                 <label class="mb-1 block text-xs font-medium text-gray-600">Template Title</label>
                                 <input type="text" name="title" value="{{ old('title', $template->title) }}"
+                                       data-template-title
                                        class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
                             </div>
 
                             <div>
                                 <label class="mb-1 block text-xs font-medium text-gray-600">Message Body</label>
                                 <textarea name="message" rows="4"
+                                          data-template-message
                                           class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500">{{ old('message', $template->message) }}</textarea>
                             </div>
 
                             <label class="inline-flex items-center gap-2">
                                 <input type="hidden" name="is_active" value="0">
                                 <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $template->is_active))
+                                       data-template-toggle
                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 <span class="text-sm text-gray-700">Enable this template</span>
                             </label>
+                            <p class="hidden text-xs text-amber-700" data-template-lock-note>
+                                Template is locked while enabled. Uncheck this option first to edit title and message.
+                            </p>
 
                             <div class="flex items-center justify-end">
                                 <button type="submit"
@@ -173,4 +174,34 @@
         </div>
     </div>
 </section>
+
+<script>
+(function () {
+    var forms = document.querySelectorAll('[data-sms-template-form]');
+
+    forms.forEach(function (form) {
+        var toggle = form.querySelector('[data-template-toggle]');
+        var title = form.querySelector('[data-template-title]');
+        var message = form.querySelector('[data-template-message]');
+        var lockNote = form.querySelector('[data-template-lock-note]');
+        if (!toggle || !title || !message) return;
+
+        function applyLockState() {
+            var locked = toggle.checked;
+            title.readOnly = locked;
+            message.readOnly = locked;
+            title.classList.toggle('bg-gray-100', locked);
+            title.classList.toggle('cursor-not-allowed', locked);
+            message.classList.toggle('bg-gray-100', locked);
+            message.classList.toggle('cursor-not-allowed', locked);
+            if (lockNote) {
+                lockNote.classList.toggle('hidden', !locked);
+            }
+        }
+
+        toggle.addEventListener('change', applyLockState);
+        applyLockState();
+    });
+})();
+</script>
 @endsection

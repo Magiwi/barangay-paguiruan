@@ -71,21 +71,23 @@
                     <option value="">All</option>
                     <option value="active" @selected(request('status') === 'active')>Active</option>
                     <option value="archived" @selected(request('status') === 'archived')>Archived</option>
+                    <option value="pending" @selected(request('status') === 'pending')>Pending</option>
+                    <option value="served" @selected(request('status') === 'served')>Served</option>
+                    <option value="completed" @selected(request('status') === 'completed')>Completed</option>
+                    <option value="scheduled" @selected(request('status') === 'scheduled')>Scheduled</option>
+                    <option value="ongoing" @selected(request('status') === 'ongoing')>Ongoing</option>
+                    <option value="no_show" @selected(request('status') === 'no_show')>No Show</option>
+                    <option value="settled" @selected(request('status') === 'settled')>Settled</option>
+                    <option value="not_settled" @selected(request('status') === 'not_settled')>Not Settled</option>
+                    <option value="reschedule" @selected(request('status') === 'reschedule')>For Further Hearing</option>
+                    <option value="done" @selected(request('status') === 'done')>Done</option>
                 </select>
-            </div>
-            {{-- Archived toggle --}}
-            <div class="flex items-center gap-2">
-                <label class="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
-                    <input type="checkbox" name="archived" value="1" @checked(request('archived') === '1')
-                           class="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500">
-                    Show Archived
-                </label>
             </div>
             {{-- Buttons --}}
             <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">
                 Filter
             </button>
-            @if (request()->hasAny(['search', 'status', 'archived']))
+            @if (request()->hasAny(['search', 'status']))
                 <a href="{{ route($rp . '.blotters.index') }}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
                     Clear
                 </a>
@@ -93,7 +95,7 @@
         </form>
 
         {{-- Table --}}
-        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-visible rounded-2xl border border-gray-200 bg-white shadow-sm">
             @if ($blotters->isEmpty())
                 <div class="p-12 text-center">
                     <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,7 +103,7 @@
                     </svg>
                     <p class="mt-3 text-sm font-medium text-gray-600">No blotter records found.</p>
                     <p class="mt-1 text-xs text-gray-400">
-                        @if (request()->hasAny(['search', 'status', 'archived']))
+                        @if (request()->hasAny(['search', 'status']))
                             Try adjusting your filters.
                         @else
                             Upload a new blotter entry to get started.
@@ -109,7 +111,7 @@
                     </p>
                 </div>
             @else
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto overflow-y-visible pb-24">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -143,18 +145,65 @@
                                             <span class="text-sm text-gray-400">--</span>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-4 whitespace-nowrap text-center">
-                                        @if ($blotter->status === 'active' && ! $blotter->trashed())
-                                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-green-100 text-green-800">Active</span>
-                                        @else
-                                            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-600">Archived</span>
-                                        @endif
+                                    <td class="relative overflow-visible px-5 py-4 whitespace-nowrap text-center">
+                                        @php
+                                            $statusLabel = 'Active';
+                                            $statusClasses = 'bg-green-100 text-green-800';
+
+                                            if ($blotter->trashed() || $blotter->status === 'archived') {
+                                                $statusLabel = 'Archived';
+                                                $statusClasses = 'bg-gray-100 text-gray-600';
+                                            } elseif ($blotter->latestHearing) {
+                                                $hearingStatus = (string) $blotter->latestHearing->status;
+                                                $hearingResult = (string) ($blotter->latestHearing->result ?? '');
+
+                                                if ($hearingStatus === 'done' && $hearingResult === 'settled') {
+                                                    $statusLabel = 'Settled';
+                                                    $statusClasses = 'bg-emerald-100 text-emerald-700';
+                                                } elseif ($hearingStatus === 'done' && $hearingResult === 'not_settled') {
+                                                    $statusLabel = 'Not Settled';
+                                                    $statusClasses = 'bg-rose-100 text-rose-700';
+                                                } elseif ($hearingStatus === 'done' && $hearingResult === 'reschedule') {
+                                                    $statusLabel = 'For Further Hearing';
+                                                    $statusClasses = 'bg-amber-100 text-amber-800';
+                                                } elseif ($hearingStatus === 'scheduled') {
+                                                    $statusLabel = 'Scheduled';
+                                                    $statusClasses = 'bg-yellow-100 text-yellow-700';
+                                                } elseif ($hearingStatus === 'ongoing') {
+                                                    $statusLabel = 'Ongoing';
+                                                    $statusClasses = 'bg-blue-100 text-blue-700';
+                                                } elseif ($hearingStatus === 'no_show') {
+                                                    $statusLabel = 'No Show';
+                                                    $statusClasses = 'bg-red-100 text-red-700';
+                                                } elseif ($hearingStatus === 'done') {
+                                                    $statusLabel = 'Done';
+                                                    $statusClasses = 'bg-green-100 text-green-700';
+                                                }
+                                            } elseif ($blotter->latestSummon) {
+                                                $summonStatus = (string) $blotter->latestSummon->status;
+
+                                                if ($summonStatus === 'pending') {
+                                                    $statusLabel = 'Pending';
+                                                    $statusClasses = 'bg-yellow-100 text-yellow-700';
+                                                } elseif ($summonStatus === 'served') {
+                                                    $statusLabel = 'Served';
+                                                    $statusClasses = 'bg-blue-100 text-blue-700';
+                                                } elseif ($summonStatus === 'no_show') {
+                                                    $statusLabel = 'No Show';
+                                                    $statusClasses = 'bg-red-100 text-red-700';
+                                                } elseif ($summonStatus === 'completed') {
+                                                    $statusLabel = 'Completed';
+                                                    $statusClasses = 'bg-green-100 text-green-700';
+                                                }
+                                            }
+                                        @endphp
+                                        <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {{ $statusClasses }}">{{ $statusLabel }}</span>
                                     </td>
                                     <td class="px-5 py-4 whitespace-nowrap text-center">
-                                        <div class="flex items-center justify-center gap-2">
+                                        <div class="flex items-center justify-center">
                                             @if ($blotter->trashed())
                                                 {{-- Restore button (admin only) --}}
-                                                @if (in_array(auth()->user()->role, ['admin', 'super_admin'], true))
+                                                @if (in_array(auth()->user()->role, ['staff', 'admin', 'super_admin'], true))
                                                     <form method="POST" action="{{ route($rp . '.blotters.restore', $blotter->id) }}" class="inline">
                                                         @csrf
                                                         <button type="submit" class="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 transition"
@@ -173,76 +222,103 @@
                                                         ? 'image'
                                                         : ($evidenceExt === 'pdf' ? 'pdf' : 'file');
                                                 @endphp
-                                                <a href="{{ route($rp . '.blotters.edit', $blotter) }}"
-                                                   class="inline-flex items-center gap-1 rounded-lg bg-violet-100 px-3 py-1.5 text-xs font-medium text-violet-800 hover:bg-violet-200 transition"
-                                                   title="Edit blotter">
-                                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                    </svg>
-                                                    Edit
-                                                </a>
-                                                {{-- Summons --}}
-                                                <a href="{{ route($rp . '.blotters.summons.index', $blotter) }}"
-                                                   class="inline-flex items-center gap-1 rounded-lg bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-200 transition"
-                                                   title="Manage summons">
-                                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 6.75a3 3 0 00-6 0v.75h6v-.75zM4.5 7.5h15m-13.5 0V18A2.25 2.25 0 008.25 20.25h7.5A2.25 2.25 0 0018 18V7.5M9 11.25h6m-6 3h6"/>
-                                                    </svg>
-                                                    Summons
-                                                </a>
-                                                <a href="{{ route($rp . '.blotters.hearings.index', $blotter) }}"
-                                                   class="inline-flex items-center gap-1 rounded-lg bg-indigo-100 px-3 py-1.5 text-xs font-medium text-indigo-800 hover:bg-indigo-200 transition"
-                                                   title="Manage hearings">
-                                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/>
-                                                    </svg>
-                                                    Hearings
-                                                </a>
-                                                <button
-                                                    type="button"
-                                                    class="inline-flex items-center gap-1 rounded-lg bg-emerald-100 px-3 py-1.5 text-xs font-medium text-emerald-800 hover:bg-emerald-200 transition"
-                                                    data-open-evidence
-                                                    data-blotter-number="{{ $blotter->blotter_number }}"
-                                                    data-handwritten-url="{{ route($rp . '.blotters.evidence.preview', ['blotter' => $blotter, 'type' => 'handwritten']) }}"
-                                                    data-evidence-url="{{ $blotter->file_path ? route($rp . '.blotters.evidence.preview', ['blotter' => $blotter, 'type' => 'evidence']) : '' }}"
-                                                    data-evidence-kind="{{ $blotter->file_path ? $evidenceKind : 'none' }}"
-                                                >
-                                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z"/>
-                                                    </svg>
-                                                    View
-                                                </button>
-                                                {{-- Download --}}
-                                                @if ($blotter->file_path)
-                                                    <a href="{{ route($rp . '.blotters.download', $blotter) }}" class="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition" title="Download file">
-                                                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                <div class="relative inline-block text-left" data-actions-dropdown>
+                                                    <button
+                                                        type="button"
+                                                        class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                                                        data-actions-toggle
+                                                        aria-expanded="false"
+                                                        aria-haspopup="true"
+                                                    >
+                                                        <svg class="h-3.5 w-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                                                         </svg>
-                                                        Download
-                                                    </a>
-                                                @else
-                                                    <span class="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-500" title="No optional evidence uploaded">
-                                                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728"/>
+                                                        Actions
+                                                        <svg class="h-3.5 w-3.5 text-gray-400 transition-transform duration-150" data-actions-chevron fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>
                                                         </svg>
-                                                        No File
-                                                    </span>
-                                                @endif
-                                                {{-- Archive (admin only) --}}
-                                                @if (in_array(auth()->user()->role, ['admin', 'super_admin'], true))
-                                                    <form method="POST" action="{{ route($rp . '.blotters.archive', $blotter) }}" class="inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="inline-flex items-center gap-1 rounded-lg bg-gray-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-700 transition"
-                                                                onclick="return confirm('Archive this blotter record? It can be restored later.')">
-                                                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                                                    </button>
+
+                                                    <div
+                                                        class="absolute right-0 z-30 mt-2 hidden w-52 origin-top-right rounded-xl border border-gray-200 bg-white py-1.5 text-left shadow-lg ring-1 ring-black/5 transition duration-150 ease-out opacity-0 scale-95"
+                                                        data-actions-menu
+                                                    >
+                                                        <a href="{{ route($rp . '.blotters.edit', $blotter) }}"
+                                                           class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-violet-50 hover:text-violet-800">
+                                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                             </svg>
-                                                            Archive
+                                                            Edit
+                                                        </a>
+
+                                                        <a href="{{ route($rp . '.blotters.summons.index', $blotter) }}"
+                                                           class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-amber-50 hover:text-amber-800">
+                                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 6.75a3 3 0 00-6 0v.75h6v-.75zM4.5 7.5h15m-13.5 0V18A2.25 2.25 0 008.25 20.25h7.5A2.25 2.25 0 0018 18V7.5M9 11.25h6m-6 3h6"/>
+                                                            </svg>
+                                                            Summons
+                                                        </a>
+
+                                                        <a href="{{ route($rp . '.blotters.hearings.index', $blotter) }}"
+                                                           class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-indigo-50 hover:text-indigo-800">
+                                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/>
+                                                            </svg>
+                                                            Hearings
+                                                        </a>
+
+                                                        <button
+                                                            type="button"
+                                                            class="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-emerald-50 hover:text-emerald-800"
+                                                            data-open-evidence
+                                                            data-blotter-number="{{ $blotter->blotter_number }}"
+                                                            data-handwritten-url="{{ route($rp . '.blotters.evidence.preview', ['blotter' => $blotter, 'type' => 'handwritten']) }}"
+                                                            data-evidence-url="{{ $blotter->file_path ? route($rp . '.blotters.evidence.preview', ['blotter' => $blotter, 'type' => 'evidence']) : '' }}"
+                                                            data-evidence-kind="{{ $blotter->file_path ? $evidenceKind : 'none' }}"
+                                                        >
+                                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7S3.732 16.057 2.458 12z"/>
+                                                            </svg>
+                                                            View
                                                         </button>
-                                                    </form>
-                                                @endif
+
+                                                        @if ($blotter->file_path)
+                                                            <a href="{{ route($rp . '.blotters.download', $blotter) }}"
+                                                               class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-blue-50 hover:text-blue-800">
+                                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                                </svg>
+                                                                Download
+                                                            </a>
+                                                        @else
+                                                            <span class="flex cursor-not-allowed items-center gap-2 px-3 py-2 text-xs font-medium text-gray-400">
+                                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728"/>
+                                                                </svg>
+                                                                Download (No File)
+                                                            </span>
+                                                        @endif
+
+                                                        @if (in_array(auth()->user()->role, ['staff', 'admin', 'super_admin'], true))
+                                                            <div class="my-1 border-t border-gray-100"></div>
+                                                            <form method="POST" action="{{ route($rp . '.blotters.archive', $blotter) }}">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button
+                                                                    type="submit"
+                                                                    class="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-red-600 transition hover:bg-red-50"
+                                                                    onclick="return confirm('Archive this blotter record? It can be restored later.')"
+                                                                >
+                                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                                                                    </svg>
+                                                                    Archive
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             @endif
                                         </div>
                                     </td>
@@ -378,6 +454,78 @@
 
     tabHandwritten.addEventListener('click', function () { switchTab('handwritten'); });
     tabEvidence.addEventListener('click', function () { switchTab('evidence'); });
+
+    (function initActionDropdowns() {
+        var containers = document.querySelectorAll('[data-actions-dropdown]');
+
+        function closeMenu(container) {
+            var menu = container.querySelector('[data-actions-menu]');
+            var toggle = container.querySelector('[data-actions-toggle]');
+            var chevron = container.querySelector('[data-actions-chevron]');
+            if (!menu || !toggle) return;
+            menu.classList.add('opacity-0', 'scale-95');
+            menu.classList.remove('opacity-100', 'scale-100');
+            setTimeout(function () {
+                if (menu.classList.contains('opacity-0')) {
+                    menu.classList.add('hidden');
+                }
+            }, 150);
+            toggle.setAttribute('aria-expanded', 'false');
+            if (chevron) chevron.classList.remove('rotate-180');
+        }
+
+        function openMenu(container) {
+            var menu = container.querySelector('[data-actions-menu]');
+            var toggle = container.querySelector('[data-actions-toggle]');
+            var chevron = container.querySelector('[data-actions-chevron]');
+            if (!menu || !toggle) return;
+            menu.classList.remove('hidden');
+            requestAnimationFrame(function () {
+                menu.classList.remove('opacity-0', 'scale-95');
+                menu.classList.add('opacity-100', 'scale-100');
+            });
+            toggle.setAttribute('aria-expanded', 'true');
+            if (chevron) chevron.classList.add('rotate-180');
+        }
+
+        function closeAll(exceptContainer) {
+            containers.forEach(function (container) {
+                if (exceptContainer && container === exceptContainer) return;
+                closeMenu(container);
+            });
+        }
+
+        containers.forEach(function (container) {
+            var toggle = container.querySelector('[data-actions-toggle]');
+            var menu = container.querySelector('[data-actions-menu]');
+            if (!toggle || !menu) return;
+
+            toggle.addEventListener('click', function (event) {
+                event.stopPropagation();
+                var expanded = toggle.getAttribute('aria-expanded') === 'true';
+                closeAll(container);
+                if (!expanded) {
+                    openMenu(container);
+                } else {
+                    closeMenu(container);
+                }
+            });
+
+            menu.addEventListener('click', function (event) {
+                event.stopPropagation();
+            });
+        });
+
+        document.addEventListener('click', function () {
+            closeAll();
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeAll();
+            }
+        });
+    })();
 
     function closeModal() {
         modal.classList.add('hidden');

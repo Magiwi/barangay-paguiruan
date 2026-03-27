@@ -7,10 +7,6 @@
     <div class="mx-auto max-w-7xl">
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
             <h1 class="text-xl font-semibold tracking-tight text-gray-800">Residents</h1>
-            <a href="{{ route('admin.residents.duplicates') }}"
-               class="inline-flex items-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100">
-                Duplicate Resolver
-            </a>
         </div>
 
         @if (session('success'))

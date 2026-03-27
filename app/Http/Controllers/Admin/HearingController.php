@@ -171,7 +171,7 @@ class HearingController extends Controller
             ])->withInput();
         }
 
-        DB::transaction(function () use ($hearing, $validated) {
+        DB::transaction(function () use ($blotter, $hearing, $validated) {
             $hearing->complainant_attendance = $validated['complainant_attendance'];
             $hearing->respondent_attendance = $validated['respondent_attendance'];
             $hearing->result = $validated['result'];
@@ -183,6 +183,12 @@ class HearingController extends Controller
                 $hearing->summon->status = Summon::STATUS_COMPLETED;
                 $hearing->summon->save();
             }
+
+            // Once a hearing is settled, close the blotter case as archived.
+            if ($validated['result'] === Hearing::RESULT_SETTLED && ! $blotter->trashed()) {
+                $blotter->forceFill(['status' => Blotter::STATUS_ARCHIVED])->save();
+                $blotter->delete();
+            }
         });
 
         AuditService::log(
@@ -191,8 +197,12 @@ class HearingController extends Controller
             "Marked hearing for summon #{$hearing->summon?->summon_number} as Done ({$validated['result']})"
         );
 
+        $message = $validated['result'] === Hearing::RESULT_SETTLED
+            ? 'Hearing marked as done. Blotter case has been archived.'
+            : 'Hearing marked as done successfully.';
+
         return redirect()->route($this->routePrefix() . '.blotters.hearings.index', $blotter)
-            ->with('success', 'Hearing marked as done successfully.');
+            ->with('success', $message);
     }
 
     public function reschedule(Request $request, Blotter $blotter, Hearing $hearing): RedirectResponse

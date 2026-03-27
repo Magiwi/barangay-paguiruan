@@ -30,7 +30,7 @@
                         $navActive = 'relative px-3 py-2 text-sm font-medium ui-topnav-active';
                         $navUnderline = 'absolute bottom-0 left-3 right-3 h-0.5 rounded-full ui-topnav-underline';
                         $navSummaryBase = 'flex list-none items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium cursor-pointer transition [&::-webkit-details-marker]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-200';
-                        $dropdownPanelBase = 'absolute left-0 mt-3 rounded-xl border border-gray-200/90 bg-white/98 py-1.5 shadow-xl backdrop-blur-sm z-50 origin-top-left opacity-0 scale-95 -translate-y-1 pointer-events-none transition duration-150 ease-out group-open:opacity-100 group-open:scale-100 group-open:translate-y-0 group-open:pointer-events-auto';
+                        $dropdownPanelBase = 'absolute left-0 z-50 mt-3 hidden rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg ring-1 ring-gray-100 group-open:block';
                         $dropdownItem = 'block rounded-lg px-4 py-2.5 text-sm text-gray-600 transition hover:bg-gray-50 hover:text-gray-900';
                     @endphp
 
@@ -90,7 +90,7 @@
                                 <span class="absolute top-0.5 right-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
                             @endif
                         </summary>
-                        <div class="absolute right-0 mt-3 w-80 rounded-xl border border-gray-200/90 bg-white/98 shadow-xl backdrop-blur-sm z-50 origin-top-right opacity-0 scale-95 -translate-y-1 pointer-events-none transition duration-150 ease-out group-open:opacity-100 group-open:scale-100 group-open:translate-y-0 group-open:pointer-events-auto">
+                        <div class="absolute right-0 z-50 mt-3 hidden w-80 rounded-xl border border-gray-200 bg-white shadow-lg ring-1 ring-gray-100 group-open:block">
                             <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
                                 <h3 class="text-sm font-semibold text-gray-800">Notifications</h3>
                                 @if ($unreadCount > 0)
@@ -133,7 +133,7 @@
                             <span class="hidden sm:inline max-w-[100px] truncate">{{ auth()->user()->first_name }}</span>
                             <svg class="h-3.5 w-3.5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                         </summary>
-                        <div class="absolute right-0 mt-3 w-56 rounded-xl border border-gray-200/90 bg-white/98 py-1.5 shadow-xl backdrop-blur-sm z-50 origin-top-right opacity-0 scale-95 -translate-y-1 pointer-events-none transition duration-150 ease-out group-open:opacity-100 group-open:scale-100 group-open:translate-y-0 group-open:pointer-events-auto">
+                        <div class="absolute right-0 z-50 mt-3 hidden w-56 rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg ring-1 ring-gray-100 group-open:block">
                             <div class="px-4 py-2 border-b border-gray-100 mb-1">
                                 <p class="text-sm font-medium text-gray-800 truncate">{{ auth()->user()->full_name }}</p>
                                 <p class="text-xs text-gray-400 truncate">{{ auth()->user()->email }}</p>
@@ -165,7 +165,7 @@
                             <svg class="h-5 w-5 group-open:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
                             <svg class="h-5 w-5 hidden group-open:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                         </summary>
-                        <div class="absolute right-0 mt-3 w-72 rounded-xl border border-gray-200/90 bg-white/98 py-2 shadow-xl backdrop-blur-sm z-50 origin-top-right opacity-0 scale-95 -translate-y-1 pointer-events-none transition duration-150 ease-out group-open:opacity-100 group-open:scale-100 group-open:translate-y-0 group-open:pointer-events-auto">
+                        <div class="absolute right-0 z-50 mt-3 hidden w-72 rounded-xl border border-gray-200 bg-white py-2 shadow-lg ring-1 ring-gray-100 group-open:block">
                             <div class="px-4 py-2 border-b border-gray-100 mb-1">
                                 <p class="text-sm font-medium text-gray-800">{{ auth()->user()->full_name }}</p>
                                 <p class="text-xs text-gray-400">{{ auth()->user()->email }}</p>

@@ -11,41 +11,6 @@ class ReportExportTemplateConsistencyTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_csv_exports_include_official_preamble_for_all_report_modules(): void
-    {
-        $admin = $this->createAdmin();
-
-        $routes = [
-            ['name' => 'admin.reports.population.export.csv', 'query' => [], 'header' => 'Total Residents', 'mysql_only' => true],
-            ['name' => 'admin.reports.classification.export.csv', 'query' => [], 'header' => 'PWD Total'],
-            ['name' => 'admin.reports.services.export.csv', 'query' => [], 'header' => 'Certificates Total'],
-            ['name' => 'admin.reports.households.export.csv', 'query' => [], 'header' => 'Head of Family'],
-            ['name' => 'admin.reports.households.view.export.csv', 'query' => [], 'header' => 'House Head'],
-            ['name' => 'admin.reports.households.timeline.export.csv', 'query' => [], 'header' => 'Performed By'],
-            ['name' => 'admin.reports.blotter.export.csv', 'query' => [], 'header' => 'Case Number', 'streamed' => false],
-        ];
-
-        foreach ($routes as $route) {
-            if (($route['mysql_only'] ?? false) && config('database.default') === 'sqlite') {
-                continue;
-            }
-
-            $response = $this->actingAs($admin)->get(route($route['name'], $route['query']));
-
-            $response->assertOk();
-            $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
-
-            if (($route['streamed'] ?? true) === false) {
-                $content = file_get_contents($response->baseResponse->getFile()->getPathname());
-            } else {
-                $content = $response->streamedContent();
-            }
-            $this->assertStringContainsString('Republic of the Philippines', $content);
-            $this->assertStringContainsString('Office of the Barangay Chairman', $content);
-            $this->assertStringContainsString($route['header'], $content);
-        }
-    }
-
     public function test_excel_exports_generate_valid_xlsx_files_for_all_report_modules(): void
     {
         $admin = $this->createAdmin();

@@ -903,7 +903,52 @@ class ReportController extends Controller
                 $query->whereDate('created_at', '<=', $to);
             }
             if ($status) {
-                $query->where('status', $status);
+                switch ((string) $status) {
+                    case Blotter::STATUS_ACTIVE:
+                        $query->where('status', Blotter::STATUS_ACTIVE)->whereNull('deleted_at');
+                        break;
+                    case Blotter::STATUS_ARCHIVED:
+                        $query->onlyTrashed()->where('status', Blotter::STATUS_ARCHIVED);
+                        break;
+                    case 'scheduled':
+                    case 'ongoing':
+                    case 'done':
+                        $query->whereNull('deleted_at')
+                            ->whereHas('latestHearing', function ($q) use ($status): void {
+                                $q->where('status', $status);
+                            });
+                        break;
+                    case 'settled':
+                    case 'not_settled':
+                    case 'reschedule':
+                        $query->whereNull('deleted_at')
+                            ->whereHas('latestHearing', function ($q) use ($status): void {
+                                $q->where('status', 'done')->where('result', $status);
+                            });
+                        break;
+                    case 'no_show':
+                        $query->whereNull('deleted_at')
+                            ->where(function ($q): void {
+                                $q->whereHas('latestHearing', function ($hq): void {
+                                    $hq->where('status', 'no_show');
+                                })->orWhere(function ($sq): void {
+                                    $sq->whereDoesntHave('latestHearing')
+                                        ->whereHas('latestSummon', function ($ssq): void {
+                                            $ssq->where('status', 'no_show');
+                                        });
+                                });
+                            });
+                        break;
+                    case 'pending':
+                    case 'served':
+                    case 'completed':
+                        $query->whereNull('deleted_at')
+                            ->whereDoesntHave('latestHearing')
+                            ->whereHas('latestSummon', function ($q) use ($status): void {
+                                $q->where('status', $status);
+                            });
+                        break;
+                }
             }
             if ($complaintType) {
                 if ($hasComplaintType) {
@@ -937,7 +982,8 @@ class ReportController extends Controller
             $hasComplaintType,
             $applyFilters
         ) {
-            $query = Blotter::query()
+            $query = Blotter::withTrashed()
+                ->with(['latestHearing', 'latestSummon'])
                 ->select([
                     'id',
                     'blotter_number',
@@ -955,12 +1001,17 @@ class ReportController extends Controller
             return $query;
         };
 
-        $summaryBase = Blotter::query();
+        $summaryBase = Blotter::withTrashed();
         $applyFilters($summaryBase, false);
         $totalCases = (clone $summaryBase)->count();
-        $pendingCases = (clone $summaryBase)->where('status', 'pending')->count();
-        $ongoingCases = (clone $summaryBase)->where('status', 'ongoing')->count();
-        $resolvedCases = (clone $summaryBase)->where('status', 'resolved')->count();
+        $activeCases = (clone $summaryBase)->whereNull('deleted_at')->where('status', Blotter::STATUS_ACTIVE)->count();
+        $ongoingCases = (clone $summaryBase)->whereNull('deleted_at')
+            ->whereHas('latestHearing', fn ($q) => $q->where('status', 'ongoing'))
+            ->count();
+        $settledCases = (clone $summaryBase)->whereNull('deleted_at')
+            ->whereHas('latestHearing', fn ($q) => $q->where('status', 'done')->where('result', 'settled'))
+            ->count();
+        $archivedCases = (clone $summaryBase)->onlyTrashed()->where('status', Blotter::STATUS_ARCHIVED)->count();
 
         $monthlyMap = (clone $summaryBase)
             ->selectRaw('MONTH(created_at) as month_no, COUNT(*) as total')
@@ -972,9 +1023,10 @@ class ReportController extends Controller
             ->all();
 
         $statusDistribution = [
-            'pending' => $pendingCases,
+            'active' => $activeCases,
             'ongoing' => $ongoingCases,
-            'resolved' => $resolvedCases,
+            'settled' => $settledCases,
+            'archived' => $archivedCases,
         ];
 
         if ($hasComplaintType) {
@@ -1013,6 +1065,61 @@ class ReportController extends Controller
             ->orderBy($sort, $direction)
             ->paginate(15)
             ->withQueryString();
+        $rows->getCollection()->transform(function ($row) {
+            $label = 'Active';
+            $class = 'bg-green-100 text-green-800';
+
+            if ($row->trashed() || $row->status === Blotter::STATUS_ARCHIVED) {
+                $label = 'Archived';
+                $class = 'bg-gray-100 text-gray-600';
+            } elseif ($row->latestHearing) {
+                $hearingStatus = (string) $row->latestHearing->status;
+                $hearingResult = (string) ($row->latestHearing->result ?? '');
+
+                if ($hearingStatus === 'done' && $hearingResult === 'settled') {
+                    $label = 'Settled';
+                    $class = 'bg-emerald-100 text-emerald-700';
+                } elseif ($hearingStatus === 'done' && $hearingResult === 'not_settled') {
+                    $label = 'Not Settled';
+                    $class = 'bg-rose-100 text-rose-700';
+                } elseif ($hearingStatus === 'done' && $hearingResult === 'reschedule') {
+                    $label = 'For Further Hearing';
+                    $class = 'bg-amber-100 text-amber-800';
+                } elseif ($hearingStatus === 'scheduled') {
+                    $label = 'Scheduled';
+                    $class = 'bg-yellow-100 text-yellow-700';
+                } elseif ($hearingStatus === 'ongoing') {
+                    $label = 'Ongoing';
+                    $class = 'bg-blue-100 text-blue-700';
+                } elseif ($hearingStatus === 'no_show') {
+                    $label = 'No Show';
+                    $class = 'bg-red-100 text-red-700';
+                } elseif ($hearingStatus === 'done') {
+                    $label = 'Done';
+                    $class = 'bg-green-100 text-green-700';
+                }
+            } elseif ($row->latestSummon) {
+                $summonStatus = (string) $row->latestSummon->status;
+                if ($summonStatus === 'pending') {
+                    $label = 'Pending';
+                    $class = 'bg-yellow-100 text-yellow-700';
+                } elseif ($summonStatus === 'served') {
+                    $label = 'Served';
+                    $class = 'bg-blue-100 text-blue-700';
+                } elseif ($summonStatus === 'no_show') {
+                    $label = 'No Show';
+                    $class = 'bg-red-100 text-red-700';
+                } elseif ($summonStatus === 'completed') {
+                    $label = 'Completed';
+                    $class = 'bg-green-100 text-green-700';
+                }
+            }
+
+            $row->report_status_label = $label;
+            $row->report_status_class = $class;
+
+            return $row;
+        });
 
         $complaintTypeOptions = $hasComplaintType
             ? Blotter::query()
@@ -1027,9 +1134,10 @@ class ReportController extends Controller
         return view('admin.reports.blotter', compact(
             'rows',
             'totalCases',
-            'pendingCases',
+            'activeCases',
             'ongoingCases',
-            'resolvedCases',
+            'settledCases',
+            'archivedCases',
             'monthLabels',
             'monthlySeries',
             'statusDistribution',

@@ -5,10 +5,13 @@
 @section('content')
 <div class="max-w-5xl mx-auto px-4 md:px-6 py-8">
     {{-- Page header (clean, no heavy gradient) --}}
-    <section class="rounded-2xl border border-gray-200 bg-white shadow-sm px-6 py-8 mb-8 bg-gray-50">
-        <p class="text-xs uppercase tracking-wider text-gray-500">Republic of the Philippines</p>
-        <h1 class="mt-1 text-2xl font-semibold tracking-tight text-gray-800 sm:text-3xl">Barangay Paguiruan, Floridablanca</h1>
-        <p class="mt-1 text-gray-600">Official Council Members</p>
+    <section class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-800 via-blue-700 to-green-600 px-6 py-8 mb-8 shadow-lg ring-1 ring-blue-900/20">
+        <div class="absolute inset-0 opacity-[0.08]" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;40&quot; height=&quot;40&quot; viewBox=&quot;0 0 40 40&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;%23fff&quot; fill-rule=&quot;evenodd&quot;%3E%3Cpath d=&quot;M0 40L40 0H20L0 20M40 40V20L20 40&quot;/%3E%3C/g%3E%3C/svg%3E');"></div>
+        <div class="relative">
+            <p class="text-xs uppercase tracking-wider text-blue-100">Republic of the Philippines</p>
+            <h1 class="mt-1 text-2xl font-semibold tracking-tight text-white sm:text-3xl">Barangay Paguiruan, Floridablanca</h1>
+            <p class="mt-1 text-blue-100/90">Official Council Members</p>
+        </div>
     </section>
 
     {{-- Barangay Chairman --}}
@@ -28,8 +31,11 @@
                     </span>
                     <h3 class="mt-3 text-xl font-semibold tracking-tight text-gray-800">{{ $chairman->user->full_name }}</h3>
                     <p class="mt-1 text-sm text-gray-600">
-                        Term: {{ $chairman->term_start->format('M Y') }}
-                        @if ($chairman->term_end) &mdash; {{ $chairman->term_end->format('M Y') }} @endif
+                        @if ($chairman->term_start || $chairman->term_end)
+                            Term: {{ optional($chairman->term_start)->format('M Y') }}@if ($chairman->term_end) &mdash; {{ $chairman->term_end->format('M Y') }} @endif
+                        @else
+                            <span class="text-gray-500">Term not specified</span>
+                        @endif
                     </p>
                 </div>
             </div>
@@ -64,7 +70,11 @@
                             </span>
                             <h3 class="mt-2 text-base font-semibold tracking-tight text-gray-800">{{ $officer->user->full_name }}</h3>
                             <p class="mt-0.5 text-xs text-gray-600">
-                                {{ $officer->term_start->format('M Y') }}@if ($officer->term_end) &ndash; {{ $officer->term_end->format('M Y') }}@endif
+                                @if ($officer->term_start || $officer->term_end)
+                                    {{ optional($officer->term_start)->format('M Y') }}@if ($officer->term_end) &ndash; {{ $officer->term_end->format('M Y') }}@endif
+                                @else
+                                    —
+                                @endif
                             </p>
                         </div>
                     @endif
@@ -93,7 +103,11 @@
                         </span>
                         <h3 class="mt-2 text-sm font-semibold tracking-tight text-gray-800">{{ $kagawad->user->full_name }}</h3>
                         <p class="mt-0.5 text-xs text-gray-600">
-                            {{ $kagawad->term_start->format('M Y') }}@if ($kagawad->term_end) &ndash; {{ $kagawad->term_end->format('M Y') }}@endif
+                            @if ($kagawad->term_start || $kagawad->term_end)
+                                {{ optional($kagawad->term_start)->format('M Y') }}@if ($kagawad->term_end) &ndash; {{ $kagawad->term_end->format('M Y') }}@endif
+                            @else
+                                —
+                            @endif
                         </p>
                     </div>
                 @endforeach

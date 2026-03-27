@@ -239,35 +239,28 @@ Route::middleware(['auth', 'role:staff,admin'])->prefix('staff')->name('staff.')
     Route::get('/reports/population', [StaffReportController::class, 'population'])->name('reports.population');
     Route::get('/reports/population/export/pdf', [StaffReportController::class, 'populationExportPdf'])->name('reports.population.export.pdf');
     Route::get('/reports/population/export/excel', [StaffReportController::class, 'populationExportExcel'])->name('reports.population.export.excel');
-    Route::get('/reports/population/export/csv', [StaffReportController::class, 'populationExportCsv'])->name('reports.population.export.csv');
     Route::get('/reports/classification', [StaffReportController::class, 'classification'])->name('reports.classification');
     Route::get('/reports/classification/export/pdf', [StaffReportController::class, 'classificationExportPdf'])->name('reports.classification.export.pdf');
     Route::get('/reports/classification/export/excel', [StaffReportController::class, 'classificationExportExcel'])->name('reports.classification.export.excel');
-    Route::get('/reports/classification/export/csv', [StaffReportController::class, 'classificationExportCsv'])->name('reports.classification.export.csv');
     Route::get('/reports/services', [StaffReportController::class, 'services'])->name('reports.services');
     Route::get('/reports/services/export/pdf', [StaffReportController::class, 'servicesExportPdf'])->name('reports.services.export.pdf');
     Route::get('/reports/services/export/excel', [StaffReportController::class, 'servicesExportExcel'])->name('reports.services.export.excel');
-    Route::get('/reports/services/export/csv', [StaffReportController::class, 'servicesExportCsv'])->name('reports.services.export.csv');
     Route::get('/reports/households', [StaffReportController::class, 'households'])->name('reports.households');
     Route::get('/reports/households/view', [StaffReportController::class, 'householdsView'])->name('reports.households.view');
     Route::get('/reports/households/view/print', [StaffReportController::class, 'householdsViewPrint'])->name('reports.households.view.print');
     Route::get('/reports/households/view/export/pdf', [StaffReportController::class, 'householdsViewExportPdf'])->name('reports.households.view.export.pdf');
-    Route::get('/reports/households/view/export/csv', [StaffReportController::class, 'householdsViewExportCsv'])->name('reports.households.view.export.csv');
     Route::get('/reports/households/view/export/excel', [StaffReportController::class, 'householdsViewExportExcel'])->name('reports.households.view.export.excel');
     Route::get('/reports/households/head-suggestions', [StaffReportController::class, 'householdHeadSuggestions'])
         ->middleware('throttle:30,1')
         ->name('reports.households.head-suggestions');
     Route::get('/reports/households/timeline', [StaffReportController::class, 'householdsTimeline'])->name('reports.households.timeline');
     Route::get('/reports/households/timeline/export/pdf', [StaffReportController::class, 'householdsTimelineExportPdf'])->name('reports.households.timeline.export.pdf');
-    Route::get('/reports/households/timeline/export/csv', [StaffReportController::class, 'householdsTimelineExportCsv'])->name('reports.households.timeline.export.csv');
     Route::get('/reports/households/export', [StaffReportController::class, 'householdsExport'])->name('reports.households.export');
     Route::get('/reports/households/export/print', [StaffReportController::class, 'householdsExportPrint'])->name('reports.households.export.print');
     Route::get('/reports/households/export/pdf', [StaffReportController::class, 'householdsExportPdf'])->name('reports.households.export.pdf');
-    Route::get('/reports/households/export/csv', [StaffReportController::class, 'householdsExportCsv'])->name('reports.households.export.csv');
     Route::get('/reports/blotter', [StaffReportController::class, 'blotter'])->name('reports.blotter');
     Route::get('/reports/blotter/export/pdf', [StaffReportController::class, 'blotterExportPdf'])->name('reports.blotter.export.pdf');
     Route::get('/reports/blotter/export/excel', [StaffReportController::class, 'blotterExportExcel'])->name('reports.blotter.export.excel');
-    Route::get('/reports/blotter/export/csv', [StaffReportController::class, 'blotterExportCsv'])->name('reports.blotter.export.csv');
     Route::get('/reports/export', [StaffReportController::class, 'export'])->name('reports.export');
 });
 
@@ -343,9 +336,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         return view('admin.dashboard', compact('stats', 'recentCertificates', 'recentIssues'));
     })->name('dashboard');
     Route::get('/residents', [UserController::class, 'index'])->name('residents.index');
-    Route::get('/residents/duplicates', [UserController::class, 'duplicateResolver'])->name('residents.duplicates');
-    Route::post('/residents/duplicates/merge', [UserController::class, 'mergeDuplicateResident'])->name('residents.duplicates.merge');
-    Route::post('/residents/duplicates/undo', [UserController::class, 'undoDuplicateMerge'])->name('residents.duplicates.undo');
+    // Duplicate resolver routes are intentionally hidden/disabled for now.
     Route::get('/residents/{user}', [UserController::class, 'show'])->name('residents.show');
     Route::get('/residents/{user}/edit', [UserController::class, 'edit'])->name('residents.edit');
     Route::put('/residents/{user}', [UserController::class, 'update'])->name('residents.update');
@@ -409,35 +400,28 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/reports/population', [ReportController::class, 'population'])->name('reports.population');
         Route::get('/reports/population/export/pdf', [ReportController::class, 'populationExportPdf'])->name('reports.population.export.pdf');
         Route::get('/reports/population/export/excel', [ReportController::class, 'populationExportExcel'])->name('reports.population.export.excel');
-        Route::get('/reports/population/export/csv', [ReportController::class, 'populationExportCsv'])->name('reports.population.export.csv');
         Route::get('/reports/classification', [ReportController::class, 'classification'])->name('reports.classification');
         Route::get('/reports/classification/export/pdf', [ReportController::class, 'classificationExportPdf'])->name('reports.classification.export.pdf');
         Route::get('/reports/classification/export/excel', [ReportController::class, 'classificationExportExcel'])->name('reports.classification.export.excel');
-        Route::get('/reports/classification/export/csv', [ReportController::class, 'classificationExportCsv'])->name('reports.classification.export.csv');
         Route::get('/reports/services', [ReportController::class, 'services'])->name('reports.services');
         Route::get('/reports/services/export/pdf', [ReportController::class, 'servicesExportPdf'])->name('reports.services.export.pdf');
         Route::get('/reports/services/export/excel', [ReportController::class, 'servicesExportExcel'])->name('reports.services.export.excel');
-        Route::get('/reports/services/export/csv', [ReportController::class, 'servicesExportCsv'])->name('reports.services.export.csv');
         Route::get('/reports/households', [ReportController::class, 'households'])->name('reports.households');
         Route::get('/reports/households/view', [ReportController::class, 'householdsView'])->name('reports.households.view');
         Route::get('/reports/households/view/print', [ReportController::class, 'householdsViewPrint'])->name('reports.households.view.print');
         Route::get('/reports/households/view/export/pdf', [ReportController::class, 'householdsViewExportPdf'])->name('reports.households.view.export.pdf');
-        Route::get('/reports/households/view/export/csv', [ReportController::class, 'householdsViewExportCsv'])->name('reports.households.view.export.csv');
         Route::get('/reports/households/view/export/excel', [ReportController::class, 'householdsViewExportExcel'])->name('reports.households.view.export.excel');
         Route::get('/reports/households/head-suggestions', [ReportController::class, 'householdHeadSuggestions'])
             ->middleware('throttle:30,1')
             ->name('reports.households.head-suggestions');
         Route::get('/reports/households/timeline', [ReportController::class, 'householdsTimeline'])->name('reports.households.timeline');
         Route::get('/reports/households/timeline/export/pdf', [ReportController::class, 'householdsTimelineExportPdf'])->name('reports.households.timeline.export.pdf');
-        Route::get('/reports/households/timeline/export/csv', [ReportController::class, 'householdsTimelineExportCsv'])->name('reports.households.timeline.export.csv');
         Route::get('/reports/households/export', [ReportController::class, 'householdsExport'])->name('reports.households.export');
         Route::get('/reports/households/export/print', [ReportController::class, 'householdsExportPrint'])->name('reports.households.export.print');
         Route::get('/reports/households/export/pdf', [ReportController::class, 'householdsExportPdf'])->name('reports.households.export.pdf');
-        Route::get('/reports/households/export/csv', [ReportController::class, 'householdsExportCsv'])->name('reports.households.export.csv');
         Route::get('/reports/blotter', [ReportController::class, 'blotter'])->name('reports.blotter');
         Route::get('/reports/blotter/export/pdf', [ReportController::class, 'blotterExportPdf'])->name('reports.blotter.export.pdf');
         Route::get('/reports/blotter/export/excel', [ReportController::class, 'blotterExportExcel'])->name('reports.blotter.export.excel');
-        Route::get('/reports/blotter/export/csv', [ReportController::class, 'blotterExportCsv'])->name('reports.blotter.export.csv');
         Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
     });
     // Purok Management

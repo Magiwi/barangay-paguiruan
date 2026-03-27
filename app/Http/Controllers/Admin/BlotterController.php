@@ -21,11 +21,9 @@ class BlotterController extends Controller
     // ──────────────────────────────────────────────────
     public function index(Request $request): View
     {
-        $query = Blotter::with('uploadedBy')->latest();
-
-        if ($request->get('archived') === '1') {
-            $query->onlyTrashed();
-        }
+        $query = Blotter::withTrashed()
+            ->with(['uploadedBy', 'latestSummon', 'latestHearing'])
+            ->latest();
 
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
@@ -34,13 +32,63 @@ class BlotterController extends Controller
             });
         }
 
-        if ($status = $request->get('status')) {
-            $query->where('status', $status);
+        if ($status = (string) $request->get('status')) {
+            switch ($status) {
+                case Blotter::STATUS_ACTIVE:
+                    $query->where('status', Blotter::STATUS_ACTIVE)->whereNull('deleted_at');
+                    break;
+
+                case Blotter::STATUS_ARCHIVED:
+                    $query->onlyTrashed()->where('status', Blotter::STATUS_ARCHIVED);
+                    break;
+
+                case 'scheduled':
+                case 'ongoing':
+                case 'done':
+                    $query->whereNull('deleted_at')
+                        ->whereHas('latestHearing', function ($q) use ($status) {
+                            $q->where('status', $status);
+                        });
+                    break;
+
+                case 'settled':
+                case 'not_settled':
+                case 'reschedule':
+                    $query->whereNull('deleted_at')
+                        ->whereHas('latestHearing', function ($q) use ($status) {
+                            $q->where('status', 'done')->where('result', $status);
+                        });
+                    break;
+
+                case 'no_show':
+                    $query->whereNull('deleted_at')
+                        ->where(function ($q): void {
+                            $q->whereHas('latestHearing', function ($hq): void {
+                                $hq->where('status', 'no_show');
+                            })->orWhere(function ($sq): void {
+                                $sq->whereDoesntHave('latestHearing')
+                                    ->whereHas('latestSummon', function ($ssq): void {
+                                        $ssq->where('status', 'no_show');
+                                    });
+                            });
+                        });
+                    break;
+
+                case 'pending':
+                case 'served':
+                case 'completed':
+                    $query->whereNull('deleted_at')
+                        ->whereDoesntHave('latestHearing')
+                        ->whereHas('latestSummon', function ($q) use ($status) {
+                            $q->where('status', $status);
+                        });
+                    break;
+            }
         }
 
         $blotters = $query->paginate(15)->withQueryString();
 
-        $stats = Blotter::query()
+        $stats = Blotter::withTrashed()
             ->selectRaw('count(*) as total')
             ->selectRaw("sum(case when status = 'active' then 1 else 0 end) as active_count")
             ->selectRaw("sum(case when status = 'archived' then 1 else 0 end) as archived_count")
@@ -339,8 +387,8 @@ class BlotterController extends Controller
     // ──────────────────────────────────────────────────
     public function archive(Request $request, Blotter $blotter): RedirectResponse
     {
-        if (! in_array($request->user()->role, [User::ROLE_ADMIN, User::ROLE_SUPER_ADMIN], true)) {
-            abort(403, 'Only administrators can archive blotter records.');
+        if (! in_array($request->user()->role, [User::ROLE_STAFF, User::ROLE_ADMIN, User::ROLE_SUPER_ADMIN], true)) {
+            abort(403, 'You are not authorized to archive blotter records.');
         }
 
         $blotter->forceFill(['status' => Blotter::STATUS_ARCHIVED])->save();
@@ -357,8 +405,8 @@ class BlotterController extends Controller
     // ──────────────────────────────────────────────────
     public function restore(Request $request, int $id): RedirectResponse
     {
-        if (! in_array($request->user()->role, [User::ROLE_ADMIN, User::ROLE_SUPER_ADMIN], true)) {
-            abort(403, 'Only administrators can restore archived blotter records.');
+        if (! in_array($request->user()->role, [User::ROLE_STAFF, User::ROLE_ADMIN, User::ROLE_SUPER_ADMIN], true)) {
+            abort(403, 'You are not authorized to restore archived blotter records.');
         }
 
         $blotter = Blotter::onlyTrashed()->findOrFail($id);

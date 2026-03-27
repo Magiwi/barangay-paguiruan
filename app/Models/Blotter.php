@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Blotter extends Model
@@ -133,9 +134,19 @@ class Blotter extends Model
         return $this->hasMany(Summon::class);
     }
 
+    public function latestSummon(): HasOne
+    {
+        return $this->hasOne(Summon::class)->latestOfMany();
+    }
+
     public function hearings(): HasMany
     {
         return $this->hasMany(Hearing::class);
+    }
+
+    public function latestHearing(): HasOne
+    {
+        return $this->hasOne(Hearing::class)->latestOfMany();
     }
 
     public function revisions(): HasMany

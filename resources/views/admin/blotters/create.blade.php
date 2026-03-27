@@ -57,16 +57,16 @@
                     {{-- Complainant name with autocomplete --}}
                     <div class="relative" id="autocomplete-wrapper">
                         <label for="complainant_name" class="block text-sm font-medium text-gray-700 mb-1.5">
-                            Complainant Name <span class="text-red-500">*</span>
+                            Complainant Name <span class="text-gray-400 font-normal">(optional if filling First/Last Name below)</span>
                         </label>
                         <input type="text" name="complainant_name" id="complainant_name"
                                value="{{ old('complainant_name') }}"
-                               required
                                autocomplete="off"
                                placeholder="Start typing a resident's name..."
                                class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 @error('complainant_name') border-red-400 ring-red-100 @enderror">
                         <input type="hidden" name="complainant_user_id" id="complainant_user_id">
                         <div id="suggestions" class="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg hidden"></div>
+                        <p class="mt-1.5 text-xs text-gray-500">Use this for registered residents; otherwise fill out First Name and Last Name below.</p>
                         @error('complainant_name')
                             <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -74,7 +74,7 @@
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div>
-                            <label for="complainant_first_name" class="block text-sm font-medium text-gray-700 mb-1.5">First Name <span class="text-red-500">*</span></label>
+                            <label for="complainant_first_name" class="block text-sm font-medium text-gray-700 mb-1.5">First Name <span class="text-gray-400 font-normal">(required if no Complainant Name above)</span></label>
                             <input type="text" name="complainant_first_name" id="complainant_first_name" value="{{ old('complainant_first_name') }}" class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="John">
                         </div>
                         <div>
@@ -82,7 +82,7 @@
                             <input type="text" name="complainant_middle_name" id="complainant_middle_name" value="{{ old('complainant_middle_name') }}" class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Santos">
                         </div>
                         <div>
-                            <label for="complainant_last_name" class="block text-sm font-medium text-gray-700 mb-1.5">Last Name <span class="text-red-500">*</span></label>
+                            <label for="complainant_last_name" class="block text-sm font-medium text-gray-700 mb-1.5">Last Name <span class="text-gray-400 font-normal">(required if no Complainant Name above)</span></label>
                             <input type="text" name="complainant_last_name" id="complainant_last_name" value="{{ old('complainant_last_name') }}" class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Doe">
                         </div>
                     </div>
@@ -249,6 +249,12 @@
     const input = document.getElementById('complainant_name');
     const hiddenId = document.getElementById('complainant_user_id');
     const box = document.getElementById('suggestions');
+    const complainantFirstName = document.getElementById('complainant_first_name');
+    const complainantMiddleName = document.getElementById('complainant_middle_name');
+    const complainantLastName = document.getElementById('complainant_last_name');
+    const complainantAge = document.getElementById('complainant_age');
+    const complainantContact = document.getElementById('complainant_contact');
+    const complainantAddress = document.getElementById('complainant_address');
     let debounceTimer = null;
     let activeIndex = -1;
 
@@ -267,8 +273,20 @@
     function render(items, query) {
         if (!items.length) { hide(); return; }
         activeIndex = -1;
+        function esc(value) {
+            return String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
         box.innerHTML = items.map(function (r, i) {
-            return '<div class="suggestion-item flex items-center justify-between gap-3 px-4 py-2.5 cursor-pointer text-sm transition-colors hover:bg-gray-50" data-index="' + i + '" data-name="' + r.full_name.replace(/"/g, '&quot;') + '" data-id="' + r.id + '">'
+            return '<div class="suggestion-item flex items-center justify-between gap-3 px-4 py-2.5 cursor-pointer text-sm transition-colors hover:bg-gray-50"'
+                 + ' data-index="' + i + '"'
+                 + ' data-name="' + esc(r.full_name) + '"'
+                 + ' data-id="' + esc(r.id) + '"'
+                 + ' data-first-name="' + esc(r.first_name) + '"'
+                 + ' data-middle-name="' + esc(r.middle_name) + '"'
+                 + ' data-last-name="' + esc(r.last_name) + '"'
+                 + ' data-age="' + esc(r.age) + '"'
+                 + ' data-contact-number="' + esc(r.contact_number) + '"'
+                 + ' data-address="' + esc(r.address) + '">'
                  + '<div class="min-w-0"><p class="font-medium text-gray-900 truncate">' + highlight(r.full_name, query) + '</p></div>'
                  + '<span class="shrink-0 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">' + r.purok_name + '</span>'
                  + '</div>';
@@ -276,9 +294,17 @@
         box.classList.remove('hidden');
     }
 
-    function select(name, id) {
-        input.value = name;
-        hiddenId.value = id;
+    function select(selected) {
+        input.value = selected.name || '';
+        hiddenId.value = selected.id || '';
+
+        if (complainantFirstName) complainantFirstName.value = selected.firstName || '';
+        if (complainantMiddleName) complainantMiddleName.value = selected.middleName || '';
+        if (complainantLastName) complainantLastName.value = selected.lastName || '';
+        if (complainantAge) complainantAge.value = selected.age || '';
+        if (complainantContact) complainantContact.value = String(selected.contactNumber || '').replace(/[^0-9]/g, '').slice(0, 11);
+        if (complainantAddress) complainantAddress.value = selected.address || '';
+
         hide();
     }
 
@@ -299,7 +325,19 @@
 
     box.addEventListener('mousedown', function (e) {
         var item = e.target.closest('.suggestion-item');
-        if (item) { e.preventDefault(); select(item.dataset.name, item.dataset.id); }
+        if (item) {
+            e.preventDefault();
+            select({
+                id: item.dataset.id,
+                name: item.dataset.name,
+                firstName: item.dataset.firstName,
+                middleName: item.dataset.middleName,
+                lastName: item.dataset.lastName,
+                age: item.dataset.age,
+                contactNumber: item.dataset.contactNumber,
+                address: item.dataset.address
+            });
+        }
     });
 
     input.addEventListener('keydown', function (e) {
@@ -307,7 +345,21 @@
         if (!items.length || box.classList.contains('hidden')) return;
         if (e.key === 'ArrowDown') { e.preventDefault(); activeIndex = (activeIndex + 1) % items.length; }
         else if (e.key === 'ArrowUp') { e.preventDefault(); activeIndex = (activeIndex - 1 + items.length) % items.length; }
-        else if (e.key === 'Enter' && activeIndex >= 0) { e.preventDefault(); select(items[activeIndex].dataset.name, items[activeIndex].dataset.id); return; }
+        else if (e.key === 'Enter' && activeIndex >= 0) {
+            e.preventDefault();
+            var active = items[activeIndex];
+            select({
+                id: active.dataset.id,
+                name: active.dataset.name,
+                firstName: active.dataset.firstName,
+                middleName: active.dataset.middleName,
+                lastName: active.dataset.lastName,
+                age: active.dataset.age,
+                contactNumber: active.dataset.contactNumber,
+                address: active.dataset.address
+            });
+            return;
+        }
         else if (e.key === 'Escape') { hide(); return; }
         else { return; }
         items.forEach(function (el, i) { el.classList.toggle('bg-blue-50', i === activeIndex); el.classList.toggle('bg-white', i !== activeIndex); });

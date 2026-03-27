@@ -436,8 +436,11 @@ class OfficialController extends Controller
 
     private function resolveCurrentGroupTerm(string $group): array
     {
+        // Prefer officials with a full term window so appointed/incomplete rows do not clear the group pickers.
         $official = Official::with('position')
             ->currentlyServing()
+            ->whereNotNull('term_start')
+            ->whereNotNull('term_end')
             ->whereHas('position', function ($query) use ($group) {
                 if ($group === 'sk') {
                     $query->where('name', 'like', 'SK %');
@@ -471,6 +474,8 @@ class OfficialController extends Controller
 
         $existing = Official::with('position')
             ->currentlyServing()
+            ->whereNotNull('term_start')
+            ->whereNotNull('term_end')
             ->whereHas('position', function ($query) use ($group) {
                 if ($group === 'sk') {
                     $query->where('name', 'like', 'SK %');
@@ -486,8 +491,8 @@ class OfficialController extends Controller
             return null;
         }
 
-        $existingStart = $existing->term_start?->toDateString();
-        $existingEnd = $existing->term_end?->toDateString();
+        $existingStart = $existing->term_start->toDateString();
+        $existingEnd = $existing->term_end->toDateString();
         if ($existingStart !== $start || $existingEnd !== $end) {
             $groupLabel = $group === 'sk' ? 'SK' : 'Barangay';
 
@@ -495,28 +500,5 @@ class OfficialController extends Controller
         }
 
         return null;
-    }
-
-    private function positionRequiresTerm(string $positionName): bool
-    {
-        $normalized = mb_strtolower($positionName);
-
-        if (str_starts_with($positionName, 'Staff ')) {
-            return false;
-        }
-
-        return ! str_contains($normalized, 'secretary')
-            && ! str_contains($normalized, 'treasurer')
-            && ! str_contains($normalized, 'investigator');
-    }
-
-    private function ensureDefaultPositions(): void
-    {
-        foreach (self::DEFAULT_POSITIONS as $position) {
-            Position::updateOrCreate(
-                ['name' => $position['name']],
-                $position
-            );
-        }
     }
 }

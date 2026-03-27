@@ -26,13 +26,38 @@ class ResidentSearchController extends Controller
             })
             ->with('purokRelation:id,name')
             ->limit(10)
-            ->get(['id', 'first_name', 'middle_name', 'last_name', 'purok_id']);
+            ->get([
+                'id',
+                'first_name',
+                'middle_name',
+                'last_name',
+                'age',
+                'contact_number',
+                'house_no',
+                'street_name',
+                'sitio_subdivision',
+                'purok_id',
+            ]);
 
-        $results = $residents->map(fn (User $u) => [
-            'id' => $u->id,
-            'full_name' => trim("{$u->first_name} {$u->middle_name} {$u->last_name}"),
-            'purok_name' => $u->purokRelation?->name ?? '—',
-        ]);
+        $results = $residents->map(function (User $u): array {
+            $address = trim(implode(', ', array_filter([
+                trim(implode(' ', array_filter([$u->house_no, $u->street_name]))),
+                $u->sitio_subdivision,
+                $u->purokRelation?->name,
+            ])));
+
+            return [
+                'id' => $u->id,
+                'full_name' => trim("{$u->first_name} {$u->middle_name} {$u->last_name}"),
+                'first_name' => (string) ($u->first_name ?? ''),
+                'middle_name' => (string) ($u->middle_name ?? ''),
+                'last_name' => (string) ($u->last_name ?? ''),
+                'age' => $u->age,
+                'contact_number' => (string) ($u->contact_number ?? ''),
+                'address' => $address,
+                'purok_name' => $u->purokRelation?->name ?? '—',
+            ];
+        });
 
         return response()->json($results->values());
     }

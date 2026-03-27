@@ -35,7 +35,6 @@
                     <x-ui.export-toolbar
                         :pdf-url="route($rp . '.reports.households.view.export.pdf', $pdfQuery ?? $query)"
                         :excel-url="route($rp . '.reports.households.view.export.excel', $excelQuery ?? $query)"
-                        :csv-url="route($rp . '.reports.households.view.export.csv', $csvQuery ?? $query)"
                         :print-url="$templatePrintUrl"
                         filter-label="Exports include current view filters"
                         :filter-value="$exportFilterValue"

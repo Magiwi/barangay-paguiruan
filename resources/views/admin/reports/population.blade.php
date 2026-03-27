@@ -17,7 +17,6 @@
                 <x-ui.export-toolbar
                     :pdf-url="route($rp . '.reports.population.export.pdf', request()->query())"
                     :excel-url="route($rp . '.reports.population.export.excel', request()->query())"
-                    :csv-url="route($rp . '.reports.population.export.csv', request()->query())"
                     filter-label="Exports include current filters"
                     :filter-value="$activePopulationFilterLabel"
                     :show-print="true"

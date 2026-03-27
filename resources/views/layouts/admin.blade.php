@@ -356,38 +356,35 @@
             </span>
         @endif
 
-        {{-- User name (desktop) --}}
-        <span class="hidden md:block text-sm font-medium text-gray-600">
-            {{ $authUser->first_name }} {{ $authUser->last_name }}
-        </span>
-
-        {{-- Divider --}}
-        <div class="hidden sm:block h-6 w-px bg-gray-200"></div>
-
-        {{-- Quick links --}}
-        <a href="{{ route('resident.dashboard') }}" class="hidden sm:inline-flex text-sm text-gray-500 hover:text-gray-700 transition" title="Resident View">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-            </svg>
-        </a>
-
-        <a href="{{ url('/profile') }}" class="hidden sm:inline-flex text-sm text-gray-500 hover:text-gray-700 transition" title="Profile">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
-        </a>
-
-        {{-- Logout --}}
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 shadow-sm hover:bg-red-50 hover:border-red-200 transition">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        {{-- Profile dropdown --}}
+        <details class="relative group">
+            <summary class="flex list-none items-center gap-2 cursor-pointer rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition [&::-webkit-details-marker]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-200">
+                <div class="ui-avatar-circle h-7 w-7 text-xs">
+                    {{ strtoupper(substr($authUser->first_name, 0, 1)) }}
+                </div>
+                <span class="hidden sm:inline max-w-[140px] truncate">{{ $authUser->first_name }} {{ $authUser->last_name }}</span>
+                <svg class="h-3.5 w-3.5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                 </svg>
-                <span class="hidden sm:inline">Logout</span>
-            </button>
-        </form>
+            </summary>
+
+            <div class="absolute right-0 z-50 mt-3 hidden w-56 rounded-xl border border-gray-200 bg-white py-1.5 shadow-lg ring-1 ring-gray-100 group-open:block">
+                <div class="px-4 py-2 border-b border-gray-100 mb-1">
+                    <p class="text-sm font-medium text-gray-800 truncate">{{ $authUser->first_name }} {{ $authUser->last_name }}</p>
+                    <p class="text-xs text-gray-400 truncate">{{ $authUser->email }}</p>
+                </div>
+
+                <a href="{{ route('resident.dashboard') }}" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900">Resident View</a>
+                <a href="{{ url('/profile') }}" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900">Profile Settings</a>
+                <a href="{{ url('/profile/password') }}" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900">Change Password</a>
+                <div class="border-t border-gray-100 my-1"></div>
+
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 hover:text-red-700">Sign Out</button>
+                </form>
+            </div>
+        </details>
     </div>
 </header>
 
@@ -420,6 +417,34 @@
             overlay.classList.remove('hidden');
         }
     }
+</script>
+<script>
+    (function () {
+        const dropdowns = Array.from(document.querySelectorAll('header details'));
+        if (!dropdowns.length) return;
+
+        const closeAll = () => {
+            dropdowns.forEach((d) => d.removeAttribute('open'));
+        };
+
+        dropdowns.forEach((current) => {
+            current.addEventListener('toggle', () => {
+                if (!current.open) return;
+                dropdowns.forEach((d) => {
+                    if (d !== current) d.removeAttribute('open');
+                });
+            });
+        });
+
+        document.addEventListener('click', (event) => {
+            const insideAny = dropdowns.some((d) => d.contains(event.target));
+            if (!insideAny) closeAll();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeAll();
+        });
+    })();
 </script>
 @stack('scripts')
 </body>

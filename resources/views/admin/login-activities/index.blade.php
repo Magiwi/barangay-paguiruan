@@ -34,7 +34,7 @@
 
         {{-- Filters --}}
         <form method="GET" action="{{ route('admin.login-activities.index') }}" class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
                     <label for="user_id" class="block text-xs font-medium text-gray-600 mb-1">User</label>
                     <select name="user_id" id="user_id" class="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-blue-500">
@@ -54,11 +54,6 @@
                         <option value="failed" @selected(request('status') === 'failed')>Failed</option>
                         <option value="blocked" @selected(request('status') === 'blocked')>Blocked</option>
                     </select>
-                </div>
-                <div>
-                    <label for="ip_address" class="block text-xs font-medium text-gray-600 mb-1">IP Address</label>
-                    <input type="text" name="ip_address" id="ip_address" value="{{ request('ip_address') }}" placeholder="e.g. 127.0.0.1"
-                           class="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div>
                     <label for="date_from" class="block text-xs font-medium text-gray-600 mb-1">Date From</label>
@@ -95,7 +90,6 @@
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date & Time</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">IP Address</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Browser</th>
                         </tr>
                     </thead>
@@ -134,9 +128,6 @@
                                         {{ ucfirst($activity->status) }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-600 whitespace-nowrap font-mono text-xs">
-                                    {{ $activity->ip_address ?? '—' }}
-                                </td>
                                 <td class="px-4 py-3 text-sm text-gray-500 max-w-[200px] truncate" title="{{ $activity->user_agent }}">
                                     @php
                                         $ua = $activity->user_agent ?? '';
@@ -160,7 +151,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-12 text-center">
+                                <td colspan="4" class="px-4 py-12 text-center">
                                     <div class="flex flex-col items-center gap-2">
                                         <svg class="h-10 w-10 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>

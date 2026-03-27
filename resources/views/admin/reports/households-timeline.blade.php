@@ -25,7 +25,6 @@
             <x-slot:actions>
                 <x-ui.export-toolbar
                     :pdf-url="route($rp . '.reports.households.timeline.export.pdf', request()->query())"
-                    :csv-url="route($rp . '.reports.households.timeline.export.csv', request()->query())"
                     filter-label="Exports include current filters"
                     :filter-value="'Action: ' . (request('action') ?: 'All') . ' | Range: ' . (request('date_from') ?: 'Any') . ' to ' . (request('date_to') ?: 'Any')"
                 />

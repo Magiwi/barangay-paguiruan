@@ -15,7 +15,22 @@
                 'Date Range: ' . (($filters['from'] ?: 'Start') . ' to ' . ($filters['to'] ?: 'Present')),
             ],
             'rightMeta' => [
-                'Status: ' . ($filters['status'] ?: 'All'),
+                'Status: ' . match ($filters['status'] ?? '') {
+                    '' => 'All',
+                    'active' => 'Active',
+                    'archived' => 'Archived',
+                    'pending' => 'Pending',
+                    'served' => 'Served',
+                    'completed' => 'Completed',
+                    'scheduled' => 'Scheduled',
+                    'ongoing' => 'Ongoing',
+                    'no_show' => 'No Show',
+                    'settled' => 'Settled',
+                    'not_settled' => 'Not Settled',
+                    'reschedule' => 'For Further Hearing',
+                    'done' => 'Done',
+                    default => ucfirst(str_replace('_', ' ', (string) $filters['status'])),
+                },
                 'Complaint Type: ' . ($filters['complaint_type'] ?: 'All'),
                 'Total Records: ' . count($records),
             ],
@@ -42,7 +57,7 @@
                         <td>{{ $record['complainant_name'] }}</td>
                         <td>{{ $record['respondent_name'] }}</td>
                         <td>{{ $record['complaint_type'] }}</td>
-                        <td>{{ ucfirst($record['status']) }}</td>
+                        <td>{{ $record['status_label'] ?? ucfirst((string) ($record['status'] ?? 'active')) }}</td>
                         <td>{{ \Illuminate\Support\Carbon::parse($record['created_at'])->format('M d, Y') }}</td>
                     </tr>
                 @empty

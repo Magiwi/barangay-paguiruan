@@ -30,7 +30,8 @@ class BlotterSpreadsheetExportService
         $hasRespondent = Schema::hasColumn('blotters', 'respondent_name');
         $hasComplaintType = Schema::hasColumn('blotters', 'complaint_type');
 
-        $query = Blotter::query()
+        $query = Blotter::withTrashed()
+            ->with(['latestHearing', 'latestSummon'])
             ->select(['id', 'blotter_number', 'complainant_name', 'remarks', 'status', 'created_at']);
 
         $query->selectRaw($hasCaseNumber ? 'case_number' : 'blotter_number as case_number');
@@ -44,7 +45,52 @@ class BlotterSpreadsheetExportService
             $query->whereDate('created_at', '<=', $to);
         }
         if ($status) {
-            $query->where('status', $status);
+            switch ((string) $status) {
+                case Blotter::STATUS_ACTIVE:
+                    $query->where('status', Blotter::STATUS_ACTIVE)->whereNull('deleted_at');
+                    break;
+                case Blotter::STATUS_ARCHIVED:
+                    $query->onlyTrashed()->where('status', Blotter::STATUS_ARCHIVED);
+                    break;
+                case 'scheduled':
+                case 'ongoing':
+                case 'done':
+                    $query->whereNull('deleted_at')
+                        ->whereHas('latestHearing', function ($q) use ($status): void {
+                            $q->where('status', $status);
+                        });
+                    break;
+                case 'settled':
+                case 'not_settled':
+                case 'reschedule':
+                    $query->whereNull('deleted_at')
+                        ->whereHas('latestHearing', function ($q) use ($status): void {
+                            $q->where('status', 'done')->where('result', $status);
+                        });
+                    break;
+                case 'no_show':
+                    $query->whereNull('deleted_at')
+                        ->where(function ($q): void {
+                            $q->whereHas('latestHearing', function ($hq): void {
+                                $hq->where('status', 'no_show');
+                            })->orWhere(function ($sq): void {
+                                $sq->whereDoesntHave('latestHearing')
+                                    ->whereHas('latestSummon', function ($ssq): void {
+                                        $ssq->where('status', 'no_show');
+                                    });
+                            });
+                        });
+                    break;
+                case 'pending':
+                case 'served':
+                case 'completed':
+                    $query->whereNull('deleted_at')
+                        ->whereDoesntHave('latestHearing')
+                        ->whereHas('latestSummon', function ($q) use ($status): void {
+                            $q->where('status', $status);
+                        });
+                    break;
+            }
         }
         if ($complaintType) {
             if ($hasComplaintType) {
@@ -69,14 +115,65 @@ class BlotterSpreadsheetExportService
             });
         }
 
-        return $query->orderByDesc('created_at')->get()->map(fn ($item) => [
-            'case_number' => $item->case_number ?: $item->blotter_number,
-            'complainant_name' => $item->complainant_name ?: '—',
-            'respondent_name' => $item->respondent_name ?: 'N/A',
-            'complaint_type' => $item->complaint_type ?: 'Others',
-            'status' => $item->status ?: 'pending',
-            'created_at' => $item->created_at,
-        ])->all();
+        return $query->orderByDesc('created_at')->get()->map(function ($item): array {
+            $statusLabel = $this->resolveReportStatusLabel($item);
+
+            return [
+                'case_number' => $item->case_number ?: $item->blotter_number,
+                'complainant_name' => $item->complainant_name ?: '—',
+                'respondent_name' => $item->respondent_name ?: 'N/A',
+                'complaint_type' => $item->complaint_type ?: 'Others',
+                'status' => $item->status ?: Blotter::STATUS_ACTIVE,
+                'status_label' => $statusLabel,
+                'created_at' => $item->created_at,
+            ];
+        })->all();
+    }
+
+    private function resolveReportStatusLabel(Blotter $blotter): string
+    {
+        if ($blotter->trashed() || $blotter->status === Blotter::STATUS_ARCHIVED) {
+            return 'Archived';
+        }
+
+        if ($blotter->latestHearing) {
+            $hearingStatus = (string) $blotter->latestHearing->status;
+            $hearingResult = (string) ($blotter->latestHearing->result ?? '');
+
+            if ($hearingStatus === 'done' && $hearingResult === 'settled') {
+                return 'Settled';
+            }
+            if ($hearingStatus === 'done' && $hearingResult === 'not_settled') {
+                return 'Not Settled';
+            }
+            if ($hearingStatus === 'done' && $hearingResult === 'reschedule') {
+                return 'For Further Hearing';
+            }
+            if ($hearingStatus === 'scheduled') {
+                return 'Scheduled';
+            }
+            if ($hearingStatus === 'ongoing') {
+                return 'Ongoing';
+            }
+            if ($hearingStatus === 'no_show') {
+                return 'No Show';
+            }
+            if ($hearingStatus === 'done') {
+                return 'Done';
+            }
+        }
+
+        if ($blotter->latestSummon) {
+            return match ((string) $blotter->latestSummon->status) {
+                'pending' => 'Pending',
+                'served' => 'Served',
+                'no_show' => 'No Show',
+                'completed' => 'Completed',
+                default => 'Active',
+            };
+        }
+
+        return 'Active';
     }
 
     public function generateBlotterExcel(array $records): array
@@ -103,7 +200,7 @@ class BlotterSpreadsheetExportService
                 $record['complainant_name'],
                 $record['respondent_name'],
                 $record['complaint_type'],
-                ucfirst($record['status']),
+                $record['status_label'] ?? ucfirst((string) $record['status']),
                 Carbon::parse($record['created_at'])->format('M d, Y'),
             ], null, "A{$row}");
             $row++;
@@ -147,7 +244,7 @@ class BlotterSpreadsheetExportService
                 $record['complainant_name'],
                 $record['respondent_name'],
                 $record['complaint_type'],
-                ucfirst($record['status']),
+                $record['status_label'] ?? ucfirst((string) $record['status']),
                 Carbon::parse($record['created_at'])->format('M d, Y'),
             ]
         );

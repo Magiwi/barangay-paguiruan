@@ -16,7 +16,6 @@
                 <x-ui.export-toolbar
                     :pdf-url="route($rp . '.reports.blotter.export.pdf', request()->query())"
                     :excel-url="route($rp . '.reports.blotter.export.excel', request()->query())"
-                    :csv-url="route($rp . '.reports.blotter.export.csv', request()->query())"
                     filter-label="Exports include current filters"
                     :filter-value="'From: ' . (request('from') ?: 'Any') . ' | To: ' . (request('to') ?: 'Any') . ' | Status: ' . (request('status') ?: 'All')"
                 />
@@ -44,7 +43,20 @@
                     <label for="status" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Status</label>
                     <select id="status" name="status" class="w-full rounded-lg border-gray-300 text-sm focus:border-red-500 focus:ring-red-500">
                         <option value="">All Statuses</option>
-                        @foreach (['pending' => 'Pending', 'ongoing' => 'Ongoing', 'resolved' => 'Resolved'] as $key => $label)
+                        @foreach ([
+                            'active' => 'Active',
+                            'archived' => 'Archived',
+                            'pending' => 'Pending',
+                            'served' => 'Served',
+                            'completed' => 'Completed',
+                            'scheduled' => 'Scheduled',
+                            'ongoing' => 'Ongoing',
+                            'no_show' => 'No Show',
+                            'settled' => 'Settled',
+                            'not_settled' => 'Not Settled',
+                            'reschedule' => 'For Further Hearing',
+                            'done' => 'Done',
+                        ] as $key => $label)
                             <option value="{{ $key }}" @selected(request('status') === $key)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -65,7 +77,7 @@
                 </div>
         </x-ui.report-filter-bar>
 
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
             <x-ui.stats-card
                 label="Total Blotter Cases"
                 :value="number_format($totalCases)"
@@ -73,10 +85,10 @@
                 value-class="mt-1 text-3xl font-bold text-red-700"
             />
             <x-ui.stats-card
-                label="Pending Cases"
-                :value="number_format($pendingCases)"
-                wrapper-class="rounded-2xl border border-yellow-100 bg-white p-5 shadow-sm"
-                value-class="mt-1 text-3xl font-bold text-yellow-700"
+                label="Active Cases"
+                :value="number_format($activeCases)"
+                wrapper-class="rounded-2xl border border-green-100 bg-white p-5 shadow-sm"
+                value-class="mt-1 text-3xl font-bold text-green-700"
             />
             <x-ui.stats-card
                 label="Ongoing Cases"
@@ -85,10 +97,16 @@
                 value-class="mt-1 text-3xl font-bold text-blue-700"
             />
             <x-ui.stats-card
-                label="Resolved Cases"
-                :value="number_format($resolvedCases)"
-                wrapper-class="rounded-2xl border border-green-100 bg-white p-5 shadow-sm"
-                value-class="mt-1 text-3xl font-bold text-green-700"
+                label="Archived Cases"
+                :value="number_format($archivedCases)"
+                wrapper-class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+                value-class="mt-1 text-3xl font-bold text-gray-700"
+            />
+            <x-ui.stats-card
+                label="Settled Cases"
+                :value="number_format($settledCases)"
+                wrapper-class="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm"
+                value-class="mt-1 text-3xl font-bold text-emerald-700"
             />
         </div>
 
@@ -129,16 +147,8 @@
                                 <x-ui.table-td class="whitespace-nowrap" padding-class="px-5 py-3" label="{{ $row->respondent_name ?: 'N/A' }}" />
                                 <x-ui.table-td class="whitespace-nowrap" padding-class="px-5 py-3" label="{{ $row->complaint_type ?: 'Others' }}" />
                                 <x-ui.table-td class="whitespace-nowrap" padding-class="px-5 py-3" size-class="" text-class="">
-                                    @php
-                                        $statusClass = match ($row->status) {
-                                            'resolved' => 'bg-green-100 text-green-700',
-                                            'ongoing' => 'bg-blue-100 text-blue-700',
-                                            'pending' => 'bg-yellow-100 text-yellow-700',
-                                            default => 'bg-gray-100 text-gray-700',
-                                        };
-                                    @endphp
-                                    <x-ui.status-badge class="{{ $statusClass }}">
-                                        {{ ucfirst($row->status ?? 'pending') }}
+                                    <x-ui.status-badge class="{{ $row->report_status_class ?? 'bg-gray-100 text-gray-700' }}">
+                                        {{ $row->report_status_label ?? 'Active' }}
                                     </x-ui.status-badge>
                                 </x-ui.table-td>
                                 <x-ui.table-td class="whitespace-nowrap" padding-class="px-5 py-3" label="{{ optional($row->created_at)->format('M d, Y') }}" />

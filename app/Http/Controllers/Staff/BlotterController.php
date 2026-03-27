@@ -32,7 +32,9 @@ class BlotterController extends Controller
 
     public function index(Request $request): View
     {
-        $query = Blotter::with('uploadedBy')->latest();
+        $query = Blotter::withTrashed()
+            ->with(['uploadedBy', 'latestSummon', 'latestHearing'])
+            ->latest();
 
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
@@ -41,13 +43,63 @@ class BlotterController extends Controller
             });
         }
 
-        if ($status = $request->get('status')) {
-            $query->where('status', $status);
+        if ($status = (string) $request->get('status')) {
+            switch ($status) {
+                case Blotter::STATUS_ACTIVE:
+                    $query->where('status', Blotter::STATUS_ACTIVE)->whereNull('deleted_at');
+                    break;
+
+                case Blotter::STATUS_ARCHIVED:
+                    $query->onlyTrashed()->where('status', Blotter::STATUS_ARCHIVED);
+                    break;
+
+                case 'scheduled':
+                case 'ongoing':
+                case 'done':
+                    $query->whereNull('deleted_at')
+                        ->whereHas('latestHearing', function ($q) use ($status) {
+                            $q->where('status', $status);
+                        });
+                    break;
+
+                case 'settled':
+                case 'not_settled':
+                case 'reschedule':
+                    $query->whereNull('deleted_at')
+                        ->whereHas('latestHearing', function ($q) use ($status) {
+                            $q->where('status', 'done')->where('result', $status);
+                        });
+                    break;
+
+                case 'no_show':
+                    $query->whereNull('deleted_at')
+                        ->where(function ($q): void {
+                            $q->whereHas('latestHearing', function ($hq): void {
+                                $hq->where('status', 'no_show');
+                            })->orWhere(function ($sq): void {
+                                $sq->whereDoesntHave('latestHearing')
+                                    ->whereHas('latestSummon', function ($ssq): void {
+                                        $ssq->where('status', 'no_show');
+                                    });
+                            });
+                        });
+                    break;
+
+                case 'pending':
+                case 'served':
+                case 'completed':
+                    $query->whereNull('deleted_at')
+                        ->whereDoesntHave('latestHearing')
+                        ->whereHas('latestSummon', function ($q) use ($status) {
+                            $q->where('status', $status);
+                        });
+                    break;
+            }
         }
 
         $blotters = $query->paginate(15)->withQueryString();
 
-        $stats = Blotter::query()
+        $stats = Blotter::withTrashed()
             ->selectRaw('count(*) as total')
             ->selectRaw("sum(case when status = 'active' then 1 else 0 end) as active_count")
             ->selectRaw("sum(case when status = 'archived' then 1 else 0 end) as archived_count")

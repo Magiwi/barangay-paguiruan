@@ -17,7 +17,6 @@
                 <x-ui.export-toolbar
                     :pdf-url="route($rp . '.reports.households.export.pdf', request()->query())"
                     :excel-url="route($rp . '.reports.households.export', request()->query())"
-                    :csv-url="route($rp . '.reports.households.export.csv', request()->query())"
                     :print-url="route($rp . '.reports.households.export.print', request()->query())"
                     filter-label="Exports include current filters"
                     :filter-value="$allPuroks->firstWhere('id', $purokId)?->name ?? 'All Puroks'"
@@ -96,11 +95,11 @@
                 </div>
                 <div>
                     <label for="members_min" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Members Min</label>
-                    <input id="members_min" name="members_min" type="number" min="1" value="{{ $membersMin ?? '' }}" class="w-full rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" />
+                    <input id="members_min" name="members_min" type="number" min="1" value="{{ $membersMin ?? '' }}" placeholder="e.g. 1" class="w-full rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" />
                 </div>
                 <div>
                     <label for="members_max" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Members Max</label>
-                    <input id="members_max" name="members_max" type="number" min="1" value="{{ $membersMax ?? '' }}" class="w-full rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" />
+                    <input id="members_max" name="members_max" type="number" min="1" value="{{ $membersMax ?? '' }}" placeholder="e.g. 10" class="w-full rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500" />
                 </div>
                 <div>
                     <label for="created_from" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Registered From</label>
@@ -296,7 +295,7 @@
             </x-ui.report-table-card>
         </div>
 
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <x-ui.stats-card
                 label="Total Households"
                 :value="number_format($totalHouseholds)"
@@ -309,26 +308,6 @@
                 wrapper-class="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm"
                 value-class="mt-1 text-3xl font-bold text-blue-700"
             />
-            <x-ui.stats-card
-                label="Avg Household Size"
-                :value="$avgSize"
-                wrapper-class="rounded-2xl border border-green-100 bg-white p-5 shadow-sm"
-                value-class="mt-1 text-3xl font-bold text-green-700"
-            />
-            <x-ui.summary-card title="Highlights">
-                @if($largest)
-                    <p class="mt-2 text-sm text-gray-700">
-                        Largest: <span class="font-semibold">{{ $largest->last_name }}, {{ $largest->first_name }}</span>
-                        <span class="text-gray-400">({{ $largest->family_members_count + ($largest->linked_members_count ?? 0) + 1 }})</span>
-                    </p>
-                @endif
-                @if($smallest)
-                    <p class="mt-1 text-sm text-gray-700">
-                        Smallest: <span class="font-semibold">{{ $smallest->last_name }}, {{ $smallest->first_name }}</span>
-                        <span class="text-gray-400">({{ $smallest->family_members_count + ($smallest->linked_members_count ?? 0) + 1 }})</span>
-                    </p>
-                @endif
-            </x-ui.summary-card>
         </div>
 
     </div>

@@ -301,41 +301,6 @@ class HouseholdHeadAutocompleteTest extends TestCase
         });
     }
 
-    public function test_households_export_csv_respects_advanced_filters(): void
-    {
-        $admin = $this->createUser([
-            'role' => User::ROLE_ADMIN,
-            'head_of_family' => 'no',
-        ]);
-
-        $matching = $this->createUser([
-            'first_name' => 'Filter',
-            'last_name' => 'Target',
-            'head_of_family' => 'yes',
-            'resident_type' => 'non-permanent',
-            'is_suspended' => false,
-        ]);
-
-        $other = $this->createUser([
-            'first_name' => 'Filter',
-            'last_name' => 'Other',
-            'head_of_family' => 'yes',
-            'resident_type' => 'permanent',
-            'is_suspended' => false,
-        ]);
-
-        $response = $this->actingAs($admin)->get(route('admin.reports.households.export.csv', [
-            'resident_type' => 'non-permanent',
-            'head_q' => 'Target',
-        ]));
-
-        $response->assertOk();
-
-        $content = $response->streamedContent();
-        $this->assertStringContainsString($matching->last_name . ', ' . $matching->first_name, $content);
-        $this->assertStringNotContainsString($other->last_name . ', ' . $other->first_name, $content);
-    }
-
     public function test_household_exports_create_audit_logs(): void
     {
         $admin = $this->createUser([
@@ -357,10 +322,6 @@ class HouseholdHeadAutocompleteTest extends TestCase
             'head_q' => 'Audit',
         ]))->assertOk();
 
-        $this->actingAs($admin)->get(route('admin.reports.households.export.csv', [
-            'head_q' => 'Audit',
-        ]))->assertOk();
-
         $this->assertDatabaseHas('audit_logs', [
             'user_id' => $admin->id,
             'action' => 'report_households_export_excel',
@@ -369,17 +330,11 @@ class HouseholdHeadAutocompleteTest extends TestCase
             'user_id' => $admin->id,
             'action' => 'report_households_export_pdf',
         ]);
-        $this->assertDatabaseHas('audit_logs', [
-            'user_id' => $admin->id,
-            'action' => 'report_households_export_csv',
-        ]);
-
         $descriptions = AuditLog::query()
             ->where('user_id', $admin->id)
             ->whereIn('action', [
                 'report_households_export_excel',
                 'report_households_export_pdf',
-                'report_households_export_csv',
             ])
             ->pluck('description')
             ->filter()
