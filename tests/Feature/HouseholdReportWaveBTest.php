@@ -8,15 +8,17 @@ use App\Models\Purok;
 use App\Models\StaffPermission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CreatesResidents;
 use Tests\TestCase;
 
 class HouseholdReportWaveBTest extends TestCase
 {
+    use CreatesResidents;
     use RefreshDatabase;
 
     public function test_household_view_and_print_routes_render_for_admin(): void
     {
-        $admin = $this->createResident([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'yes',
             'first_name' => 'Admin',
@@ -36,7 +38,6 @@ class HouseholdReportWaveBTest extends TestCase
         $viewResponse->assertOk();
         $viewResponse->assertSeeText('Garcia, Pedro');
         $viewResponse->assertSeeText('Export PDF');
-        $viewResponse->assertSeeText('Export CSV');
         $viewResponse->assertSeeText('Export Excel');
         $viewResponse->assertSeeText('Print Preview');
         $viewResponse->assertSeeText('Garcia, Pedro');
@@ -51,9 +52,9 @@ class HouseholdReportWaveBTest extends TestCase
         $printResponse->assertSeeText('Garcia, Pedro');
     }
 
-    public function test_household_view_pdf_csv_and_excel_exports_follow_filters_and_sort(): void
+    public function test_household_view_pdf_and_excel_exports_follow_filters_and_sort(): void
     {
-        $admin = $this->createResident([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'yes',
             'first_name' => 'Admin',
@@ -76,26 +77,6 @@ class HouseholdReportWaveBTest extends TestCase
         $pdfResponse->assertHeader('content-type', 'application/pdf');
         $pdfResponse->assertHeader('content-disposition');
         $this->assertStringContainsString('.pdf', (string) $pdfResponse->headers->get('content-disposition'));
-
-        $csvResponse = $this->actingAs($admin)
-            ->get(route('admin.reports.households.view.export.csv', $query));
-
-        $csvResponse->assertOk();
-        $csvResponse->assertHeader('content-type', 'text/csv; charset=UTF-8');
-        $csvResponse->assertHeader('content-disposition');
-
-        $csvContent = $csvResponse->streamedContent();
-        $this->assertStringContainsString('"House Head","Family Member",Relationship,"House No."', $csvContent);
-        $this->assertStringContainsString('Garcia, Pedro', $csvContent);
-        $this->assertStringContainsString('(Head of Family)', $csvContent);
-        $this->assertStringContainsString('Mario Santos', $csvContent);
-        $this->assertStringContainsString('Maria Santos', $csvContent);
-
-        $brotherPosition = strpos($csvContent, 'Mario Santos');
-        $auntPosition = strpos($csvContent, 'Maria Santos');
-        $this->assertNotFalse($brotherPosition);
-        $this->assertNotFalse($auntPosition);
-        $this->assertTrue($brotherPosition < $auntPosition, 'CSV order should follow relationship DESC.');
 
         $excelResponse = $this->actingAs($admin)
             ->get(route('admin.reports.households.view.export.excel', $query));
@@ -122,7 +103,7 @@ class HouseholdReportWaveBTest extends TestCase
 
     public function test_resident_role_cannot_access_admin_or_staff_household_view_routes(): void
     {
-        $resident = $this->createResident([
+        $resident = $this->createResidentUser([
             'role' => User::ROLE_RESIDENT,
             'head_of_family' => 'no',
         ]);
@@ -138,7 +119,7 @@ class HouseholdReportWaveBTest extends TestCase
 
     public function test_staff_without_reports_module_cannot_access_staff_household_endpoints(): void
     {
-        $staff = $this->createResident([
+        $staff = $this->createResidentUser([
             'role' => User::ROLE_STAFF,
             'head_of_family' => 'yes',
         ]);
@@ -167,10 +148,6 @@ class HouseholdReportWaveBTest extends TestCase
             ->assertForbidden();
 
         $this->actingAs($staff)
-            ->get(route('staff.reports.households.view.export.csv', $query))
-            ->assertForbidden();
-
-        $this->actingAs($staff)
             ->get(route('staff.reports.households.view.export.pdf', $query))
             ->assertForbidden();
 
@@ -181,7 +158,7 @@ class HouseholdReportWaveBTest extends TestCase
 
     public function test_staff_with_reports_module_can_access_staff_household_endpoints(): void
     {
-        $staff = $this->createResident([
+        $staff = $this->createResidentUser([
             'role' => User::ROLE_STAFF,
             'head_of_family' => 'yes',
         ]);
@@ -204,7 +181,7 @@ class HouseholdReportWaveBTest extends TestCase
         $this->actingAs($staff)
             ->get(route('staff.reports.households.view', $query))
             ->assertOk()
-            ->assertSeeText('Export CSV');
+            ->assertSeeText('Export PDF');
 
         $this->actingAs($staff)
             ->get(route('staff.reports.households.view.print', $query))
@@ -215,7 +192,7 @@ class HouseholdReportWaveBTest extends TestCase
     private function seedHouseholdDetailData(): array
     {
         $purok = Purok::firstOrCreate(['name' => 'Purok 1']);
-        $head = $this->createResident([
+        $head = $this->createResidentUser([
             'head_of_family' => 'yes',
             'first_name' => 'Pedro',
             'last_name' => 'Garcia',
@@ -269,45 +246,4 @@ class HouseholdReportWaveBTest extends TestCase
         return [$head, $household];
     }
 
-    private function createResident(array $overrides = []): User
-    {
-        $purok = isset($overrides['purok_id'])
-            ? Purok::findOrFail($overrides['purok_id'])
-            : Purok::firstOrCreate(['name' => 'Purok 1']);
-
-        $defaults = [
-            'first_name' => 'Juan',
-            'middle_name' => 'D',
-            'last_name' => 'Cruz',
-            'suffix' => null,
-            'house_no' => '101',
-            'purok' => $purok->name,
-            'purok_id' => $purok->id,
-            'street_name' => 'Main St',
-            'contact_number' => '+639171234567',
-            'age' => 30,
-            'gender' => 'male',
-            'birthdate' => now()->subYears(30)->toDateString(),
-            'civil_status' => 'single',
-            'head_of_family' => 'no',
-            'resident_type' => 'permanent',
-            'email' => 'user' . uniqid() . '@example.com',
-            'password' => 'password123',
-            'head_of_family_id' => null,
-            'family_link_status' => null,
-            'relationship_to_head' => null,
-            'household_id' => null,
-        ];
-
-        $data = array_merge($defaults, array_intersect_key($overrides, $defaults));
-        $user = User::create($data);
-
-        $user->forceFill([
-            'role' => $overrides['role'] ?? User::ROLE_RESIDENT,
-            'status' => $overrides['status'] ?? User::STATUS_APPROVED,
-            'is_suspended' => $overrides['is_suspended'] ?? false,
-        ])->save();
-
-        return $user->fresh();
-    }
 }

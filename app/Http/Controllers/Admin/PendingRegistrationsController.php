@@ -33,32 +33,46 @@ class PendingRegistrationsController extends Controller
     {
         $settings = RegistrationEscalationConfig::get();
         $status = $request->get('status', 'pending');
-        $query = User::countable();
 
-        if (in_array($status, ['pending', 'approved', 'rejected', 'suspended'], true)) {
-            $query->where('status', $status);
-        }
+        $rejectionLogs = null;
 
-        if ($status === User::STATUS_PENDING) {
-            $this->applyPendingQueueFilters($query, $request, $settings);
-            $query->orderByRaw(
-                "CASE
-                    WHEN created_at <= ? THEN 0
-                    WHEN created_at <= ? THEN 1
-                    ELSE 2
-                END",
-                [now()->subHours($settings['overdue_hours']), now()->subHours($settings['due_soon_hours'])]
-            )->orderBy('created_at');
+        if ($status === 'rejected') {
+            $rejectionLogs = ApprovalLog::query()
+                ->with('performer')
+                ->where('action', ApprovalLog::ACTION_REJECTED)
+                ->orderByDesc('created_at')
+                ->paginate(15)
+                ->withQueryString();
+
+            $users = User::query()->whereRaw('0 = 1')->paginate(15)->withQueryString();
         } else {
-            $query->orderByDesc('created_at');
-        }
+            $query = User::countable();
 
-        $users = $query->paginate(15)->withQueryString();
+            if (in_array($status, ['pending', 'approved', 'suspended'], true)) {
+                $query->where('status', $status);
+            }
+
+            if ($status === User::STATUS_PENDING) {
+                $this->applyPendingQueueFilters($query, $request, $settings);
+                $query->orderByRaw(
+                    "CASE
+                        WHEN created_at <= ? THEN 0
+                        WHEN created_at <= ? THEN 1
+                        ELSE 2
+                    END",
+                    [now()->subHours($settings['overdue_hours']), now()->subHours($settings['due_soon_hours'])]
+                )->orderBy('created_at');
+            } else {
+                $query->orderByDesc('created_at');
+            }
+
+            $users = $query->paginate(15)->withQueryString();
+        }
 
         $counts = [
             'pending' => User::countable()->where('status', User::STATUS_PENDING)->count(),
             'approved' => User::countable()->where('status', User::STATUS_APPROVED)->count(),
-            'rejected' => User::countable()->where('status', User::STATUS_REJECTED)->count(),
+            'rejected' => ApprovalLog::query()->where('action', ApprovalLog::ACTION_REJECTED)->count(),
             'suspended' => User::countable()->where('status', User::STATUS_SUSPENDED)->count(),
         ];
 
@@ -78,7 +92,7 @@ class PendingRegistrationsController extends Controller
         $escalationAnalytics = $this->escalationAnalytics();
         $failedQueueStats = $this->failedQueueStats();
 
-        return view('admin.pending-registrations.index', compact('users', 'status', 'counts', 'rejectionReasonOptions', 'pendingQueueStats', 'latestEscalationRun', 'manualReminderCooldownSeconds', 'escalationAnalytics', 'failedQueueStats', 'settings'));
+        return view('admin.pending-registrations.index', compact('users', 'rejectionLogs', 'status', 'counts', 'rejectionReasonOptions', 'pendingQueueStats', 'latestEscalationRun', 'manualReminderCooldownSeconds', 'escalationAnalytics', 'failedQueueStats', 'settings'));
     }
 
     public function sendReminderNow(Request $request): RedirectResponse
@@ -474,11 +488,18 @@ class PendingRegistrationsController extends Controller
             }
         }
 
+        $applicantSnapshot = sprintf(
+            "Applicant: %s | Email: %s | User ID at rejection: %d\n",
+            $user->full_name,
+            $user->email ?? '—',
+            $user->id
+        );
+
         ApprovalLog::create([
             'user_id' => $user->id,
             'action' => ApprovalLog::ACTION_REJECTED,
             'performed_by' => Auth::id(),
-            'remarks' => $this->buildRejectionAuditRemarks($payload, $remarks),
+            'remarks' => $applicantSnapshot . $this->buildRejectionAuditRemarks($payload, $remarks),
         ]);
 
         AuditService::log(

@@ -16,7 +16,6 @@ use App\Services\AuditService;
 use App\Services\PopulationService;
 use App\Services\Reports\HouseholdReportService;
 use App\Services\Reports\OfficialFormSpreadsheetTheme;
-use App\Services\Reports\ReportCsvFormatter;
 use App\Services\Reports\ReportSpreadsheetExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,7 +36,6 @@ class ReportController extends Controller
         private readonly ReportSpreadsheetExportService $spreadsheetExportService,
         private readonly HouseholdReportService $householdReportService,
         private readonly OfficialFormSpreadsheetTheme $spreadsheetTheme,
-        private readonly ReportCsvFormatter $csvFormatter,
         private readonly PopulationService $populationService
     ) {
     }
@@ -414,44 +412,6 @@ class ReportController extends Controller
     }
 
     /**
-     * Export population report as CSV.
-     */
-    public function populationExportCsv(Request $request)
-    {
-        $records = $this->buildPopulationExportRows($request);
-        $filename = 'population_report_' . now()->format('Ymd_His') . '.csv';
-        $purokInput = (string) $request->query('purok', 'all');
-        $purokId = ctype_digit($purokInput) ? (int) $purokInput : null;
-        $ageRange = $this->normalizePopulationAgeRange((string) $request->query('age_range', 'all'));
-        $gender = $this->normalizePopulationGender((string) $request->query('gender', 'all'));
-
-        return $this->streamOfficialCsvResponse(
-            $filename,
-            'Population Report',
-            [
-                ['Purok', $this->resolvePurokLabel($purokId)],
-                ['Age Range', $this->resolvePopulationAgeRangeLabel($ageRange)],
-                ['Gender', $this->resolvePopulationGenderLabel($gender)],
-                ['Total Rows', (string) count($records)],
-            ],
-            ['Purok', 'Total Residents', 'Active Residents', 'Permanent', 'Non-Permanent', 'Minors', 'Adults', 'Seniors', 'Male', 'Female'],
-            $records,
-            fn (array $record) => [
-                $record['purok'],
-                $record['total_residents'],
-                $record['active_residents'],
-                $record['permanent'],
-                $record['non_permanent'],
-                $record['minors'],
-                $record['adults'],
-                $record['seniors'],
-                $record['male'],
-                $record['female'],
-            ]
-        );
-    }
-
-    /**
      * Export population report as XLSX.
      */
     public function populationExportExcel(Request $request)
@@ -507,36 +467,6 @@ class ReportController extends Controller
     }
 
     /**
-     * Export classification report as CSV.
-     */
-    public function classificationExportCsv(Request $request)
-    {
-        $records = $this->buildClassificationExportRows($request);
-        $filename = 'classification_report_' . now()->format('Ymd_His') . '.csv';
-        $purokLabel = $this->resolvePurokLabel($request->get('purok'));
-
-        return $this->streamOfficialCsvResponse(
-            $filename,
-            'Classification Report',
-            [
-                ['Scope', $purokLabel],
-                ['Total Rows', (string) count($records)],
-            ],
-            ['Purok', 'PWD Total', 'PWD Verified', 'PWD Pending', 'Senior Total', 'Senior Verified', 'Senior Pending'],
-            $records,
-            fn (array $record) => [
-                $record['purok'],
-                $record['pwd_total'],
-                $record['pwd_verified'],
-                $record['pwd_pending'],
-                $record['senior_total'],
-                $record['senior_verified'],
-                $record['senior_pending'],
-            ]
-        );
-    }
-
-    /**
      * Export classification report as XLSX.
      */
     public function classificationExportExcel(Request $request)
@@ -579,39 +509,6 @@ class ReportController extends Controller
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('services_report_' . now()->format('Ymd_His') . '.pdf');
-    }
-
-    /**
-     * Export services report as CSV.
-     */
-    public function servicesExportCsv(Request $request)
-    {
-        $records = $this->buildServicesExportRows($request);
-        $filename = 'services_report_' . now()->format('Ymd_His') . '.csv';
-        $purokLabel = $this->resolvePurokLabel($request->get('purok'));
-
-        return $this->streamOfficialCsvResponse(
-            $filename,
-            'Services Report',
-            [
-                ['Scope', $purokLabel],
-                ['Total Rows', (string) count($records)],
-            ],
-            ['Purok', 'Certificates Total', 'Certificates Pending', 'Permits Total', 'Permits Pending', 'Issues Total', 'Issues Pending', 'Issues In Progress', 'Issues Resolved', 'Issues Closed'],
-            $records,
-            fn (array $record) => [
-                $record['purok'],
-                $record['cert_total'],
-                $record['cert_pending'],
-                $record['permit_total'],
-                $record['permit_pending'],
-                $record['issue_total'],
-                $record['issue_pending'],
-                $record['issue_in_progress'],
-                $record['issue_resolved'],
-                $record['issue_closed'],
-            ]
-        );
     }
 
     /**
@@ -1182,19 +1079,6 @@ class ReportController extends Controller
     }
 
     /**
-     * Export blotter report as CSV.
-     */
-    public function blotterExportCsv(Request $request)
-    {
-        $records = $this->spreadsheetExportService->buildBlotterExportRows($request);
-        $file = $this->spreadsheetExportService->generateBlotterCsv($records);
-
-        return response()->download($file['tempPath'], $file['filename'], [
-            'Content-Type' => $file['contentType'],
-        ])->deleteFileAfterSend(true);
-    }
-
-    /**
      * Display household reports with optional purok filter.
      */
     public function households(Request $request)
@@ -1233,52 +1117,6 @@ class ReportController extends Controller
         $data['groupedRows'] = $this->groupHouseholdRows($data['rows']);
 
         return view('admin.reports.households-view-print', $data);
-    }
-
-    public function householdsViewExportCsv(Request $request)
-    {
-        $this->authorizeReportsAccess($request);
-        $filters = $this->householdReportService->resolveFilters($request);
-        $data = $this->householdReportService->buildDetailPrintData($filters, $request);
-        $rows = $data['rows'];
-        $groupedRows = $this->groupHouseholdRows($rows);
-        $exportRows = $this->flattenGroupedHouseholdRows($groupedRows);
-        $filename = 'household_view_report_' . now()->format('Ymd_His') . '.csv';
-        $sortLabel = strtoupper($data['viewOrder']) . ' ' . str_replace('_', ' ', ucfirst($data['viewSort']));
-        $filtersLabel = ! empty($data['appliedFilters'])
-            ? implode(' | ', $data['appliedFilters'])
-            : 'No additional filters';
-
-        AuditService::log(
-            'report_households_view_export_csv',
-            null,
-            $this->buildHouseholdExportAuditDescription('csv-view', array_merge($filters->toArray(), [
-                'view_sort' => $data['viewSort'],
-                'view_order' => $data['viewOrder'],
-            ]))
-        );
-
-        return $this->streamOfficialCsvResponse(
-            $filename,
-            'Household Reports',
-            [
-                ['Generated', $data['generatedAt'] ?? now()->format('M d, Y h:i A')],
-                ['Report Type', $data['reportType'] ?? 'Household View'],
-                ['Scope', $data['reportScope'] ?? 'Household'],
-                ['Sort', $sortLabel],
-                ['Total Records', (string) number_format((int) ($data['detailTotalRecords'] ?? 0))],
-                ['Household Heads', (string) number_format((int) ($data['householdHeadsCount'] ?? 0))],
-                ['Filters', $filtersLabel],
-            ],
-            ['House Head', 'Family Member', 'Relationship', 'House No.'],
-            $exportRows,
-            fn (array $row) => [
-                $row['house_head'],
-                $row['family_member'],
-                $row['relationship'],
-                $row['house_no'],
-            ]
-        );
     }
 
     public function householdsViewExportPdf(Request $request)
@@ -1657,35 +1495,6 @@ class ReportController extends Controller
     }
 
     /**
-     * Export household timeline as CSV.
-     */
-    public function householdsTimelineExportCsv(Request $request)
-    {
-        $this->authorizeReportsAccess($request);
-        $records = $this->buildHouseholdTimelineRows($request);
-        $filename = 'household_timeline_' . now()->format('Ymd_His') . '.csv';
-
-        return $this->streamOfficialCsvResponse(
-            $filename,
-            'Household Timeline Report',
-            [
-                ['Date From', (string) ($request->get('date_from') ?: 'All')],
-                ['Date To', (string) ($request->get('date_to') ?: 'All')],
-                ['Action', (string) ($request->get('action') ?: 'All')],
-                ['Total Rows', (string) count($records)],
-            ],
-            ['Date', 'Action', 'Performed By', 'Description'],
-            $records,
-            fn (array $record) => [
-                $record['date'],
-                $record['action'],
-                $record['performed_by'],
-                $record['description'],
-            ]
-        );
-    }
-
-    /**
      * Get supported household timeline action keys.
      */
     private function householdTimelineActions(): array
@@ -1898,41 +1707,6 @@ class ReportController extends Controller
         return $pdf->download('household_report_' . now()->format('Ymd_His') . '.pdf');
     }
 
-    /**
-     * Export household report as CSV.
-     */
-    public function householdsExportCsv(Request $request)
-    {
-        $this->authorizeReportsAccess($request);
-        $filters = $this->householdReportService->resolveFilters($request);
-        $records = $this->buildHouseholdExportRows($request);
-        $filename = 'household_report_' . now()->format('Ymd_His') . '.csv';
-
-        AuditService::log(
-            'report_households_export_csv',
-            null,
-            $this->buildHouseholdExportAuditDescription('csv', $filters->toArray())
-        );
-
-        return $this->streamOfficialCsvResponse(
-            $filename,
-            'Household Reports',
-            [
-                ['Scope', $this->resolvePurokLabel($request->get('purok'))],
-                ['Total Rows', (string) count($records)],
-                ['Filters', $this->buildHouseholdExportAuditDescription('csv', $filters->toArray())],
-            ],
-            ['Head of Family', 'Email', 'Purok', 'Members'],
-            $records,
-            fn (array $record) => [
-                $record['head_name'],
-                $record['email'],
-                $record['purok'],
-                $record['members_csv'],
-            ]
-        );
-    }
-
     private function buildHouseholdExportAuditDescription(string $format, array $filters): string
     {
         $parts = [
@@ -2012,7 +1786,7 @@ class ReportController extends Controller
                 ];
             }
 
-            // Spacer row between households for readability in CSV/Excel.
+            // Spacer row between households for readability in Excel exports.
             $rows[] = [
                 'house_head' => '',
                 'family_member' => '',
@@ -2088,23 +1862,6 @@ class ReportController extends Controller
         return response()->download($tempPath, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
-    }
-
-    private function streamOfficialCsvResponse(
-        string $filename,
-        string $reportTitle,
-        array $metaRows,
-        array $headers,
-        iterable $rows,
-        callable $rowMapper
-    ) {
-        return response()->streamDownload(function () use ($reportTitle, $metaRows, $headers, $rows, $rowMapper): void {
-            $handle = fopen('php://output', 'w');
-            $this->csvFormatter->writeOfficialCsv($handle, $reportTitle, $metaRows, $headers, $rows, $rowMapper);
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
     }
 
     private function normalizeHouseholdDate($value): ?string

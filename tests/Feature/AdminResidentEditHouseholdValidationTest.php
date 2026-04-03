@@ -3,20 +3,21 @@
 namespace Tests\Feature;
 
 use App\Models\Household;
-use App\Models\Purok;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CreatesResidents;
 use Tests\TestCase;
 
 class AdminResidentEditHouseholdValidationTest extends TestCase
 {
+    use CreatesResidents;
     use RefreshDatabase;
 
     public function test_head_cannot_be_assigned_to_existing_household(): void
     {
-        $admin = $this->createResident(['role' => User::ROLE_ADMIN]);
-        $target = $this->createResident(['role' => User::ROLE_RESIDENT]);
-        $head = $this->createResident([
+        $admin = $this->createResidentUser(['role' => User::ROLE_ADMIN]);
+        $target = $this->createResidentUser(['role' => User::ROLE_RESIDENT]);
+        $head = $this->createResidentUser([
             'role' => User::ROLE_RESIDENT,
             'head_of_family' => 'yes',
         ]);
@@ -38,9 +39,9 @@ class AdminResidentEditHouseholdValidationTest extends TestCase
 
     public function test_member_assignment_requires_relationship_to_head(): void
     {
-        $admin = $this->createResident(['role' => User::ROLE_ADMIN]);
-        $target = $this->createResident(['role' => User::ROLE_RESIDENT]);
-        $head = $this->createResident([
+        $admin = $this->createResidentUser(['role' => User::ROLE_ADMIN]);
+        $target = $this->createResidentUser(['role' => User::ROLE_RESIDENT]);
+        $head = $this->createResidentUser([
             'role' => User::ROLE_RESIDENT,
             'head_of_family' => 'yes',
         ]);
@@ -61,13 +62,13 @@ class AdminResidentEditHouseholdValidationTest extends TestCase
 
     public function test_minor_member_cannot_use_adult_only_relationship(): void
     {
-        $admin = $this->createResident(['role' => User::ROLE_ADMIN]);
-        $target = $this->createResident([
+        $admin = $this->createResidentUser(['role' => User::ROLE_ADMIN]);
+        $target = $this->createResidentUser([
             'role' => User::ROLE_RESIDENT,
             'birthdate' => now()->subYears(16)->toDateString(),
             'age' => 16,
         ]);
-        $head = $this->createResident([
+        $head = $this->createResidentUser([
             'role' => User::ROLE_RESIDENT,
             'head_of_family' => 'yes',
         ]);
@@ -89,8 +90,8 @@ class AdminResidentEditHouseholdValidationTest extends TestCase
 
     public function test_non_permanent_requires_permanent_address_fields(): void
     {
-        $admin = $this->createResident(['role' => User::ROLE_ADMIN]);
-        $target = $this->createResident(['role' => User::ROLE_RESIDENT]);
+        $admin = $this->createResidentUser(['role' => User::ROLE_ADMIN]);
+        $target = $this->createResidentUser(['role' => User::ROLE_RESIDENT]);
 
         $payload = $this->baseEditPayload($target, [
             'resident_type' => 'non-permanent',
@@ -116,8 +117,8 @@ class AdminResidentEditHouseholdValidationTest extends TestCase
 
     public function test_switching_to_permanent_clears_permanent_address_fields(): void
     {
-        $admin = $this->createResident(['role' => User::ROLE_ADMIN]);
-        $target = $this->createResident([
+        $admin = $this->createResidentUser(['role' => User::ROLE_ADMIN]);
+        $target = $this->createResidentUser([
             'role' => User::ROLE_RESIDENT,
             'resident_type' => 'non-permanent',
             'permanent_house_no' => '77',
@@ -174,49 +175,4 @@ class AdminResidentEditHouseholdValidationTest extends TestCase
         ], $overrides);
     }
 
-    private function createResident(array $overrides = []): User
-    {
-        $purok = isset($overrides['purok_id'])
-            ? Purok::findOrFail($overrides['purok_id'])
-            : Purok::firstOrCreate(['name' => 'Purok Household Edit']);
-
-        $defaults = [
-            'first_name' => 'Household',
-            'middle_name' => 'T',
-            'last_name' => 'User',
-            'suffix' => null,
-            'house_no' => '11',
-            'purok' => $purok->name,
-            'purok_id' => $purok->id,
-            'street_name' => 'Household St',
-            'contact_number' => '+639181111111',
-            'age' => 30,
-            'gender' => 'male',
-            'birthdate' => now()->subYears(30)->toDateString(),
-            'civil_status' => 'single',
-            'head_of_family' => 'no',
-            'resident_type' => 'permanent',
-            'permanent_house_no' => null,
-            'permanent_street' => null,
-            'permanent_region' => null,
-            'permanent_barangay' => null,
-            'permanent_city' => null,
-            'permanent_province' => null,
-            'email' => 'household' . uniqid() . '@example.com',
-            'password' => 'password123',
-            'head_of_family_id' => null,
-            'family_link_status' => null,
-            'household_id' => null,
-        ];
-
-        $data = array_merge($defaults, array_intersect_key($overrides, $defaults));
-        $user = User::create($data);
-        $user->forceFill([
-            'role' => $overrides['role'] ?? User::ROLE_RESIDENT,
-            'status' => $overrides['status'] ?? User::STATUS_APPROVED,
-            'is_suspended' => $overrides['is_suspended'] ?? false,
-        ])->save();
-
-        return $user->fresh();
-    }
 }

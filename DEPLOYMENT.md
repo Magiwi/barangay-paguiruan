@@ -64,12 +64,39 @@ Important:
 
 ## 7) Post-deploy smoke test
 
-1. Login as admin.
-2. Open `/admin/sms`.
-3. Send **Test SMS**.
-4. Confirm latest `sms_logs` entry has:
-   - `status = sent`
-   - non-empty `sent_at`
+Run these after each release (or hotfix) before announcing go-live. Adjust steps if a module is disabled in `.env`.
+
+### Core
+
+1. **HTTPS** — Site loads over `https://`; no browser certificate warnings for your domain.
+2. **Public site** — Home / login page loads without 500 errors (`storage/logs/laravel.log` stays clean on first hit).
+3. **Admin login** — Sign in as an admin; session persists across one navigation (dashboard → inner page → back).
+4. **Dashboard** — `/admin/dashboard` (or your default admin home) renders without errors.
+
+### Data & reports
+
+5. **Residents list** — Open the residents index; pagination or search if you use it regularly.
+6. **Reports** — Open **Reports →** one of Population / Households / Blotter; trigger **Export Excel** (or PDF) once and confirm download starts (no 500).  
+   - Note: super admin accounts are excluded from the residents list by design; use an admin/staff account for list checks.
+
+### Registration & queues (if used)
+
+7. **Registration** — If public registration is enabled, open the register form and submit a test applicant (or confirm validation errors display correctly).
+8. **Queue worker** — If you use jobs (mail, SMS, etc.), confirm **Supervisor** (or your worker) is running: `php artisan queue:work` equivalent, and failed jobs table is empty or expected.
+
+### SMS (Semaphore)
+
+When `SMS_ENABLED=true`:
+
+9. Open `/admin/sms`.
+10. Send **Test SMS** to a number you control.
+11. Confirm the latest `sms_logs` row has:
+    - `status = sent`
+    - non-empty `sent_at`
+
+### Email (if SMTP configured)
+
+12. Trigger a flow that sends mail (e.g. password reset) and confirm delivery or a clean entry in `storage/logs/laravel.log`.
 
 ## 8) Security reminders
 
@@ -78,6 +105,23 @@ Important:
 - Never commit `.env`
 - Restrict access to server/user permissions
 - Enable HTTPS on domain
+
+### Automated tests (CI)
+
+If the repo is on **GitHub**, pushes and pull requests to `main` / `master` / `develop` run **PHPUnit** via `.github/workflows/tests.yml` (in-memory SQLite from `phpunit.xml`, not your production database).
+
+Locally before deploy:
+
+```bash
+composer test
+# or: php artisan test
+```
+
+### Repository hygiene (do not commit)
+
+- **Never commit** `.env` or production secrets (use `.env.example` / `.env.production.example` as templates only).
+- **Database dumps** — Large SQL backups (e.g. `backup*.sql` in the project root) should stay out of git; store them on the server or secure backup storage. If a dump was committed by mistake, remove it from tracking: `git rm --cached <file>` then add the pattern to `.gitignore`.
+- **Cache** — `.phpunit.result.cache` is ignored; do not commit PHPUnit cache files.
 
 ---
 

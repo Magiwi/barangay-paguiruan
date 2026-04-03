@@ -19,6 +19,8 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Stable key for encryption / signed URLs during tests (not for production). -->
+        <env name="APP_KEY" value="base64:2fl+Ur1S/9bY1Gx3nYh8vKpQ4mZ0cX7dE6fA1bC5nM8="/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>

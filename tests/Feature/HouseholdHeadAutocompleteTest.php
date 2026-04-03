@@ -8,15 +8,17 @@ use App\Models\Household;
 use App\Models\Purok;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CreatesResidents;
 use Tests\TestCase;
 
 class HouseholdHeadAutocompleteTest extends TestCase
 {
+    use CreatesResidents;
     use RefreshDatabase;
 
     public function test_admin_can_get_top_ten_head_suggestions_filtered_by_purok(): void
     {
-        $admin = $this->createUser([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'no',
         ]);
@@ -24,7 +26,7 @@ class HouseholdHeadAutocompleteTest extends TestCase
         $purokTwo = Purok::firstOrCreate(['name' => 'Purok Auto 2']);
 
         for ($i = 1; $i <= 12; $i++) {
-            $this->createUser([
+            $this->createResidentUser([
                 'first_name' => 'Ju' . $i,
                 'last_name' => 'Abarico',
                 'head_of_family' => 'yes',
@@ -32,7 +34,7 @@ class HouseholdHeadAutocompleteTest extends TestCase
             ]);
         }
 
-        $this->createUser([
+        $this->createResidentUser([
             'first_name' => 'JuOther',
             'last_name' => 'Abarico',
             'head_of_family' => 'yes',
@@ -56,18 +58,18 @@ class HouseholdHeadAutocompleteTest extends TestCase
 
     public function test_households_table_filters_by_selected_head(): void
     {
-        $admin = $this->createUser([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'no',
         ]);
 
-        $targetHead = $this->createUser([
+        $targetHead = $this->createResidentUser([
             'first_name' => 'Maria',
             'last_name' => 'Dela Cruz',
             'head_of_family' => 'yes',
         ]);
 
-        $otherHead = $this->createUser([
+        $otherHead = $this->createResidentUser([
             'first_name' => 'Ana',
             'last_name' => 'Santos',
             'head_of_family' => 'yes',
@@ -90,12 +92,12 @@ class HouseholdHeadAutocompleteTest extends TestCase
 
     public function test_no_household_found_message_appears_for_head_search_without_matches(): void
     {
-        $admin = $this->createUser([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'no',
         ]);
 
-        $this->createUser([
+        $this->createResidentUser([
             'first_name' => 'Pedro',
             'last_name' => 'Velasco',
             'head_of_family' => 'yes',
@@ -111,18 +113,18 @@ class HouseholdHeadAutocompleteTest extends TestCase
 
     public function test_typed_head_name_without_selection_still_filters_results(): void
     {
-        $admin = $this->createUser([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'no',
         ]);
 
-        $match = $this->createUser([
+        $match = $this->createResidentUser([
             'first_name' => 'Justinkim',
             'last_name' => 'Abarico',
             'head_of_family' => 'yes',
         ]);
 
-        $other = $this->createUser([
+        $other = $this->createResidentUser([
             'first_name' => 'Christopher',
             'last_name' => 'Angoya',
             'head_of_family' => 'yes',
@@ -143,26 +145,26 @@ class HouseholdHeadAutocompleteTest extends TestCase
 
     public function test_clearing_head_search_resets_results_based_on_remaining_filters(): void
     {
-        $admin = $this->createUser([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'no',
         ]);
         $purokA = Purok::firstOrCreate(['name' => 'Purok Reset A']);
         $purokB = Purok::firstOrCreate(['name' => 'Purok Reset B']);
 
-        $headA1 = $this->createUser([
+        $headA1 = $this->createResidentUser([
             'first_name' => 'Mario',
             'last_name' => 'Rivera',
             'head_of_family' => 'yes',
             'purok_id' => $purokA->id,
         ]);
-        $headA2 = $this->createUser([
+        $headA2 = $this->createResidentUser([
             'first_name' => 'Ana',
             'last_name' => 'Rivera',
             'head_of_family' => 'yes',
             'purok_id' => $purokA->id,
         ]);
-        $headB = $this->createUser([
+        $headB = $this->createResidentUser([
             'first_name' => 'Lito',
             'last_name' => 'Santos',
             'head_of_family' => 'yes',
@@ -187,17 +189,17 @@ class HouseholdHeadAutocompleteTest extends TestCase
 
     public function test_members_sort_direction_orders_results_correctly(): void
     {
-        $admin = $this->createUser([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'no',
         ]);
 
-        $headLow = $this->createUser([
+        $headLow = $this->createResidentUser([
             'first_name' => 'Low',
             'last_name' => 'Members',
             'head_of_family' => 'yes',
         ]);
-        $headHigh = $this->createUser([
+        $headHigh = $this->createResidentUser([
             'first_name' => 'High',
             'last_name' => 'Members',
             'head_of_family' => 'yes',
@@ -259,12 +261,12 @@ class HouseholdHeadAutocompleteTest extends TestCase
 
     public function test_households_filters_by_resident_type_and_status(): void
     {
-        $admin = $this->createUser([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'no',
         ]);
 
-        $matching = $this->createUser([
+        $matching = $this->createResidentUser([
             'first_name' => 'Match',
             'last_name' => 'Household',
             'head_of_family' => 'yes',
@@ -272,7 +274,7 @@ class HouseholdHeadAutocompleteTest extends TestCase
             'is_suspended' => true,
         ]);
 
-        $this->createUser([
+        $this->createResidentUser([
             'first_name' => 'Different',
             'last_name' => 'Type',
             'head_of_family' => 'yes',
@@ -280,7 +282,7 @@ class HouseholdHeadAutocompleteTest extends TestCase
             'is_suspended' => true,
         ]);
 
-        $this->createUser([
+        $this->createResidentUser([
             'first_name' => 'Different',
             'last_name' => 'Status',
             'head_of_family' => 'yes',
@@ -303,12 +305,12 @@ class HouseholdHeadAutocompleteTest extends TestCase
 
     public function test_household_exports_create_audit_logs(): void
     {
-        $admin = $this->createUser([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'no',
         ]);
 
-        $this->createUser([
+        $this->createResidentUser([
             'first_name' => 'Audit',
             'last_name' => 'Target',
             'head_of_family' => 'yes',
@@ -341,42 +343,5 @@ class HouseholdHeadAutocompleteTest extends TestCase
             ->implode(' | ');
 
         $this->assertStringContainsString('head_q=Audit', $descriptions);
-    }
-
-    private function createUser(array $overrides = []): User
-    {
-        $purok = isset($overrides['purok_id'])
-            ? Purok::findOrFail($overrides['purok_id'])
-            : Purok::firstOrCreate(['name' => 'Purok Auto Default']);
-
-        $defaults = [
-            'first_name' => 'Test',
-            'middle_name' => 'M',
-            'last_name' => 'Resident',
-            'suffix' => null,
-            'house_no' => '10',
-            'purok' => $purok->name,
-            'purok_id' => $purok->id,
-            'street_name' => 'Sample Street',
-            'contact_number' => '+639171111111',
-            'age' => 30,
-            'gender' => 'male',
-            'birthdate' => now()->subYears(30)->toDateString(),
-            'civil_status' => 'single',
-            'head_of_family' => 'yes',
-            'resident_type' => 'permanent',
-            'email' => 'user' . uniqid() . '@example.com',
-            'password' => 'password123',
-        ];
-
-        $payload = array_merge($defaults, array_intersect_key($overrides, $defaults));
-        $user = User::create($payload);
-        $user->forceFill([
-            'role' => $overrides['role'] ?? User::ROLE_RESIDENT,
-            'status' => $overrides['status'] ?? User::STATUS_APPROVED,
-            'is_suspended' => $overrides['is_suspended'] ?? false,
-        ])->save();
-
-        return $user->fresh();
     }
 }

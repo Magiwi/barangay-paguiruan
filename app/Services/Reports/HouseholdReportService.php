@@ -315,7 +315,6 @@ class HouseholdReportService
                 'purok' => (string) ($head->purokRelation?->name ?? '—'),
                 'members' => $memberCount,
                 'members_list' => $memberNames->all(),
-                'members_csv' => $memberNames->isNotEmpty() ? $memberNames->implode(', ') : 'No members',
                 'resident_type' => ucfirst((string) ($head->resident_type ?? '—')),
                 'status' => $head->is_suspended ? 'Suspended' : ucfirst((string) ($head->status ?? '—')),
                 'registered_at' => optional($head->created_at)->format('M d, Y'),
@@ -445,7 +444,6 @@ class HouseholdReportService
             'reportScope' => 'family_members',
             'printQuery' => $exportQuery,
             'pdfQuery' => $exportQuery,
-            'csvQuery' => $exportQuery,
             'excelQuery' => $exportQuery,
         ];
     }

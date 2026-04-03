@@ -13,6 +13,18 @@ class AuthRegistrationPermanentAddressValidationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_registration_rejects_invalid_email_format(): void
+    {
+        Storage::fake('public');
+        $purok = $this->createAddress();
+
+        $response = $this->post('/register', $this->basePayload($purok, [
+            'email' => 'not-a-valid-email',
+        ]));
+
+        $response->assertSessionHasErrors(['email']);
+    }
+
     public function test_non_permanent_registration_requires_permanent_region_and_address_fields(): void
     {
         Storage::fake('public');
@@ -176,7 +188,7 @@ class AuthRegistrationPermanentAddressValidationTest extends TestCase
             'is_pwd' => 'no',
             'is_senior' => 'no',
             'government_id_type' => 'national_id',
-            'government_id_proof' => UploadedFile::fake()->create('government-id.pdf', 100, 'application/pdf'),
+            'government_id_proof' => UploadedFile::fake()->image('government-id.jpg', 100, 100),
             'email' => 'resident.' . uniqid() . '@example.com',
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',

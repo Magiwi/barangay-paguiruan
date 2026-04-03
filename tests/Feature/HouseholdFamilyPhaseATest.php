@@ -11,17 +11,19 @@ use App\Models\StaffPermission;
 use App\Models\User;
 use App\Models\UserNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CreatesResidents;
 use Tests\TestCase;
 
 class HouseholdFamilyPhaseATest extends TestCase
 {
+    use CreatesResidents;
     use RefreshDatabase;
 
     public function test_admin_must_provide_reason_when_linking_family_member(): void
     {
-        $admin = $this->createResident(['role' => User::ROLE_ADMIN, 'head_of_family' => 'yes']);
-        $head = $this->createResident(['head_of_family' => 'yes']);
-        $member = $this->createResident(['head_of_family' => 'no']);
+        $admin = $this->createResidentUser(['role' => User::ROLE_ADMIN, 'head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
+        $member = $this->createResidentUser(['head_of_family' => 'no']);
 
         $response = $this->actingAs($admin)->post(route('admin.residents.linkFamily', $member), [
             'head_of_family_id' => $head->id,
@@ -33,9 +35,9 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_admin_blocks_link_when_target_head_is_suspended(): void
     {
-        $admin = $this->createResident(['role' => User::ROLE_ADMIN, 'head_of_family' => 'yes']);
-        $suspendedHead = $this->createResident(['head_of_family' => 'yes', 'is_suspended' => true]);
-        $member = $this->createResident(['head_of_family' => 'no']);
+        $admin = $this->createResidentUser(['role' => User::ROLE_ADMIN, 'head_of_family' => 'yes']);
+        $suspendedHead = $this->createResidentUser(['head_of_family' => 'yes', 'is_suspended' => true]);
+        $member = $this->createResidentUser(['head_of_family' => 'no']);
 
         $response = $this->actingAs($admin)->post(route('admin.residents.linkFamily', $member), [
             'head_of_family_id' => $suspendedHead->id,
@@ -49,14 +51,14 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_admin_can_unlink_member_when_reason_is_provided(): void
     {
-        $admin = $this->createResident(['role' => User::ROLE_ADMIN, 'head_of_family' => 'yes']);
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $admin = $this->createResidentUser(['role' => User::ROLE_ADMIN, 'head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
         ]);
 
-        $member = $this->createResident([
+        $member = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $head->id,
             'household_id' => $household->id,
@@ -76,7 +78,7 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_head_can_soft_delete_and_restore_member_within_window(): void
     {
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
@@ -113,7 +115,7 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_head_cannot_restore_member_after_restore_window(): void
     {
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
@@ -148,13 +150,13 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_profile_family_tab_shows_linked_user_members_without_family_member_records(): void
     {
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
         ]);
 
-        $linkedUser = $this->createResident([
+        $linkedUser = $this->createResidentUser([
             'first_name' => 'Linked',
             'last_name' => 'Resident',
             'head_of_family' => 'no',
@@ -175,7 +177,7 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_resident_can_submit_head_transfer_request_with_reason(): void
     {
-        $requestingHead = $this->createResident([
+        $requestingHead = $this->createResidentUser([
             'head_of_family' => 'yes',
             'first_name' => 'Current',
             'last_name' => 'Head',
@@ -185,7 +187,7 @@ class HouseholdFamilyPhaseATest extends TestCase
             'purok' => $requestingHead->purok,
         ]);
 
-        $requestedHead = $this->createResident([
+        $requestedHead = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $requestingHead->id,
             'household_id' => $household->id,
@@ -217,13 +219,13 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_non_head_resident_cannot_submit_head_transfer_request(): void
     {
-        $head = $this->createResident(['head_of_family' => 'yes']);
-        $targetHead = $this->createResident(['head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
+        $targetHead = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
         ]);
-        $resident = $this->createResident([
+        $resident = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $head->id,
             'household_id' => $household->id,
@@ -244,12 +246,12 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_head_cannot_submit_transfer_request_when_no_eligible_linked_members(): void
     {
-        $head = $this->createResident([
+        $head = $this->createResidentUser([
             'head_of_family' => 'yes',
             'first_name' => 'Solo',
             'last_name' => 'Head',
         ]);
-        $unrelated = $this->createResident([
+        $unrelated = $this->createResidentUser([
             'head_of_family' => 'yes',
             'first_name' => 'Other',
             'last_name' => 'Head',
@@ -269,12 +271,12 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_head_transfer_request_requires_details_when_reason_is_other(): void
     {
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
         ]);
-        $requestedHead = $this->createResident([
+        $requestedHead = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $head->id,
             'household_id' => $household->id,
@@ -296,13 +298,13 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_head_transfer_request_accepts_legacy_linked_account_from_family_member_record(): void
     {
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
         ]);
 
-        $legacyLinkedUser = $this->createResident([
+        $legacyLinkedUser = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => null,
             'household_id' => null,
@@ -348,12 +350,12 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_head_transfer_request_accepts_birthdate_eligible_member_with_stale_age_column(): void
     {
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
         ]);
-        $requestedHead = $this->createResident([
+        $requestedHead = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $head->id,
             'household_id' => $household->id,
@@ -378,18 +380,18 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_household_can_only_have_one_pending_head_transfer_request(): void
     {
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
         ]);
-        $firstTarget = $this->createResident([
+        $firstTarget = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $head->id,
             'household_id' => $household->id,
             'family_link_status' => 'linked',
         ]);
-        $secondTarget = $this->createResident([
+        $secondTarget = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $head->id,
             'household_id' => $household->id,
@@ -424,16 +426,16 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_admin_can_approve_resident_head_transfer_request(): void
     {
-        $admin = $this->createResident([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'yes',
         ]);
-        $requesterHead = $this->createResident(['head_of_family' => 'yes']);
+        $requesterHead = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $requesterHead->id,
             'purok' => $requesterHead->purok,
         ]);
-        $requestedMember = $this->createResident([
+        $requestedMember = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $requesterHead->id,
             'household_id' => $household->id,
@@ -483,7 +485,7 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_staff_with_registrations_permission_can_approve_resident_head_transfer_request(): void
     {
-        $staff = $this->createResident([
+        $staff = $this->createResidentUser([
             'role' => User::ROLE_STAFF,
             'head_of_family' => 'yes',
         ]);
@@ -496,12 +498,12 @@ class HouseholdFamilyPhaseATest extends TestCase
             'can_manage_reports' => false,
         ]);
 
-        $requesterHead = $this->createResident(['head_of_family' => 'yes']);
+        $requesterHead = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $requesterHead->id,
             'purok' => $requesterHead->purok,
         ]);
-        $requestedMember = $this->createResident([
+        $requestedMember = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $requesterHead->id,
             'household_id' => $household->id,
@@ -532,11 +534,11 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_admin_can_directly_transfer_head_to_linked_member_from_resident_profile(): void
     {
-        $admin = $this->createResident([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'yes',
         ]);
-        $currentHead = $this->createResident([
+        $currentHead = $this->createResidentUser([
             'head_of_family' => 'yes',
             'first_name' => 'Current',
             'last_name' => 'Head',
@@ -545,7 +547,7 @@ class HouseholdFamilyPhaseATest extends TestCase
             'head_id' => $currentHead->id,
             'purok' => $currentHead->purok,
         ]);
-        $targetMember = $this->createResident([
+        $targetMember = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $currentHead->id,
             'household_id' => $household->id,
@@ -553,7 +555,7 @@ class HouseholdFamilyPhaseATest extends TestCase
             'first_name' => 'Target',
             'last_name' => 'Member',
         ]);
-        $otherMember = $this->createResident([
+        $otherMember = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $currentHead->id,
             'household_id' => $household->id,
@@ -601,7 +603,7 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_staff_without_registrations_permission_cannot_access_or_process_transfer_queue(): void
     {
-        $staff = $this->createResident([
+        $staff = $this->createResidentUser([
             'role' => User::ROLE_STAFF,
             'head_of_family' => 'yes',
         ]);
@@ -614,12 +616,12 @@ class HouseholdFamilyPhaseATest extends TestCase
             'can_manage_reports' => false,
         ]);
 
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
         ]);
-        $requestedMember = $this->createResident([
+        $requestedMember = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $head->id,
             'household_id' => $household->id,
@@ -648,18 +650,18 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_transfer_queue_pending_tab_is_sorted_oldest_first(): void
     {
-        $admin = $this->createResident([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'yes',
         ]);
 
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
         ]);
 
-        $oldestRequestedMember = $this->createResident([
+        $oldestRequestedMember = $this->createResidentUser([
             'first_name' => 'Oldest',
             'last_name' => 'Member',
             'head_of_family' => 'no',
@@ -667,7 +669,7 @@ class HouseholdFamilyPhaseATest extends TestCase
             'household_id' => $household->id,
             'family_link_status' => 'linked',
         ]);
-        $newestRequestedMember = $this->createResident([
+        $newestRequestedMember = $this->createResidentUser([
             'first_name' => 'Newest',
             'last_name' => 'Member',
             'head_of_family' => 'no',
@@ -675,7 +677,7 @@ class HouseholdFamilyPhaseATest extends TestCase
             'household_id' => null,
             'family_link_status' => 'linked',
         ]);
-        $newestHead = $this->createResident([
+        $newestHead = $this->createResidentUser([
             'first_name' => 'Newest',
             'last_name' => 'Head',
             'head_of_family' => 'yes',
@@ -726,12 +728,12 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_transfer_queue_supports_search_and_date_filters(): void
     {
-        $admin = $this->createResident([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'yes',
         ]);
 
-        $headA = $this->createResident([
+        $headA = $this->createResidentUser([
             'head_of_family' => 'yes',
             'first_name' => 'Searchable',
             'last_name' => 'Head',
@@ -740,7 +742,7 @@ class HouseholdFamilyPhaseATest extends TestCase
             'head_id' => $headA->id,
             'purok' => $headA->purok,
         ]);
-        $requestedA = $this->createResident([
+        $requestedA = $this->createResidentUser([
             'first_name' => 'Match',
             'last_name' => 'Keyword',
             'head_of_family' => 'no',
@@ -749,7 +751,7 @@ class HouseholdFamilyPhaseATest extends TestCase
             'family_link_status' => 'linked',
         ]);
 
-        $headB = $this->createResident([
+        $headB = $this->createResidentUser([
             'head_of_family' => 'yes',
             'first_name' => 'Other',
             'last_name' => 'Head',
@@ -758,7 +760,7 @@ class HouseholdFamilyPhaseATest extends TestCase
             'head_id' => $headB->id,
             'purok' => $headB->purok,
         ]);
-        $requestedB = $this->createResident([
+        $requestedB = $this->createResidentUser([
             'first_name' => 'No',
             'last_name' => 'Match',
             'head_of_family' => 'no',
@@ -806,16 +808,16 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_rejecting_transfer_request_requires_rejection_note(): void
     {
-        $admin = $this->createResident([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'yes',
         ]);
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create([
             'head_id' => $head->id,
             'purok' => $head->purok,
         ]);
-        $requestedMember = $this->createResident([
+        $requestedMember = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $head->id,
             'household_id' => $household->id,
@@ -841,12 +843,12 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_cannot_approve_already_processed_transfer_request(): void
     {
-        $admin = $this->createResident([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'yes',
         ]);
-        $head = $this->createResident(['head_of_family' => 'yes']);
-        $member = $this->createResident([
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
+        $member = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $head->id,
             'family_link_status' => 'linked',
@@ -872,12 +874,12 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_cannot_reject_already_processed_transfer_request(): void
     {
-        $admin = $this->createResident([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'head_of_family' => 'yes',
         ]);
-        $head = $this->createResident(['head_of_family' => 'yes']);
-        $member = $this->createResident([
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
+        $member = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $head->id,
             'family_link_status' => 'linked',
@@ -904,11 +906,11 @@ class HouseholdFamilyPhaseATest extends TestCase
 
     public function test_updating_head_profile_cascades_address_to_linked_members(): void
     {
-        $admin = $this->createResident(['role' => User::ROLE_ADMIN, 'head_of_family' => 'yes']);
+        $admin = $this->createResidentUser(['role' => User::ROLE_ADMIN, 'head_of_family' => 'yes']);
         $oldPurok = Purok::create(['name' => 'Purok Old']);
         $newPurok = Purok::create(['name' => 'Purok New']);
 
-        $head = $this->createResident([
+        $head = $this->createResidentUser([
             'head_of_family' => 'yes',
             'purok_id' => $oldPurok->id,
             'purok' => $oldPurok->name,
@@ -921,7 +923,7 @@ class HouseholdFamilyPhaseATest extends TestCase
             'purok' => $head->purok,
         ]);
 
-        $linkedUser = $this->createResident([
+        $linkedUser = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => $head->id,
             'household_id' => $household->id,
@@ -985,45 +987,4 @@ class HouseholdFamilyPhaseATest extends TestCase
         $this->assertSame('non-permanent', $member->resident_type);
     }
 
-    private function createResident(array $overrides = []): User
-    {
-        $purok = isset($overrides['purok_id'])
-            ? Purok::findOrFail($overrides['purok_id'])
-            : Purok::firstOrCreate(['name' => 'Purok 1']);
-
-        $defaults = [
-            'first_name' => 'Juan',
-            'middle_name' => 'D',
-            'last_name' => 'Cruz',
-            'suffix' => null,
-            'house_no' => '101',
-            'purok' => $purok->name,
-            'purok_id' => $purok->id,
-            'street_name' => 'Main St',
-            'contact_number' => '+639171234567',
-            'age' => 30,
-            'gender' => 'male',
-            'birthdate' => now()->subYears(30)->toDateString(),
-            'civil_status' => 'single',
-            'head_of_family' => 'no',
-            'resident_type' => 'permanent',
-            'email' => 'user' . uniqid() . '@example.com',
-            'password' => 'password123',
-            'head_of_family_id' => null,
-            'family_link_status' => null,
-            'relationship_to_head' => null,
-            'household_id' => null,
-        ];
-
-        $data = array_merge($defaults, array_intersect_key($overrides, $defaults));
-        $user = User::create($data);
-
-        $user->forceFill([
-            'role' => $overrides['role'] ?? User::ROLE_RESIDENT,
-            'status' => $overrides['status'] ?? User::STATUS_APPROVED,
-            'is_suspended' => $overrides['is_suspended'] ?? false,
-        ])->save();
-
-        return $user->fresh();
-    }
 }

@@ -23,11 +23,6 @@ class ReportSpreadsheetExportService
         return $this->blotterExport->generateBlotterExcel($records);
     }
 
-    public function generateBlotterCsv(array $records): array
-    {
-        return $this->blotterExport->generateBlotterCsv($records);
-    }
-
     public function generateHouseholdsReportExcel(?int $purokId): array
     {
         return $this->householdExport->generateHouseholdsReportExcel($purokId);

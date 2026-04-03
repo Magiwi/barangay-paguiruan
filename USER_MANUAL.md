@@ -243,7 +243,6 @@ Sa reports module, maaaring makita ang:
 May export options depende sa page, gaya ng:
 
 - `PDF`
-- `CSV`
 - `Excel`
 
 ## 8. Admin User Guide
@@ -372,7 +371,6 @@ May export features sa ilang report pages:
 
 - Print
 - PDF
-- CSV
 - Excel
 
 ### 8.12 Audit Log
@@ -474,6 +472,12 @@ Kung may problema sa paggamit ng system, makipag-ugnayan sa barangay office o sa
 - access problems
 - record correction requests
 
-## 13. Version Note
+## 13. Sanggunian para sa developers (optional)
+
+- **Deployment at server:** tingnan ang `DEPLOYMENT.md` sa project root.
+- **Automated tests (local):** `composer test` o `php artisan test`.
+- **GitHub:** kung naka-host ang code sa GitHub, maaaring tumakbo ang parehong tests sa **Actions** tuwing push o pull request (tingnan ang `.github/workflows/tests.yml`).
+
+## 14. Version Note
 
 Ang manual na ito ay ginawa base sa kasalukuyang modules at navigation ng project sa codebase. Maaaring magbago ang ilang menu o feature kapag may bagong update sa system.

@@ -47,11 +47,6 @@ class ReportController extends Controller
         return app(AdminReportController::class)->populationExportExcel($request);
     }
 
-    public function populationExportCsv(Request $request)
-    {
-        return app(AdminReportController::class)->populationExportCsv($request);
-    }
-
     public function classification(Request $request): View
     {
         $admin = app(AdminReportController::class);
@@ -69,11 +64,6 @@ class ReportController extends Controller
         return app(AdminReportController::class)->classificationExportExcel($request);
     }
 
-    public function classificationExportCsv(Request $request)
-    {
-        return app(AdminReportController::class)->classificationExportCsv($request);
-    }
-
     public function services(Request $request): View
     {
         $admin = app(AdminReportController::class);
@@ -89,11 +79,6 @@ class ReportController extends Controller
     public function servicesExportExcel(Request $request)
     {
         return app(AdminReportController::class)->servicesExportExcel($request);
-    }
-
-    public function servicesExportCsv(Request $request)
-    {
-        return app(AdminReportController::class)->servicesExportCsv($request);
     }
 
     public function households(Request $request): View
@@ -118,11 +103,6 @@ class ReportController extends Controller
         return app(AdminReportController::class)->householdsViewPrint($request)->with($this->viewData);
     }
 
-    public function householdsViewExportCsv(Request $request)
-    {
-        return app(AdminReportController::class)->householdsViewExportCsv($request);
-    }
-
     public function householdsViewExportPdf(Request $request)
     {
         return app(AdminReportController::class)->householdsViewExportPdf($request);
@@ -143,11 +123,6 @@ class ReportController extends Controller
         return app(AdminReportController::class)->householdsTimelineExportPdf($request);
     }
 
-    public function householdsTimelineExportCsv(Request $request)
-    {
-        return app(AdminReportController::class)->householdsTimelineExportCsv($request);
-    }
-
     public function householdsExport(Request $request)
     {
         return app(AdminReportController::class)->householdsExport($request);
@@ -163,11 +138,6 @@ class ReportController extends Controller
         return app(AdminReportController::class)->householdsExportPdf($request);
     }
 
-    public function householdsExportCsv(Request $request)
-    {
-        return app(AdminReportController::class)->householdsExportCsv($request);
-    }
-
     public function blotter(Request $request): View
     {
         return app(AdminReportController::class)->blotter($request)->with($this->viewData);
@@ -181,11 +151,6 @@ class ReportController extends Controller
     public function blotterExportExcel(Request $request)
     {
         return app(AdminReportController::class)->blotterExportExcel($request);
-    }
-
-    public function blotterExportCsv(Request $request)
-    {
-        return app(AdminReportController::class)->blotterExportCsv($request);
     }
 
     public function export(Request $request)

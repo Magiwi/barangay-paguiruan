@@ -53,6 +53,12 @@
             </a>
         </div>
 
+        @if ($status === 'rejected')
+            <x-ui.alert type="info" class="mb-4">
+                Rejected applicants are removed from the database. Entries below come from the approval log (name, email, and reason are stored when the rejection happens).
+            </x-ui.alert>
+        @endif
+
         @if ($status === 'pending')
         @endif
 
@@ -73,6 +79,42 @@
 
         <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
             <div class="overflow-x-auto">
+                @if ($status === 'rejected' && $rejectionLogs)
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rejected</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rejected by</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @forelse ($rejectionLogs as $log)
+                            <tr>
+                                <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
+                                    {{ $log->created_at->format('M d, Y H:i') }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-700">
+                                    <div class="max-w-2xl whitespace-pre-wrap">{{ $log->remarks ?? '—' }}</div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    @if ($log->performer)
+                                        {{ trim($log->performer->first_name . ' ' . ($log->performer->middle_name ?? '') . ' ' . $log->performer->last_name) }}
+                                    @else
+                                        —
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-8 text-center text-sm text-gray-500">
+                                    No rejection records yet. When you reject a pending registration, it will appear here.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+                @else
                 @if ($status === 'pending' && $users->isNotEmpty())
                     <form method="POST" action="{{ route($rp . '.pending-registrations.bulk-approve') }}" id="bulk-form-inline">
                         @csrf
@@ -300,8 +342,13 @@
                 @if ($status === 'pending' && $users->isNotEmpty())
                     </form>
                 @endif
+                @endif
             </div>
-            @if ($users->hasPages())
+            @if ($status === 'rejected' && $rejectionLogs && $rejectionLogs->hasPages())
+                <div class="border-t border-gray-200 px-6 py-3">
+                    {{ $rejectionLogs->links() }}
+                </div>
+            @elseif ($users->hasPages())
                 <div class="px-6 py-3 border-t border-gray-200">
                     {{ $users->links() }}
                 </div>

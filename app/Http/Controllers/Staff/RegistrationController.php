@@ -8,7 +8,6 @@ use App\Http\Controllers\Admin\VerificationController;
 use App\Http\Controllers\Controller;
 use App\Models\RegistrationAlertRun;
 use App\Models\User;
-use App\Services\RegistrationEscalationConfig;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,54 +30,9 @@ class RegistrationController extends Controller
 
     public function index(Request $request): View
     {
-        $settings = RegistrationEscalationConfig::get();
-        $status = $request->get('status', 'pending');
-        $query = User::countable();
+        $view = app(PendingRegistrationsController::class)->index($request);
 
-        if (in_array($status, ['pending', 'approved', 'rejected', 'suspended'], true)) {
-            $query->where('status', $status);
-        }
-
-        if ($status === User::STATUS_PENDING) {
-            $this->applyPendingQueueFilters($query, $request, $settings);
-            $query->orderByRaw(
-                "CASE
-                    WHEN created_at <= ? THEN 0
-                    WHEN created_at <= ? THEN 1
-                    ELSE 2
-                END",
-                [now()->subHours($settings['overdue_hours']), now()->subHours($settings['due_soon_hours'])]
-            )->orderBy('created_at');
-        } else {
-            $query->orderByDesc('created_at');
-        }
-
-        $users = $query->paginate(15)->withQueryString();
-
-        $counts = [
-            'pending' => User::countable()->where('status', User::STATUS_PENDING)->count(),
-            'approved' => User::countable()->where('status', User::STATUS_APPROVED)->count(),
-            'rejected' => User::countable()->where('status', User::STATUS_REJECTED)->count(),
-            'suspended' => User::countable()->where('status', User::STATUS_SUSPENDED)->count(),
-        ];
-
-        $rejectionReasonOptions = User::REGISTRATION_REJECTION_REASON_LABELS;
-        $pendingQueueStats = [
-            'overdue' => User::countable()->where('status', User::STATUS_PENDING)->where('created_at', '<=', now()->subHours($settings['overdue_hours']))->count(),
-            'due_soon' => User::countable()->where('status', User::STATUS_PENDING)->where('created_at', '<=', now()->subHours($settings['due_soon_hours']))->where('created_at', '>', now()->subHours($settings['overdue_hours']))->count(),
-            'missing_id' => User::countable()->where('status', User::STATUS_PENDING)->where(function ($q) {
-                $q->whereNull('government_id_path')->orWhereNull('government_id_type');
-            })->count(),
-        ];
-        $latestEscalationRun = $this->latestEscalationRun();
-        $manualReminderCooldownSeconds = max(
-            $this->manualReminderCooldownSeconds($settings),
-            $this->manualReminderCooldownSeconds($settings, auth()->id())
-        );
-        $escalationAnalytics = $this->escalationAnalytics();
-        $failedQueueStats = $this->failedQueueStats();
-
-        return view('admin.pending-registrations.index', array_merge(compact('users', 'status', 'counts', 'rejectionReasonOptions', 'pendingQueueStats', 'latestEscalationRun', 'manualReminderCooldownSeconds', 'escalationAnalytics', 'failedQueueStats', 'settings'), $this->viewData));
+        return $view->with($this->viewData);
     }
 
     public function approve(Request $request, User $user): RedirectResponse

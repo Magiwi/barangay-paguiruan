@@ -4,18 +4,19 @@ namespace Tests\Feature;
 
 use App\Models\FamilyMember;
 use App\Models\Household;
-use App\Models\Purok;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CreatesResidents;
 use Tests\TestCase;
 
 class HouseholdPolicyAuthorizationTest extends TestCase
 {
+    use CreatesResidents;
     use RefreshDatabase;
 
     public function test_non_head_resident_cannot_add_family_member(): void
     {
-        $resident = $this->createResident([
+        $resident = $this->createResidentUser([
             'head_of_family' => 'no',
             'head_of_family_id' => null,
             'status' => User::STATUS_APPROVED,
@@ -34,8 +35,8 @@ class HouseholdPolicyAuthorizationTest extends TestCase
 
     public function test_admin_cannot_manage_family_member_record_of_another_head(): void
     {
-        $admin = $this->createResident(['role' => User::ROLE_ADMIN, 'head_of_family' => 'yes']);
-        $head = $this->createResident(['head_of_family' => 'yes']);
+        $admin = $this->createResidentUser(['role' => User::ROLE_ADMIN, 'head_of_family' => 'yes']);
+        $head = $this->createResidentUser(['head_of_family' => 'yes']);
         $household = Household::create(['head_id' => $head->id, 'purok' => $head->purok]);
 
         $member = FamilyMember::create([
@@ -58,43 +59,16 @@ class HouseholdPolicyAuthorizationTest extends TestCase
         $response->assertForbidden();
     }
 
-    private function createResident(array $overrides = []): User
+    public function test_guest_cannot_add_family_member(): void
     {
-        $purok = isset($overrides['purok_id'])
-            ? Purok::findOrFail($overrides['purok_id'])
-            : Purok::firstOrCreate(['name' => 'Purok Policy']);
-
-        $defaults = [
-            'first_name' => 'Policy',
-            'middle_name' => 'T',
-            'last_name' => 'User',
-            'suffix' => null,
-            'house_no' => '7',
-            'purok' => $purok->name,
-            'purok_id' => $purok->id,
-            'street_name' => 'Policy St',
-            'contact_number' => '+639191111111',
-            'age' => 31,
+        $response = $this->post(route('family.store'), [
+            'first_name' => 'Kid',
+            'last_name' => 'Resident',
+            'birthdate' => now()->subYears(10)->toDateString(),
             'gender' => 'male',
-            'birthdate' => now()->subYears(31)->toDateString(),
-            'civil_status' => 'single',
-            'head_of_family' => 'no',
-            'resident_type' => 'permanent',
-            'email' => 'policy' . uniqid() . '@example.com',
-            'password' => 'password123',
-            'head_of_family_id' => null,
-            'family_link_status' => null,
-            'household_id' => null,
-        ];
+            'relationship_to_head' => 'son',
+        ]);
 
-        $data = array_merge($defaults, array_intersect_key($overrides, $defaults));
-        $user = User::create($data);
-        $user->forceFill([
-            'role' => $overrides['role'] ?? User::ROLE_RESIDENT,
-            'status' => $overrides['status'] ?? User::STATUS_APPROVED,
-            'is_suspended' => $overrides['is_suspended'] ?? false,
-        ])->save();
-
-        return $user->fresh();
+        $response->assertRedirect(route('login'));
     }
 }

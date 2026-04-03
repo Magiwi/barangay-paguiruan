@@ -13,8 +13,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 class BlotterSpreadsheetExportService
 {
     public function __construct(
-        private readonly OfficialFormSpreadsheetTheme $spreadsheetTheme,
-        private readonly ReportCsvFormatter $csvFormatter
+        private readonly OfficialFormSpreadsheetTheme $spreadsheetTheme
     ) {
     }
 
@@ -222,34 +221,5 @@ class BlotterSpreadsheetExportService
         (new Xlsx($spreadsheet))->save($tempPath);
 
         return ['filename' => $filename, 'tempPath' => $tempPath, 'contentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
-    }
-
-    public function generateBlotterCsv(array $records): array
-    {
-        $filename = 'blotter_report_' . now()->format('Ymd_His') . '.csv';
-        $tempPath = storage_path("app/temp/{$filename}");
-        if (! is_dir(dirname($tempPath))) {
-            mkdir(dirname($tempPath), 0755, true);
-        }
-
-        $handle = fopen($tempPath, 'w');
-        $this->csvFormatter->writeOfficialCsv(
-            $handle,
-            'Blotter Report',
-            [['Total Rows', (string) count($records)]],
-            ['Case Number', 'Complainant', 'Respondent', 'Complaint Type', 'Status', 'Date Filed'],
-            $records,
-            fn (array $record) => [
-                $record['case_number'],
-                $record['complainant_name'],
-                $record['respondent_name'],
-                $record['complaint_type'],
-                $record['status_label'] ?? ucfirst((string) $record['status']),
-                Carbon::parse($record['created_at'])->format('M d, Y'),
-            ]
-        );
-        fclose($handle);
-
-        return ['filename' => $filename, 'tempPath' => $tempPath, 'contentType' => 'text/csv; charset=UTF-8'];
     }
 }

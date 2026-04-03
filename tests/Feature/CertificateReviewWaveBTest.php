@@ -3,24 +3,25 @@
 namespace Tests\Feature;
 
 use App\Models\CertificateRequest;
-use App\Models\Purok;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\CreatesResidents;
 use Tests\TestCase;
 
 class CertificateReviewWaveBTest extends TestCase
 {
+    use CreatesResidents;
     use RefreshDatabase;
 
     public function test_admin_can_approve_pending_certificate_without_preapproval_review(): void
     {
-        $admin = $this->createResident([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'first_name' => 'Admin',
             'last_name' => 'User',
         ]);
 
-        $resident = $this->createResident([
+        $resident = $this->createResidentUser([
             'first_name' => 'Juan',
             'last_name' => 'Dela Cruz',
         ]);
@@ -45,13 +46,13 @@ class CertificateReviewWaveBTest extends TestCase
 
     public function test_admin_review_updates_review_metadata_and_allows_approval(): void
     {
-        $admin = $this->createResident([
+        $admin = $this->createResidentUser([
             'role' => User::ROLE_ADMIN,
             'first_name' => 'Admin',
             'last_name' => 'Reviewer',
         ]);
 
-        $resident = $this->createResident([
+        $resident = $this->createResidentUser([
             'first_name' => 'Maria',
             'last_name' => 'Santos',
         ]);
@@ -94,45 +95,4 @@ class CertificateReviewWaveBTest extends TestCase
         $this->assertSame('approved', $certificate->fresh()->status);
     }
 
-    private function createResident(array $overrides = []): User
-    {
-        $purok = isset($overrides['purok_id'])
-            ? Purok::findOrFail($overrides['purok_id'])
-            : Purok::firstOrCreate(['name' => 'Purok 1']);
-
-        $defaults = [
-            'first_name' => 'Juan',
-            'middle_name' => 'D',
-            'last_name' => 'Cruz',
-            'suffix' => null,
-            'house_no' => '101',
-            'purok' => $purok->name,
-            'purok_id' => $purok->id,
-            'street_name' => 'Main St',
-            'contact_number' => '+639171234567',
-            'age' => 30,
-            'gender' => 'male',
-            'birthdate' => now()->subYears(30)->toDateString(),
-            'civil_status' => 'single',
-            'head_of_family' => 'no',
-            'resident_type' => 'permanent',
-            'email' => 'user' . uniqid() . '@example.com',
-            'password' => 'password123',
-            'head_of_family_id' => null,
-            'family_link_status' => null,
-            'relationship_to_head' => null,
-            'household_id' => null,
-        ];
-
-        $data = array_merge($defaults, array_intersect_key($overrides, $defaults));
-        $user = User::create($data);
-
-        $user->forceFill([
-            'role' => $overrides['role'] ?? User::ROLE_RESIDENT,
-            'status' => $overrides['status'] ?? User::STATUS_APPROVED,
-            'is_suspended' => $overrides['is_suspended'] ?? false,
-        ])->save();
-
-        return $user->fresh();
-    }
 }

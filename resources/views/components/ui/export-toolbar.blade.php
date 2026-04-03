@@ -1,7 +1,6 @@
 @props([
     'pdfUrl' => null,
     'excelUrl' => null,
-    'csvUrl' => null,
     'printUrl' => null,
     'filterLabel' => null,
     'filterValue' => null,
@@ -26,13 +25,6 @@
             <a href="{{ $excelUrl }}" data-export-link
                class="ui-focus-ring inline-flex items-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                 Export Excel
-            </a>
-        @endif
-
-        @if ($csvUrl)
-            <a href="{{ $csvUrl }}" data-export-link
-               class="ui-focus-ring inline-flex items-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
-                Export CSV
             </a>
         @endif
 

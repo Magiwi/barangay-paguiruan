@@ -6,3 +6,10 @@
 !.env.production.example
 vendor/
 node_modules/
+.phpunit.result.cache
+
+# Local DB dumps (keep backups off-repo)
+/backup*.sql
+
+# Local-only seeder (not committed; optional for Registration UI testing)
+/database/seeders/PendingRegistrationUsersSeeder.php
