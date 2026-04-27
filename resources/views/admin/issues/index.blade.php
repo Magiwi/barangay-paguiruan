@@ -121,7 +121,7 @@
             </div>
 
             <div class="mt-3 flex items-center gap-2">
-                <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">
+                <button type="submit" class="ui-btn ui-btn-primary rounded-lg">
                     Apply Filters
                 </button>
                 @if (request()->anyFilled(['search', 'status', 'category', 'assigned_to', 'purok_id']))
@@ -225,7 +225,7 @@
                                             $tooltip = $canAct ? '' : 'title="Only assigned officer or admin can perform this action"';
                                         @endphp
                                         <div class="flex flex-wrap items-center justify-center gap-2">
-                                            <a href="{{ route($rp . '.issues.show', $issue) }}" class="inline-flex min-w-[62px] items-center justify-center rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700" title="View">View</a>
+                                            <a href="{{ route($rp . '.issues.show', $issue) }}" class="ui-btn ui-btn-primary ui-btn-sm inline-flex min-w-[62px] justify-center rounded-md" title="View">View</a>
                                             @if (! $issue->assigned_to && ! $issue->isClosed())
                                                 <form method="POST" action="{{ route($rp . '.issues.assign-me', $issue) }}" class="inline">
                                                     @csrf
@@ -239,7 +239,7 @@
                                                     <input type="hidden" name="status" value="in_progress">
                                                     <input type="hidden" name="remarks" value="">
                                                     @if ($canAct)
-                                                        <button type="submit" class="min-w-[62px] rounded-md bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-600" title="Start Investigation">Start</button>
+                                                        <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm min-w-[62px] rounded-md" title="Start Investigation">Start</button>
                                                     @else
                                                         <button type="button" disabled {{ $tooltip }} class="min-w-[62px] cursor-not-allowed rounded-md bg-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-500">Start</button>
                                                     @endif

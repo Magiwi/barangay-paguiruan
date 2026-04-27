@@ -36,7 +36,7 @@
                        required
                        autocomplete="email"
                        placeholder="you@example.com"
-                       class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('email') border-red-400 @else border-gray-300 @enderror">
+                       class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('email') border-red-400 @else border-gray-300 @enderror">
                 @error('email')
                     <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
                 @enderror
@@ -52,10 +52,11 @@
                            required
                            autocomplete="current-password"
                            placeholder="Enter your password"
-                           class="block w-full rounded-lg border px-4 py-2.5 pr-10 text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('password') border-red-400 @else border-gray-300 @enderror">
+                           class="block w-full rounded-lg border px-4 py-2.5 pr-10 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('password') border-red-400 @else border-gray-300 @enderror">
                     <button type="button" onclick="togglePassword('password', this)"
-                            class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition"
+                            aria-label="Show password" aria-pressed="false">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
@@ -70,24 +71,24 @@
             <div class="flex items-center justify-between">
                 <label class="inline-flex items-center cursor-pointer">
                     <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}
-                           class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                           class="h-4 w-4 rounded border-gray-300 text-[var(--brand-700)] focus:ring-[var(--brand-100)]">
                     <span class="ml-2 text-sm text-gray-600">Remember me</span>
                 </label>
-                <a href="{{ route('password.request') }}" class="text-xs font-medium text-blue-600 hover:text-blue-700 transition">
+                <a href="{{ route('password.request') }}" class="ui-link text-xs transition">
                     Forgot your password?
                 </a>
             </div>
 
             {{-- Submit --}}
             <button type="submit"
-                    class="w-full rounded-lg bg-blue-600 py-3 px-4 font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition">
+                    class="ui-btn ui-btn-primary ui-btn-lg w-full rounded-lg py-3 shadow-sm">
                 Sign In
             </button>
         </form>
 
         <p class="mt-6 text-center text-sm text-gray-500">
             Don't have an account?
-            <a href="{{ route('register') }}" class="font-medium text-blue-600 hover:text-blue-700 transition">Register</a>
+            <a href="{{ route('register') }}" class="ui-link font-medium transition">Register</a>
         </p>
     </div>
 </div>
@@ -95,12 +96,18 @@
 <script>
 function togglePassword(fieldId, btn) {
     var input = document.getElementById(fieldId);
+    var showLabel = fieldId === 'password_confirmation' ? 'Show confirm password' : 'Show password';
+    var hideLabel = fieldId === 'password_confirmation' ? 'Hide confirm password' : 'Hide password';
     if (input.type === 'password') {
         input.type = 'text';
-        btn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" /></svg>';
+        btn.setAttribute('aria-label', hideLabel);
+        btn.setAttribute('aria-pressed', 'true');
+        btn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" /></svg>';
     } else {
         input.type = 'password';
-        btn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>';
+        btn.setAttribute('aria-label', showLabel);
+        btn.setAttribute('aria-pressed', 'false');
+        btn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>';
     }
 }
 </script>

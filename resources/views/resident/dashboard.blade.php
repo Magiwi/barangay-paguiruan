@@ -184,7 +184,7 @@
                     <a href="{{ route('resident.announcements.show', $announcement) }}" class="group ui-surface-card ui-surface-card-hover ui-focus-ring overflow-hidden">
                         @if ($announcement->image)
                             <div class="h-36 overflow-hidden bg-gray-100">
-                                <img src="{{ asset('storage/' . $announcement->image) }}" alt="" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                <img src="{{ asset('storage/' . $announcement->image) }}" alt="{{ $announcement->title }}" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300">
                             </div>
                         @else
                             <div class="h-1.5 bg-blue-500"></div>

@@ -159,7 +159,7 @@
                         <div>
                             <label for="file" class="block text-sm font-medium text-gray-700 mb-1.5">Attach Evidence/Proof <span class="text-gray-400 font-normal">(optional)</span></label>
                             <input type="file" name="file" id="file" accept=".pdf,image/*" capture="environment" class="block w-full rounded-lg border border-gray-300 text-sm text-gray-600 shadow-sm file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100 transition @error('file') border-red-400 @enderror">
-                            <p class="mt-1.5 text-xs text-gray-500">JPG, JPEG, PNG, or PDF (max 10MB)</p>
+                            <p class="mt-1.5 text-xs text-gray-500">JPG, JPEG, PNG, WEBP, or PDF (max 10MB)</p>
                             @error('file')
                                 <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
                             @enderror
@@ -168,6 +168,14 @@
                                 <img id="evidence_preview_img" src="" alt="Evidence preview" class="hidden max-h-56 rounded-lg border border-blue-200 bg-white object-contain">
                                 <p id="evidence_preview_meta" class="text-xs text-blue-800"></p>
                             </div>
+                        </div>
+                        <div>
+                            <label for="video" class="block text-sm font-medium text-gray-700 mb-1.5">Attach video evidence <span class="text-gray-400 font-normal">(optional)</span></label>
+                            <input type="file" name="video" id="video" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" class="block w-full rounded-lg border border-gray-300 text-sm text-gray-600 shadow-sm file:mr-4 file:rounded-lg file:border-0 file:bg-violet-50 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-violet-700 hover:file:bg-violet-100 transition @error('video') border-red-400 @enderror">
+                            <p class="mt-1.5 text-xs text-gray-500">MP4, WEBM, or MOV (max 50MB). Separate from the image/PDF proof above.</p>
+                            @error('video')
+                                <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -236,7 +244,7 @@
                 <a href="{{ route($rp . '.blotters.index') }}" class="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition">
                     Cancel
                 </a>
-                <button type="submit" class="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 transition">
+                <button type="submit" class="ui-btn ui-btn-primary ui-btn-lg rounded-lg shadow-sm">
                     Submit Blotter
                 </button>
             </div>

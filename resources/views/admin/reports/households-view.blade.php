@@ -98,7 +98,7 @@
                 <button type="button" id="columnsSelectAll" class="rounded-md border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">Select all</button>
                 <button type="button" id="columnsClear" class="rounded-md border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">Clear</button>
                 <button type="button" id="columnsResetDefault" class="rounded-md border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">Reset default</button>
-                <button type="button" id="columnsApply" class="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-blue-700">Apply</button>
+                <button type="button" id="columnsApply" class="ui-btn ui-btn-primary ui-btn-sm rounded-md">Apply</button>
             </div>
         </div>
 
@@ -141,7 +141,7 @@
                 </div>
 
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700">Apply Sort</button>
+                    <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm rounded-md">Apply Sort</button>
                     <a href="{{ route($rp . '.reports.households.view', request()->except(['view_sort', 'view_order', 'page', 'per_page'])) }}" class="rounded-md border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50">Reset</a>
                 </div>
             </form>

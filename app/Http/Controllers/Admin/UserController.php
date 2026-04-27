@@ -4,16 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\FamilyMember;
-use App\Models\HouseholdHeadTransferLog;
 use App\Models\Household;
+use App\Models\HouseholdHeadTransferLog;
 use App\Models\Position;
 use App\Models\PositionChangeLog;
 use App\Models\Purok;
 use App\Models\ResidentMergeLog;
-use App\Models\StaffPermission;
 use App\Models\User;
 use App\Services\AuditService;
 use App\Services\HeadTransferService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,8 +25,7 @@ class UserController extends Controller
 {
     public function __construct(
         private readonly HeadTransferService $headTransferService
-    ) {
-    }
+    ) {}
 
     /** Maximum number of users per role. */
     public const MAX_ADMINS = 2;
@@ -243,7 +242,7 @@ class UserController extends Controller
 
             if ($currentAdmins >= self::MAX_ADMINS) {
                 return back()->withErrors([
-                    'role' => 'Maximum number of admins (' . self::MAX_ADMINS . ') reached.',
+                    'role' => 'Maximum number of admins ('.self::MAX_ADMINS.') reached.',
                 ]);
             }
         }
@@ -254,7 +253,7 @@ class UserController extends Controller
 
             if ($currentStaff >= self::MAX_STAFF) {
                 return back()->withErrors([
-                    'role' => 'Maximum number of staff (' . self::MAX_STAFF . ') reached.',
+                    'role' => 'Maximum number of staff ('.self::MAX_STAFF.') reached.',
                 ]);
             }
         }
@@ -317,7 +316,7 @@ class UserController extends Controller
             ['name' => 'Barangay Chairman', 'max_seats' => 1, 'sort_order' => 1],
             ['name' => 'Kagawad', 'max_seats' => 7, 'sort_order' => 5],
             ['name' => 'SK Chairman', 'max_seats' => 1, 'sort_order' => 6],
-            ['name' => 'SK Kagawad', 'max_seats' => 7, 'sort_order' => 9],
+            ['name' => 'SK Kagawad', 'max_seats' => 7, 'sort_order' => 7],
             ['name' => 'Barangay Secretary', 'max_seats' => 1, 'sort_order' => 2],
             ['name' => 'Barangay Treasurer', 'max_seats' => 1, 'sort_order' => 3],
             ['name' => 'Barangay Investigator', 'max_seats' => 1, 'sort_order' => 4],
@@ -476,16 +475,16 @@ class UserController extends Controller
         }
 
         // Auto-calculate age from birthdate
-        $validated['age'] = \Carbon\Carbon::parse($validated['birthdate'])->age;
+        $validated['age'] = Carbon::parse($validated['birthdate'])->age;
 
         // Normalize contact number to +63 format for consistency
         $contact = preg_replace('/[^0-9]/', '', $validated['contact_number']);
         if (str_starts_with($contact, '63') && strlen($contact) === 12) {
-            $validated['contact_number'] = '+' . $contact;
+            $validated['contact_number'] = '+'.$contact;
         } elseif (str_starts_with($contact, '0') && strlen($contact) === 11) {
-            $validated['contact_number'] = '+63' . substr($contact, 1);
+            $validated['contact_number'] = '+63'.substr($contact, 1);
         } elseif (strlen($contact) === 10) {
-            $validated['contact_number'] = '+63' . $contact;
+            $validated['contact_number'] = '+63'.$contact;
         }
 
         // Set the purok string for backwards compatibility (until old column is removed)
@@ -539,7 +538,7 @@ class UserController extends Controller
             // Ensure a household exists for this head
             $household = $user->householdAsHead;
             if (! $household) {
-                $household = \App\Models\Household::create([
+                $household = Household::create([
                     'head_id' => $user->id,
                     'purok' => $validated['purok'],
                 ]);
@@ -725,11 +724,11 @@ class UserController extends Controller
             'resident_type' => $head->resident_type,
         ]);
 
-        $fromLabel = $previousHeadId ? ($previousHeadName ?: ('ID ' . $previousHeadId)) : 'none';
+        $fromLabel = $previousHeadId ? ($previousHeadName ?: ('ID '.$previousHeadId)) : 'none';
         AuditService::log(
             'family_linked_admin',
             $user,
-            "Admin linked {$user->full_name} to head {$head->full_name} (previous head: {$fromLabel}). Reason: {$this->buildTransferReasonText($validated)}. Snapshot: " . json_encode([
+            "Admin linked {$user->full_name} to head {$head->full_name} (previous head: {$fromLabel}). Reason: {$this->buildTransferReasonText($validated)}. Snapshot: ".json_encode([
                 'before' => $before,
                 'after' => $this->familyLinkSnapshot($user->fresh()),
             ])
@@ -782,11 +781,11 @@ class UserController extends Controller
             'family_link_status' => 'unlinked',
         ]);
 
-        $fromLabel = $previousHeadId ? ($previousHeadName ?: ('ID ' . $previousHeadId)) : 'none';
+        $fromLabel = $previousHeadId ? ($previousHeadName ?: ('ID '.$previousHeadId)) : 'none';
         AuditService::log(
             'family_unlinked_admin',
             $user,
-            "Admin unlinked {$user->full_name} from head {$fromLabel}. Reason: {$this->buildTransferReasonText($validated)}. Snapshot: " . json_encode([
+            "Admin unlinked {$user->full_name} from head {$fromLabel}. Reason: {$this->buildTransferReasonText($validated)}. Snapshot: ".json_encode([
                 'before' => $before,
                 'after' => $this->familyLinkSnapshot($user->fresh()),
             ])
@@ -1028,7 +1027,7 @@ class UserController extends Controller
 
                     if ($holderCount >= (int) $newPosition->max_seats) {
                         throw ValidationException::withMessages([
-                            'position_id' => 'Maximum number of ' . $newPosition->name . ' (' . $newPosition->max_seats . ') reached.',
+                            'position_id' => 'Maximum number of '.$newPosition->name.' ('.$newPosition->max_seats.') reached.',
                         ]);
                     }
                 }
@@ -1353,4 +1352,3 @@ class UserController extends Controller
             ->with('success', 'Duplicate merge has been undone successfully.');
     }
 }
-

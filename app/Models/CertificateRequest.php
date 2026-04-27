@@ -22,6 +22,7 @@ class CertificateRequest extends Model
         'reviewed_by',
         'released_at',
         'released_by',
+        'officials_snapshot',
     ];
 
     protected $attributes = [
@@ -35,6 +36,7 @@ class CertificateRequest extends Model
             'released_at' => 'datetime',
             'certificate_issued_on' => 'date',
             'extra_fields' => 'array',
+            'officials_snapshot' => 'array',
         ];
     }
 

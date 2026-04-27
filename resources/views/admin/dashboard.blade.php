@@ -5,12 +5,12 @@
 
 @section('content')
 {{-- Welcome banner --}}
-<div class="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 px-4 py-8 sm:px-6 lg:px-8">
+<div class="bg-gradient-to-r from-[var(--brand-800)] via-[var(--brand-700)] to-[var(--brand-600)] px-4 py-8 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
         <h2 class="text-xl font-bold text-white sm:text-2xl">
             Welcome back, {{ auth()->user()->first_name }}
         </h2>
-        <p class="mt-1 text-sm text-blue-100">
+        <p class="mt-1 text-sm text-white/85">
             Manage residents, requests, and barangay operations from your dashboard.
         </p>
     </div>
@@ -25,8 +25,8 @@
             {{-- Total Residents --}}
             <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-                        <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-100)]">
+                        <svg class="h-5 w-5 text-[var(--brand-700)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
                     </div>
@@ -128,7 +128,7 @@
                         <h3 class="text-sm font-semibold text-gray-900">Recent Certificate Requests</h3>
                         <p class="text-xs text-gray-500 mt-0.5">Latest requests from residents</p>
                     </div>
-                    <a href="{{ route('admin.certificates.index') }}" class="text-xs font-medium text-blue-600 hover:text-blue-700 transition">View all</a>
+                    <a href="{{ route('admin.certificates.index') }}" class="ui-link text-xs transition">View all</a>
                 </div>
                 <div class="p-5">
                     @if ($recentCertificates->isEmpty())
@@ -174,7 +174,7 @@
                         <h3 class="text-sm font-semibold text-gray-900">Recent Issue Reports</h3>
                         <p class="text-xs text-gray-500 mt-0.5">Issues reported by residents</p>
                     </div>
-                    <a href="{{ route('admin.issues.index') }}" class="text-xs font-medium text-blue-600 hover:text-blue-700 transition">View all</a>
+                    <a href="{{ route('admin.issues.index') }}" class="ui-link text-xs transition">View all</a>
                 </div>
                 <div class="p-5">
                     @if ($recentIssues->isEmpty())

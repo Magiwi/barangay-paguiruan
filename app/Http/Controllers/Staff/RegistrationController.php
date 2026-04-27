@@ -95,6 +95,11 @@ class RegistrationController extends Controller
         return $view->with($this->viewData);
     }
 
+    public function preview(User $user): View
+    {
+        return app(PendingRegistrationsController::class)->preview($user);
+    }
+
     private function applyPendingQueueFilters(Builder $query, Request $request, array $settings): void
     {
         $sla = $request->string('sla')->toString();

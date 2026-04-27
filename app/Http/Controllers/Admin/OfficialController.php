@@ -7,10 +7,12 @@ use App\Models\Official;
 use App\Models\Position;
 use App\Models\User;
 use App\Services\AuditService;
+use App\Support\OfficialCommittees;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class OfficialController extends Controller
@@ -163,6 +165,17 @@ class OfficialController extends Controller
             }
         }
 
+        $committee = null;
+        if (OfficialCommittees::requiresCommittee($position->name)) {
+            $request->validate([
+                'committee' => ['required', 'string', Rule::in(OfficialCommittees::keys($position->name))],
+            ]);
+            $committee = $request->input('committee');
+            if ($msg = $this->committeeConflictMessage($position, $committee, $targetOfficial?->id)) {
+                return back()->withErrors(['committee' => $msg])->withInput();
+            }
+        }
+
         $previousUserId = $targetOfficial?->user_id;
 
         if ($targetOfficial) {
@@ -183,6 +196,7 @@ class OfficialController extends Controller
                 'term_end' => $termEnd,
                 'is_active' => true,
                 'photo' => $validated['photo'] ?? $targetOfficial->photo,
+                'committee' => $committee,
             ]);
             $official = $targetOfficial;
         } else {
@@ -197,6 +211,7 @@ class OfficialController extends Controller
                 'term_end' => $termEnd,
                 'is_active' => true,
                 'photo' => $validated['photo'] ?? null,
+                'committee' => $committee,
             ]);
         }
 
@@ -250,6 +265,7 @@ class OfficialController extends Controller
             'term_start' => ['required', 'date'],
             'term_end' => ['nullable', 'date', 'after:term_start'],
             'photo' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:2048'],
+            'committee' => ['nullable', 'string', 'max:64'],
         ]);
 
         $user = User::findOrFail($validated['user_id']);
@@ -259,6 +275,17 @@ class OfficialController extends Controller
         }
 
         $position = Position::findOrFail($validated['position_id']);
+
+        $committee = null;
+        if (OfficialCommittees::requiresCommittee($position->name)) {
+            $request->validate([
+                'committee' => ['required', 'string', Rule::in(OfficialCommittees::keys($position->name))],
+            ]);
+            $committee = $request->input('committee');
+            if ($this->committeeConflictMessage($position, $committee, null)) {
+                return back()->withErrors(['committee' => 'Another active official in this position already holds that committee.'])->withInput();
+            }
+        }
 
         if (! $position->hasAvailableSeat()) {
             return back()->withErrors([
@@ -270,6 +297,8 @@ class OfficialController extends Controller
             $validated['photo'] = $request->file('photo')->store('officials', 'public');
         }
         unset($validated['photo_removed']);
+
+        $validated['committee'] = $committee;
 
         $official = Official::create($validated);
 
@@ -306,9 +335,21 @@ class OfficialController extends Controller
             'term_start' => ['required', 'date'],
             'term_end' => ['nullable', 'date', 'after:term_start'],
             'photo' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:2048'],
+            'committee' => ['nullable', 'string', 'max:64'],
         ]);
 
         $position = Position::findOrFail($validated['position_id']);
+
+        $committee = null;
+        if (OfficialCommittees::requiresCommittee($position->name)) {
+            $request->validate([
+                'committee' => ['required', 'string', Rule::in(OfficialCommittees::keys($position->name))],
+            ]);
+            $committee = $request->input('committee');
+            if ($this->committeeConflictMessage($position, $committee, $official->id)) {
+                return back()->withErrors(['committee' => 'Another active official in this position already holds that committee.'])->withInput();
+            }
+        }
 
         if ($validated['position_id'] != $official->position_id) {
             if (! $position->hasAvailableSeat($official->user_id)) {
@@ -328,6 +369,8 @@ class OfficialController extends Controller
             $validated['photo'] = null;
         }
         unset($validated['photo_removed']);
+
+        $validated['committee'] = $committee;
 
         $official->update($validated);
 
@@ -402,7 +445,7 @@ class OfficialController extends Controller
             $user->forceFill(['role' => User::ROLE_RESIDENT])->save();
             $user->staffPermission()?->delete();
 
-            AuditService::log('permissions_revoked', $user, "Permissions revoked and role downgraded to resident (official deactivated/expired)");
+            AuditService::log('permissions_revoked', $user, 'Permissions revoked and role downgraded to resident (official deactivated/expired)');
 
         } elseif ($user->role === User::ROLE_ADMIN) {
             // Do NOT downgrade admin — only clear position, log warning
@@ -411,7 +454,7 @@ class OfficialController extends Controller
                 'position_title' => null,
             ])->save();
 
-            AuditService::log('admin_term_ended', $user, "Admin official term ended/deactivated — position cleared but role preserved (manual review required)");
+            AuditService::log('admin_term_ended', $user, 'Admin official term ended/deactivated — position cleared but role preserved (manual review required)');
         }
     }
 
@@ -465,6 +508,23 @@ class OfficialController extends Controller
         }
 
         return str_starts_with($positionName, 'SK ') ? 'sk' : 'barangay';
+    }
+
+    /**
+     * @return string|null Error message if the committee is already taken by another active holder of this position.
+     */
+    private function committeeConflictMessage(Position $position, string $committeeKey, ?int $ignoreOfficialId): ?string
+    {
+        $exists = Official::query()
+            ->currentlyServing()
+            ->where('position_id', $position->id)
+            ->where('committee', $committeeKey)
+            ->when($ignoreOfficialId, fn ($query) => $query->where('id', '!=', $ignoreOfficialId))
+            ->exists();
+
+        return $exists
+            ? 'Another active official in this position already holds that committee.'
+            : null;
     }
 
     private function validateGroupTermConsistency(string $group, string $termStart, string $termEnd, ?int $ignoreOfficialId = null): ?string

@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CertificateRequest;
 use App\Services\AuditService;
+use App\Services\BarangayOfficialRosterService;
 use App\Services\NotificationService;
 use App\Services\SmsService;
+use App\Support\OfficialsPdfSnapshot;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +16,10 @@ use Illuminate\Validation\Rule;
 
 class CertificateController extends Controller
 {
+    public function __construct(
+        private readonly BarangayOfficialRosterService $officialRoster,
+    ) {}
+
     public function index(Request $request)
     {
         $query = CertificateRequest::with(['user', 'releasedBy', 'reviewedBy'])->latest();
@@ -57,9 +63,9 @@ class CertificateController extends Controller
         $certificate->update($validated);
 
         AuditService::log(
-            'certificate_' . $validated['status'],
+            'certificate_'.$validated['status'],
             $certificate,
-            ucfirst($validated['status']) . " certificate #{$certificate->id} ({$certificate->certificate_type})"
+            ucfirst($validated['status'])." certificate #{$certificate->id} ({$certificate->certificate_type})"
         );
 
         if ($certificate->user) {
@@ -68,7 +74,7 @@ class CertificateController extends Controller
             $title = $status === 'approved' ? 'Certificate Approved' : 'Certificate Rejected';
             $body = $status === 'approved'
                 ? "Your {$type} request has been approved and is ready for pickup."
-                : "Your {$type} request has been rejected." . ($validated['remarks'] ? " Reason: {$validated['remarks']}" : '');
+                : "Your {$type} request has been rejected.".($validated['remarks'] ? " Reason: {$validated['remarks']}" : '');
             NotificationService::notify($certificate->user, $title, $body, 'certificate', $certificate->id);
         }
 
@@ -185,10 +191,12 @@ class CertificateController extends Controller
 
         $certificate->load('user.purokRelation');
 
-        $pdf = Pdf::loadView('certificates.templates.residency', compact('certificate'))
+        $officialsPdf = $this->officialsPdfForCertificate($certificate);
+
+        $pdf = Pdf::loadView('certificates.templates.residency', compact('certificate', 'officialsPdf'))
             ->setPaper('a4', 'portrait');
 
-        return $pdf->stream('certificate_of_residency_' . $certificate->id . '.pdf');
+        return $pdf->stream('certificate_of_residency_'.$certificate->id.'.pdf');
     }
 
     public function printIndigencyTemplate(CertificateRequest $certificate)
@@ -197,10 +205,12 @@ class CertificateController extends Controller
 
         $certificate->load('user.purokRelation');
 
-        $pdf = Pdf::loadView('certificates.templates.indigency', compact('certificate'))
+        $officialsPdf = $this->officialsPdfForCertificate($certificate);
+
+        $pdf = Pdf::loadView('certificates.templates.indigency', compact('certificate', 'officialsPdf'))
             ->setPaper('a4', 'portrait');
 
-        return $pdf->stream('certificate_of_indigency_' . $certificate->id . '.pdf');
+        return $pdf->stream('certificate_of_indigency_'.$certificate->id.'.pdf');
     }
 
     public function printClearanceTemplate(CertificateRequest $certificate)
@@ -209,10 +219,12 @@ class CertificateController extends Controller
 
         $certificate->load('user.purokRelation');
 
-        $pdf = Pdf::loadView('certificates.templates.clearance', compact('certificate'))
+        $officialsPdf = $this->officialsPdfForCertificate($certificate);
+
+        $pdf = Pdf::loadView('certificates.templates.clearance', compact('certificate', 'officialsPdf'))
             ->setPaper('a4', 'portrait');
 
-        return $pdf->stream('barangay_clearance_' . $certificate->id . '.pdf');
+        return $pdf->stream('barangay_clearance_'.$certificate->id.'.pdf');
     }
 
     public function printBarangayCertificateTemplate(CertificateRequest $certificate)
@@ -221,10 +233,12 @@ class CertificateController extends Controller
 
         $certificate->load('user.purokRelation');
 
-        $pdf = Pdf::loadView('certificates.templates.barangay-certificate', compact('certificate'))
+        $officialsPdf = $this->officialsPdfForCertificate($certificate);
+
+        $pdf = Pdf::loadView('certificates.templates.barangay-certificate', compact('certificate', 'officialsPdf'))
             ->setPaper('a4', 'portrait');
 
-        return $pdf->stream('barangay_certificate_' . $certificate->id . '.pdf');
+        return $pdf->stream('barangay_certificate_'.$certificate->id.'.pdf');
     }
 
     /**
@@ -237,11 +251,19 @@ class CertificateController extends Controller
             return back()->with('error', 'Only approved certificates can be released.');
         }
 
-        $certificate->update([
+        $payload = [
             'status' => 'released',
             'released_at' => now(),
             'released_by' => Auth::id(),
-        ]);
+        ];
+
+        if ($certificate->officials_snapshot === null) {
+            $payload['officials_snapshot'] = OfficialsPdfSnapshot::fromPdfRosters(
+                $this->officialRoster->pdfRosters()
+            );
+        }
+
+        $certificate->update($payload);
 
         AuditService::log('certificate_released', $certificate, "Released certificate #{$certificate->id} ({$certificate->certificate_type})");
 
@@ -262,6 +284,17 @@ class CertificateController extends Controller
         }
 
         return back()->with('success', 'Certificate marked as released.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function officialsPdfForCertificate(CertificateRequest $certificate): array
+    {
+        return OfficialsPdfSnapshot::forPrint(
+            $certificate->officials_snapshot,
+            $this->officialRoster->pdfRosters()
+        );
     }
 
     private function ensureResidencyApproved(CertificateRequest $certificate): void

@@ -191,7 +191,7 @@
                                                 <form method="POST" action="{{ route('admin.permits.release', $permit) }}" class="inline">
                                                     @csrf
                                                     @method('PUT')
-                                                    <button type="submit" class="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700">
+                                                    <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm rounded">
                                                         Mark as Released
                                                     </button>
                                                 </form>

@@ -30,8 +30,19 @@ class Blotter extends Model
         'incident_date',
         'file_path',
         'handwritten_salaysay_path',
+        'video_path',
         'remarks',
     ];
+
+    /**
+     * Resolve soft-deleted (archived) blotters in URLs so hearings and evidence previews do not 404.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $field = $field ?: $this->getRouteKeyName();
+
+        return static::withTrashed()->where($field, $value)->firstOrFail();
+    }
 
     protected $attributes = [
         'status' => 'active',

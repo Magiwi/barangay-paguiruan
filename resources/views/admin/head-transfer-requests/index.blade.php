@@ -54,14 +54,14 @@
                 </label>
             </div>
             <div class="mt-3 flex flex-wrap items-center gap-2">
-                <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Apply Filters</button>
+                <button type="submit" class="ui-btn ui-btn-primary rounded-md">Apply Filters</button>
                 <a href="{{ route('admin.head-transfer-requests.index', ['status' => $activeStatus]) }}" class="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Reset</a>
             </div>
         </form>
 
         <div class="flex flex-wrap gap-2">
             <a href="{{ route('admin.head-transfer-requests.index', array_merge($baseQuery, ['status' => 'pending'])) }}"
-               class="rounded-lg px-3 py-2 text-sm font-medium transition {{ $activeStatus === 'pending' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+               class="rounded-lg px-3 py-2 text-sm font-medium transition {{ $activeStatus === 'pending' ? 'bg-[var(--brand-700)] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                 Pending ({{ $counts['pending'] ?? 0 }})
             </a>
             <a href="{{ route('admin.head-transfer-requests.index', array_merge($baseQuery, ['status' => 'approved'])) }}"

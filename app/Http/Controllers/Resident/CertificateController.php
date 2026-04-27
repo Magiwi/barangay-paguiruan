@@ -119,11 +119,14 @@ class CertificateController extends Controller
 
         $purposeOtherRules = ['nullable', 'string', 'max:1000', Rule::requiredIf((string) request('purpose') === 'Others')];
 
+        $validIdRules = ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'];
+
         return match (strtolower($certificateType)) {
             'residency certificate' => [
                 'purpose' => $generalPurposeRules,
                 'purpose_other' => $purposeOtherRules,
                 'residency_start_year' => ['required', 'integer', 'min:1900', 'max:' . now()->year],
+                'valid_id' => $validIdRules,
             ],
             'certificate of indigency' => [
                 'purpose' => $indigencyPurposeRules,
@@ -136,15 +139,17 @@ class CertificateController extends Controller
                     '₱20,000 and above',
                     'No Income',
                 ])],
+                'valid_id' => $validIdRules,
             ],
             'barangay clearance' => [
                 'purpose' => $generalPurposeRules,
                 'purpose_other' => $purposeOtherRules,
-                'valid_id' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+                'valid_id' => $validIdRules,
             ],
             default => [
                 'purpose' => $generalPurposeRules,
                 'purpose_other' => $purposeOtherRules,
+                'valid_id' => $validIdRules,
             ],
         };
     }

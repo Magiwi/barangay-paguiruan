@@ -84,7 +84,7 @@
                 </select>
             </div>
             {{-- Buttons --}}
-            <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">
+            <button type="submit" class="ui-btn ui-btn-primary rounded-lg">
                 Filter
             </button>
             @if (request()->hasAny(['search', 'status']))
@@ -275,6 +275,7 @@
                                                             data-handwritten-url="{{ route($rp . '.blotters.evidence.preview', ['blotter' => $blotter, 'type' => 'handwritten']) }}"
                                                             data-evidence-url="{{ $blotter->file_path ? route($rp . '.blotters.evidence.preview', ['blotter' => $blotter, 'type' => 'evidence']) : '' }}"
                                                             data-evidence-kind="{{ $blotter->file_path ? $evidenceKind : 'none' }}"
+                                                            data-video-url="{{ $blotter->video_path ? route($rp . '.blotters.evidence.preview', ['blotter' => $blotter, 'type' => 'video']) : '' }}"
                                                         >
                                                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -363,15 +364,19 @@
             </div>
 
             <div id="panelEvidence" class="hidden space-y-3">
+                <video id="evidenceViewerVideo" controls playsinline class="hidden max-h-[60vh] w-full rounded-lg border border-gray-200 bg-black"></video>
                 <img id="evidenceViewerImage" src="" alt="Evidence image" class="hidden max-h-[60vh] w-full rounded-lg border border-gray-200 object-contain">
                 <iframe id="evidenceViewerPdf" src="" class="hidden h-[60vh] w-full rounded-lg border border-gray-200"></iframe>
                 <p id="evidenceNoPreview" class="hidden rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                     No preview available for this file type. Use "Open in New Tab" to inspect the file.
                 </p>
                 <p id="evidenceMissing" class="hidden rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600">
-                    No optional evidence uploaded for this blotter record.
+                    No optional document, image, or video evidence uploaded for this blotter record.
                 </p>
-                <a id="evidenceOpenLink" href="#" target="_blank" rel="noopener" class="hidden inline-flex items-center rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-800 hover:bg-blue-200">Open in New Tab</a>
+                <div class="flex flex-wrap gap-2">
+                    <a id="evidenceOpenLink" href="#" target="_blank" rel="noopener" class="hidden inline-flex items-center rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-800 hover:bg-blue-200">Open document in new tab</a>
+                    <a id="evidenceVideoOpenLink" href="#" target="_blank" rel="noopener" class="hidden inline-flex items-center rounded-lg bg-violet-100 px-3 py-1.5 text-xs font-medium text-violet-800 hover:bg-violet-200">Open video in new tab</a>
+                </div>
             </div>
         </div>
     </div>
@@ -388,11 +393,13 @@
     var panelEvidence = document.getElementById('panelEvidence');
     var handwrittenImage = document.getElementById('handwrittenViewerImage');
     var handwrittenLink = document.getElementById('handwrittenOpenLink');
+    var evidenceVideo = document.getElementById('evidenceViewerVideo');
     var evidenceImage = document.getElementById('evidenceViewerImage');
     var evidencePdf = document.getElementById('evidenceViewerPdf');
     var evidenceNoPreview = document.getElementById('evidenceNoPreview');
     var evidenceMissing = document.getElementById('evidenceMissing');
     var evidenceLink = document.getElementById('evidenceOpenLink');
+    var evidenceVideoLink = document.getElementById('evidenceVideoOpenLink');
 
     function switchTab(tab) {
         var handwrittenActive = tab === 'handwritten';
@@ -401,20 +408,28 @@
             : 'rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700';
         tabEvidence.className = handwrittenActive
             ? 'rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700'
-            : 'rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white';
+            : 'ui-btn ui-btn-primary ui-btn-sm rounded-lg';
         panelHandwritten.classList.toggle('hidden', !handwrittenActive);
         panelEvidence.classList.toggle('hidden', handwrittenActive);
     }
 
     function resetEvidencePanel() {
+        try {
+            evidenceVideo.pause();
+        } catch (e) {}
+        evidenceVideo.classList.add('hidden');
+        evidenceVideo.removeAttribute('src');
+        evidenceVideo.load();
         evidenceImage.classList.add('hidden');
         evidencePdf.classList.add('hidden');
         evidenceNoPreview.classList.add('hidden');
         evidenceMissing.classList.add('hidden');
         evidenceLink.classList.add('hidden');
+        evidenceVideoLink.classList.add('hidden');
         evidenceImage.src = '';
         evidencePdf.src = '';
         evidenceLink.href = '#';
+        evidenceVideoLink.href = '#';
     }
 
     document.querySelectorAll('[data-open-evidence]').forEach(function (trigger) {
@@ -423,25 +438,34 @@
             var handwrittenUrl = trigger.getAttribute('data-handwritten-url') || '';
             var evidenceUrl = trigger.getAttribute('data-evidence-url') || '';
             var evidenceKind = trigger.getAttribute('data-evidence-kind') || 'none';
+            var videoUrl = trigger.getAttribute('data-video-url') || '';
 
             subtitle.textContent = 'Blotter #: ' + blotterNumber;
             handwrittenImage.src = handwrittenUrl;
             handwrittenLink.href = handwrittenUrl;
 
             resetEvidencePanel();
-            if (!evidenceUrl) {
+            if (!evidenceUrl && !videoUrl) {
                 evidenceMissing.classList.remove('hidden');
             } else {
-                evidenceLink.href = evidenceUrl;
-                evidenceLink.classList.remove('hidden');
-                if (evidenceKind === 'image') {
-                    evidenceImage.src = evidenceUrl;
-                    evidenceImage.classList.remove('hidden');
-                } else if (evidenceKind === 'pdf') {
-                    evidencePdf.src = evidenceUrl;
-                    evidencePdf.classList.remove('hidden');
-                } else {
-                    evidenceNoPreview.classList.remove('hidden');
+                if (videoUrl) {
+                    evidenceVideo.src = videoUrl;
+                    evidenceVideo.classList.remove('hidden');
+                    evidenceVideoLink.href = videoUrl;
+                    evidenceVideoLink.classList.remove('hidden');
+                }
+                if (evidenceUrl) {
+                    evidenceLink.href = evidenceUrl;
+                    evidenceLink.classList.remove('hidden');
+                    if (evidenceKind === 'image') {
+                        evidenceImage.src = evidenceUrl;
+                        evidenceImage.classList.remove('hidden');
+                    } else if (evidenceKind === 'pdf') {
+                        evidencePdf.src = evidenceUrl;
+                        evidencePdf.classList.remove('hidden');
+                    } else {
+                        evidenceNoPreview.classList.remove('hidden');
+                    }
                 }
             }
 

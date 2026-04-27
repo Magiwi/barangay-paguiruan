@@ -112,18 +112,38 @@
                                                         @endif
                                                     </p>
                                                 @endif
-                                                <form method="POST" action="{{ route('admin.certificates.update', $req) }}" class="flex items-center gap-2">
+                                                <form method="POST" action="{{ route('admin.certificates.update', $req) }}" class="flex flex-wrap items-center gap-2">
                                                     @csrf
                                                     <input type="hidden" name="status" value="approved">
-                                                    <input type="text" name="remarks" placeholder="Remarks (optional)" class="rounded border border-gray-300 px-2 py-1 text-sm w-24">
+                                                    <input type="text" name="remarks" placeholder="Remarks (optional)" class="min-w-[8rem] flex-1 rounded border border-gray-300 px-2 py-1 text-sm sm:max-w-xs">
                                                     <button type="submit" class="rounded bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-700">Approve</button>
                                                 </form>
-                                                <form method="POST" action="{{ route('admin.certificates.update', $req) }}" class="flex items-center gap-2">
-                                                    @csrf
-                                                    <input type="hidden" name="status" value="rejected">
-                                                    <input type="text" name="remarks" placeholder="Reason (required)" required class="rounded border border-gray-300 px-2 py-1 text-sm w-24">
-                                                    <button type="submit" class="rounded bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700">Reject</button>
-                                                </form>
+                                                <button type="button"
+                                                        class="rounded bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
+                                                        onclick="document.getElementById('reject-cert-dialog-{{ $req->id }}')?.showModal()">
+                                                    Reject
+                                                </button>
+                                                <dialog id="reject-cert-dialog-{{ $req->id }}" class="w-full max-w-md rounded-xl border border-gray-200 p-0 shadow-xl backdrop:bg-gray-900/40">
+                                                    <form method="POST" action="{{ route('admin.certificates.update', $req) }}" class="flex flex-col">
+                                                        @csrf
+                                                        <input type="hidden" name="status" value="rejected">
+                                                        <div class="border-b border-gray-100 px-5 py-4">
+                                                            <h2 class="text-sm font-semibold text-gray-900">Reject certificate request</h2>
+                                                            <p class="mt-1 text-xs text-gray-500">{{ $req->certificate_type }} — {{ Str::limit($req->user->first_name.' '.$req->user->last_name, 48) }}</p>
+                                                        </div>
+                                                        <div class="px-5 py-4">
+                                                            <label for="reject-remarks-{{ $req->id }}" class="block text-xs font-medium text-gray-700">Reason / justification <span class="text-red-500">*</span></label>
+                                                            <textarea id="reject-remarks-{{ $req->id }}" name="remarks" rows="4" required maxlength="1000" placeholder="Explain why this request is being rejected (required)."
+                                                                      class="mt-1.5 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-red-500 focus:ring-2 focus:ring-red-500/20"></textarea>
+                                                            <p class="mt-1 text-xs text-gray-400">The resident will see this in their notifications and request list.</p>
+                                                        </div>
+                                                        <div class="flex justify-end gap-2 border-t border-gray-100 bg-gray-50 px-5 py-3">
+                                                            <button type="button" class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                                                    onclick="document.getElementById('reject-cert-dialog-{{ $req->id }}')?.close()">Cancel</button>
+                                                            <button type="submit" class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700">Confirm rejection</button>
+                                                        </div>
+                                                    </form>
+                                                </dialog>
                                             </div>
                                         @elseif ($req->status === 'approved')
                                             <div class="space-y-2">
@@ -160,7 +180,7 @@
                                                 @endif
                                                 <form method="POST" action="{{ route('admin.certificates.release', $req) }}" class="inline">
                                                     @csrf
-                                                    <button type="submit" class="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700">
+                                                    <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm rounded">
                                                         Mark as Released
                                                     </button>
                                                 </form>

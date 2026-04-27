@@ -42,6 +42,10 @@ class HearingController extends Controller
 
     public function store(Request $request, Blotter $blotter): RedirectResponse
     {
+        if ($redirect = $this->redirectIfArchivedBlotter($blotter)) {
+            return $redirect;
+        }
+
         $luponAssignees = $this->luponAssignees();
 
         if (! $blotter->summons()->exists()) {
@@ -93,6 +97,10 @@ class HearingController extends Controller
     {
         abort_unless($hearing->blotter_id === $blotter->id, 404);
 
+        if ($redirect = $this->redirectIfArchivedBlotter($blotter)) {
+            return $redirect;
+        }
+
         $hearing->status = Hearing::STATUS_ONGOING;
         $hearing->save();
 
@@ -114,6 +122,10 @@ class HearingController extends Controller
     public function markNoShow(Request $request, Blotter $blotter, Hearing $hearing): RedirectResponse
     {
         abort_unless($hearing->blotter_id === $blotter->id, 404);
+
+        if ($redirect = $this->redirectIfArchivedBlotter($blotter)) {
+            return $redirect;
+        }
 
         $validated = $request->validate([
             'complainant_attendance' => ['nullable', 'string', 'in:' . implode(',', Hearing::ATTENDANCE_OPTIONS)],
@@ -209,6 +221,10 @@ class HearingController extends Controller
     {
         abort_unless($hearing->blotter_id === $blotter->id, 404);
 
+        if ($redirect = $this->redirectIfArchivedBlotter($blotter)) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'new_hearing_date' => ['required', 'date'],
             'new_hearing_time' => ['required', 'date_format:H:i'],
@@ -247,6 +263,10 @@ class HearingController extends Controller
     {
         abort_unless($hearing->blotter_id === $blotter->id, 404);
 
+        if ($redirect = $this->redirectIfArchivedBlotter($blotter)) {
+            return $redirect;
+        }
+
         $validated = $request->validate([
             'notes' => ['required', 'string', 'max:5000'],
         ]);
@@ -262,6 +282,18 @@ class HearingController extends Controller
 
         return redirect()->route($this->routePrefix() . '.blotters.hearings.index', $blotter)
             ->with('success', 'Hearing notes saved.');
+    }
+
+    private function redirectIfArchivedBlotter(Blotter $blotter): ?RedirectResponse
+    {
+        if ($blotter->trashed()) {
+            return back()->with(
+                'error',
+                'This blotter record is archived. Hearing history is view-only; you cannot add or change hearings.'
+            );
+        }
+
+        return null;
     }
 
     private function routePrefix(): string

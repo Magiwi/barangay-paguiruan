@@ -9,7 +9,7 @@
 
         <x-ui.report-topbar
             title="Population Reports"
-            subtitle="Resident demographics by age, gender, purok, type, and status"
+            subtitle="Demographics from the same population register used for barangay totals (approved accounts + listed household members without duplicate counting)"
             :back-url="route($rp . '.reports.index')"
             class="no-print"
         >
@@ -19,11 +19,22 @@
                     :excel-url="route($rp . '.reports.population.export.excel', request()->query())"
                     filter-label="Exports include current filters"
                     :filter-value="$activePopulationFilterLabel"
-                    :show-print="true"
-                    print-button-class="inline-flex items-center rounded-lg bg-gray-800 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-gray-900 transition"
+                    :show-print="false"
                 />
             </x-slot:actions>
         </x-ui.report-topbar>
+
+        <div class="no-print rounded-2xl border border-blue-100 bg-blue-50/80 px-4 py-3 text-sm text-blue-900 shadow-sm">
+            <p class="font-semibold text-blue-950">How these numbers relate</p>
+            <ul class="mt-2 list-inside list-disc space-y-1 text-blue-900/90">
+                <li><strong>{{ number_format($filteredPopulationCount) }}</strong> people match <strong>current filters</strong> (purok scope + age + gender).</li>
+                <li><strong>{{ number_format($scopePopulationTotal) }}</strong> people in the <strong>same purok scope</strong> with <strong>all ages and genders</strong> — use this to compare with dashboard “total residents” when filters are set to “All”.</li>
+                <li><strong>Active / Suspended</strong> below count only <strong>user accounts</strong> (login). Household members without their own account appear in per-purok population rows but not in those two cards.</li>
+                @if (($activeAccountsOutsidePurokTable ?? 0) > 0)
+                    <li><strong>{{ number_format($activeAccountsOutsidePurokTable) }}</strong> active account(s) have <strong>no purok assigned</strong>, so they are not in the per-purok “Active” column (they are still included in the Active total card).</li>
+                @endif
+            </ul>
+        </div>
 
         {{-- Multi Filter Row --}}
         <div class="mb-8 no-print">
@@ -165,9 +176,9 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-green-700 uppercase">Active Residents</p>
+                            <p class="text-sm font-medium text-green-700 uppercase">Active accounts</p>
                             <p class="text-4xl font-bold text-green-800 mt-1">{{ number_format($activeCount) }}</p>
-                            <p class="text-xs text-green-600 mt-1">Approved accounts, not suspended</p>
+                            <p class="text-xs text-green-600 mt-1">Approved resident logins, not suspended (current age/gender filters apply)</p>
                         </div>
                     </div>
                 </x-ui.summary-card>
@@ -179,9 +190,9 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-600 uppercase">Inactive Residents</p>
+                            <p class="text-sm font-medium text-gray-600 uppercase">Suspended accounts</p>
                             <p class="text-4xl font-bold text-gray-700 mt-1">{{ number_format($inactiveCount) }}</p>
-                            <p class="text-xs text-gray-500 mt-1">Pending, rejected, or suspended</p>
+                            <p class="text-xs text-gray-500 mt-1">Approved accounts with suspended login only — not pending or rejected registrations</p>
                         </div>
                     </div>
                 </x-ui.summary-card>
@@ -219,7 +230,7 @@
                                 <tr>
                                     <x-ui.table-td text-class="text-gray-900" weight-class="font-bold" label="Grand Total" />
                                     <x-ui.table-td align="right" class="tabular-nums" text-class="text-gray-900" weight-class="font-bold" label="{{ number_format($residentsPerPurok->sum('residents_count')) }}" />
-                                    <x-ui.table-td align="right" class="tabular-nums" text-class="text-green-600" weight-class="font-bold" label="{{ number_format($activeCount) }}" />
+                                    <x-ui.table-td align="right" class="tabular-nums" text-class="text-green-600" weight-class="font-bold" label="{{ number_format($activePerPurokFootSum) }}" />
                                 </tr>
                             </tfoot>
                         @endif

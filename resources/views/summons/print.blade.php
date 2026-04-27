@@ -160,15 +160,15 @@
     @endif
 
     <div class="header">
-        <div class="small">Republic of the Philippines</div>
-        <div class="small">Province of Pampanga</div>
-        <div class="small">Municipality of Floridablanca</div>
-        <div class="barangay">BARANGAY PAGUIRUAN</div>
+        <div class="small">{{ \App\Models\SiteSetting::getValue('doc_header_line_1') }}</div>
+        <div class="small">{{ \App\Models\SiteSetting::getValue('doc_header_line_2') }}</div>
+        <div class="small">{{ \App\Models\SiteSetting::getValue('doc_header_line_3') }}</div>
+        <div class="barangay">{{ \App\Models\SiteSetting::getValue('doc_header_line_4') }}</div>
     </div>
 
     <div class="line"></div>
 
-    <div class="office-title">OFFICE OF THE LUPONG TAGAPAMAYAPA</div>
+    <div class="office-title">{{ \App\Models\SiteSetting::getValue('doc_lupon_office_title') }}</div>
 
     <table class="top-grid" cellpadding="0" cellspacing="0">
         <tr>
@@ -229,8 +229,8 @@
     </p>
 
     <div class="signature">
-        <div class="signature-name">HON. JOSE C. BASA</div>
-        <div class="signature-role">Punong Barangay/Lupon Chairman</div>
+        <div class="signature-name">{{ $officialsPdf['signature_name_upper'] }}</div>
+        <div class="signature-role">{{ \App\Models\SiteSetting::getValue('doc_summon_signatory_role') }}</div>
     </div>
 </div>
 </body>

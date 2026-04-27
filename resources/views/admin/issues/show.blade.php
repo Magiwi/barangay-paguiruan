@@ -335,7 +335,7 @@
                                     @if ($canUpdate)
                                         <button type="button" onclick="openConfirmModal()"
                                                 class="w-full rounded-lg px-4 py-2.5 text-sm font-medium text-white transition shadow-sm
-                                                {{ $nextStatus === 'in_progress' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-800' }}">
+                                                {{ $nextStatus === 'in_progress' ? 'bg-[var(--brand-700)] hover:bg-[var(--brand-600)]' : 'bg-gray-700 hover:bg-gray-800' }}">
                                             {{ $actionConfig['label'] ?? 'Advance' }}
                                         </button>
                                     @else
@@ -380,7 +380,7 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition shadow-sm">
+                                <button type="submit" class="ui-btn ui-btn-primary w-full rounded-lg shadow-sm">
                                     {{ $issue->assignedOfficer ? 'Reassign' : 'Assign Officer' }}
                                 </button>
                             </form>
@@ -407,7 +407,7 @@
                             @if (! $issue->isClosed())
                                 <form method="POST" action="{{ route($rp . '.issues.assign-me', $issue) }}" class="mt-3">
                                     @csrf
-                                    <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">
+                                    <button type="submit" class="ui-btn ui-btn-primary w-full rounded-lg">
                                         Assign to me
                                     </button>
                                 </form>
@@ -572,7 +572,7 @@
                     </button>
                     <button type="button" onclick="submitTransition()"
                             class="flex-1 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition shadow-sm
-                            {{ $nextStatus === 'closed' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700' }}">
+                            {{ $nextStatus === 'closed' ? 'bg-red-600 hover:bg-red-700' : 'bg-[var(--brand-700)] hover:bg-[var(--brand-600)]' }}">
                         {{ $nextStatus === 'closed' ? 'Yes, Close Case' : 'Yes, Advance' }}
                     </button>
                 </div>

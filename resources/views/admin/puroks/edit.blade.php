@@ -103,7 +103,7 @@
                     <a href="{{ route('admin.puroks.index') }}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
                         Cancel
                     </a>
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">
+                    <button type="submit" class="ui-btn ui-btn-primary rounded-lg">
                         Update Purok
                     </button>
                 </div>

@@ -278,7 +278,11 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-sm">
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <a href="{{ route($rp . '.pending-registrations.preview', $user) }}"
+                                           class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-50">
+                                            View profile
+                                        </a>
                                         {{-- PENDING: Approve + Reject --}}
                                         @if ($user->status === 'pending')
                                             <form method="POST" action="{{ route($rp . '.pending-registrations.approve', $user) }}" class="inline">
@@ -310,7 +314,7 @@
                                         @elseif ($user->status === 'suspended')
                                             <form method="POST" action="{{ route($rp . '.pending-registrations.unsuspend', $user) }}" class="inline">
                                                 @csrf
-                                                <button type="submit" class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition">
+                                                <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm rounded-lg">
                                                     Unsuspend
                                                 </button>
                                             </form>

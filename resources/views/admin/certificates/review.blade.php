@@ -121,7 +121,7 @@
                     @endif
 
                     <div class="flex items-center justify-end gap-3 border-t border-gray-200 pt-4">
-                        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                        <button type="submit" class="ui-btn ui-btn-primary rounded-lg">
                             Save Review Details
                         </button>
                     </div>

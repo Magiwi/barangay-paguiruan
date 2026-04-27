@@ -62,7 +62,7 @@
                             <p class="text-sm font-semibold text-blue-700 uppercase">Persons with Disability</p>
                             <p class="text-4xl font-bold text-blue-800 mt-2">{{ number_format($totals['pwd']) }}</p>
                         </div>
-                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-white shadow-lg shadow-blue-200 no-print">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-600)] text-white shadow-lg shadow-[var(--brand-100)] no-print">
                             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
@@ -147,7 +147,7 @@
                                 <tr>
                                     <x-ui.table-td text-class="text-gray-900" weight-class="font-bold" label="Grand Total" />
                                     <x-ui.table-td align="right" size-class="" text-class="">
-                                        <span class="inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-1 rounded-full text-sm font-bold bg-blue-600 text-white">
+                                        <span class="inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-1 rounded-full text-sm font-bold bg-[var(--brand-700)] text-white">
                                             {{ number_format($totals['pwd']) }}
                                         </span>
                                     </x-ui.table-td>

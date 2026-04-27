@@ -15,11 +15,19 @@
     </style>
 </head>
 <body>
+@php
+    if (! isset($officialsPdf)) {
+        $officialsPdf = \App\Support\OfficialsPdfSnapshot::forPrint(
+            null,
+            app(\App\Services\BarangayOfficialRosterService::class)->pdfRosters()
+        );
+    }
+@endphp
     <div class="header">
-        <div>Republic of the Philippines</div>
-        <div>Barangay Paguiruan, Floridablanca, Pampanga</div>
+        <div>{{ \App\Models\SiteSetting::getValue('doc_header_line_1') }}</div>
+        <div>{{ \App\Models\SiteSetting::getValue('doc_jurisdiction_short') }}</div>
         <div class="title">SUMMON NOTICE</div>
-        <div class="subtitle">Katarungang Pambarangay Process</div>
+        <div class="subtitle">{{ \App\Models\SiteSetting::getValue('doc_blotter_summon_subtitle') }}</div>
     </div>
 
     <div class="section box">
@@ -44,10 +52,10 @@
     </div>
 
     <div class="section" style="margin-top: 48px;">
-        <p>Issued this {{ now()->format('F d, Y') }} at Barangay Paguiruan.</p>
+        <p>Issued this {{ now()->format('F d, Y') }} {{ \App\Models\SiteSetting::getValue('doc_issued_at_suffix') }}</p>
         <br><br>
-        <p>______________________________</p>
-        <p><strong>Punong Barangay / Authorized Officer</strong></p>
+        <p><strong>{{ $officialsPdf['signature_name_upper'] }}</strong></p>
+        <p><strong>{{ \App\Models\SiteSetting::getValue('doc_summon_signatory_role') }}</strong></p>
     </div>
 
     <div class="footer">

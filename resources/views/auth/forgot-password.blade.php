@@ -34,17 +34,17 @@
                        value="{{ old('email') }}"
                        required
                        autocomplete="email"
-                       class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                       class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus">
             </div>
             <button type="submit"
-                    class="w-full rounded-lg bg-gradient-to-r from-red-600 to-red-700 py-3 px-4 font-semibold text-white shadow-md hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition">
+                    class="ui-btn ui-btn-primary ui-btn-lg w-full rounded-lg py-3 shadow-sm">
                 Send Reset Link
             </button>
         </form>
 
         <p class="mt-6 text-center text-sm text-gray-600">
             Remembered your password?
-            <a href="{{ route('login') }}" class="font-medium text-blue-600 hover:text-blue-700">Back to login</a>
+            <a href="{{ route('login') }}" class="ui-link font-medium">Back to login</a>
         </p>
     </div>
 </div>

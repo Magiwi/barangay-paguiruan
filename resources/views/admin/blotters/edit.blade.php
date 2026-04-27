@@ -88,6 +88,20 @@
                                 @endif
                                 @error('file') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                             </div>
+
+                            <div>
+                                <label for="video" class="mb-1.5 block text-sm font-medium text-gray-700">Replace optional video evidence</label>
+                                <input type="file" id="video" name="video" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                                       class="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm">
+                                @if ($blotter->video_path)
+                                    <p class="mt-1 text-xs text-gray-500">Current file: {{ basename($blotter->video_path) }}</p>
+                                    <label class="mt-2 inline-flex items-center gap-2 text-xs text-gray-700">
+                                        <input type="checkbox" name="remove_video" value="1" class="rounded border-gray-300 text-violet-600 focus:ring-violet-500">
+                                        Remove current video
+                                    </label>
+                                @endif
+                                @error('video') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
                         </div>
                     </div>
 
@@ -102,7 +116,7 @@
 
                     <div class="flex items-center justify-end gap-3 pt-2">
                         <a href="{{ route($rp . '.blotters.index') }}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</a>
-                        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                        <button type="submit" class="ui-btn ui-btn-primary rounded-lg">
                             Save Changes
                         </button>
                     </div>

@@ -95,6 +95,29 @@ class PendingRegistrationsController extends Controller
         return view('admin.pending-registrations.index', compact('users', 'rejectionLogs', 'status', 'counts', 'rejectionReasonOptions', 'pendingQueueStats', 'latestEscalationRun', 'manualReminderCooldownSeconds', 'escalationAnalytics', 'failedQueueStats', 'settings'));
     }
 
+    /**
+     * Read-only applicant profile before approve / reject / suspend (registration module).
+     */
+    public function preview(User $user): View
+    {
+        if ($user->role === User::ROLE_SUPER_ADMIN) {
+            abort(404);
+        }
+        if ($user->role !== User::ROLE_RESIDENT) {
+            abort(403, 'This preview is only for resident registrations.');
+        }
+        if (! in_array($user->status, [User::STATUS_PENDING, User::STATUS_APPROVED, User::STATUS_SUSPENDED], true)) {
+            abort(404);
+        }
+
+        $user->load(['purokRelation', 'household.head', 'household.members']);
+
+        $routePrefix = auth()->user()->role === User::ROLE_STAFF ? 'staff' : 'admin';
+        $layout = $routePrefix === 'staff' ? 'layouts.staff' : 'layouts.admin';
+
+        return view('admin.pending-registrations.preview', compact('user', 'routePrefix', 'layout'));
+    }
+
     public function sendReminderNow(Request $request): RedirectResponse
     {
         $settings = RegistrationEscalationConfig::get();

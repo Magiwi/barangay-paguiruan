@@ -17,8 +17,11 @@
         .fade-delay-3 { transition-delay: 0.3s; }
         .fade-delay-4 { transition-delay: 0.4s; }
             </style>
+    @include('partials.ui-foundation-styles')
+    @include('partials.a11y-skip-link-styles')
 </head>
 <body class="min-h-screen bg-white antialiased text-gray-700">
+    @include('partials.a11y-skip-link')
 
 {{-- ============================================================
      NAVBAR
@@ -26,37 +29,36 @@
 <header class="sticky top-0 z-50 border-b border-gray-200/80 bg-white/80 backdrop-blur-lg">
     <nav class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
         <a href="/" class="flex items-center gap-2.5 group">
-            <img src="{{ asset('images/logo1.png') }}" alt="Logo" class="h-9 w-auto shrink-0 object-contain">
-            <span class="text-sm md:text-base font-semibold tracking-tight text-gray-800 group-hover:text-blue-600 transition">Barangay Paguiruan, Floridablanca</span>
+            <img src="{{ asset('images/logo1.png') }}" alt="Barangay Paguiruan official seal" class="h-9 w-auto shrink-0 object-contain">
+            <span class="text-sm md:text-base font-semibold tracking-tight text-gray-800 transition group-hover:text-[var(--brand-700)]">Barangay Paguiruan, Floridablanca</span>
         </a>
 
         <div class="hidden md:flex items-center gap-1">
             @php
-                $navLink = 'px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-200 relative';
+                $navLink = 'px-3 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-[var(--brand-700)] relative';
             @endphp
             <a href="#hero" class="{{ $navLink }}">Home</a>
             <a href="#services" class="{{ $navLink }}">Services</a>
             <a href="#announcements" class="{{ $navLink }}">Announcements</a>
             <a href="#how-it-works" class="{{ $navLink }}">How It Works</a>
             <a href="#about-preview" class="{{ $navLink }}">About</a>
-            <a href="#contact" class="{{ $navLink }}">Contact</a>
         </div>
 
         <div class="flex items-center gap-2">
             @auth
-                <a href="{{ route('resident.dashboard') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">Dashboard</a>
+                <a href="{{ route('resident.dashboard') }}" class="ui-btn ui-btn-primary rounded-lg">Dashboard</a>
             @else
-                <a href="{{ route('login') }}" class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">Log In</a>
+                <a href="{{ route('login') }}" class="ui-btn ui-btn-secondary rounded-lg">Log In</a>
                 @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">Register</a>
+                    <a href="{{ route('register') }}" class="ui-btn ui-btn-primary rounded-lg">Register</a>
         @endif
             @endauth
 
             {{-- Mobile menu --}}
             <details class="relative md:hidden group">
-                <summary class="flex list-none items-center justify-center h-9 w-9 rounded-lg text-gray-500 hover:bg-gray-100 cursor-pointer transition [&::-webkit-details-marker]:hidden">
-                    <svg class="h-5 w-5 group-open:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
-                    <svg class="h-5 w-5 hidden group-open:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                <summary class="flex list-none items-center justify-center h-9 w-9 rounded-lg text-gray-500 hover:bg-gray-100 cursor-pointer transition [&::-webkit-details-marker]:hidden" aria-label="Open navigation menu">
+                    <svg class="h-5 w-5 group-open:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+                    <svg class="h-5 w-5 hidden group-open:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </summary>
                 <div class="absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 bg-white py-2 shadow-lg z-50">
                     <a href="#hero" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">Home</a>
@@ -64,20 +66,21 @@
                     <a href="#announcements" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">Announcements</a>
                     <a href="#how-it-works" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">How It Works</a>
                     <a href="#about-preview" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">About</a>
-                    <a href="#contact" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">Contact</a>
                 </div>
             </details>
         </div>
     </nav>
 </header>
 
+<main id="main-content">
+
 {{-- ============================================================
      HERO SECTION
      ============================================================ --}}
-<section id="hero" class="relative overflow-hidden bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700">
+<section id="hero" class="relative overflow-hidden bg-gradient-to-br from-[var(--brand-800)] via-[var(--brand-700)] to-[var(--brand-600)]">
     <div class="absolute inset-0">
         <img src="{{ asset('images/ui design/barangayhall.jpg') }}" alt="Barangay Hall" class="h-full w-full object-cover opacity-35">
-        <div class="absolute inset-0 bg-gradient-to-br from-blue-900/70 via-blue-800/65 to-indigo-900/70"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-[#0d3d0f]/80 via-[var(--brand-800)]/75 to-[var(--brand-600)]/70"></div>
     </div>
     <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23ffffff&quot; fill-opacity=&quot;0.3&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
     <div class="relative mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28 lg:py-36">
@@ -85,23 +88,23 @@
             <div class="fade-in">
                 <div class="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
-                    Official Barangay Portal
+                    {{ $site['welcome_hero_badge'] }}
                 </div>
                 <h1 class="text-4xl font-extrabold leading-tight tracking-tight text-white md:text-5xl lg:text-6xl">
-                    e-Governance<br>
-                    <span class="text-blue-200">System</span>
+                    {{ $site['welcome_hero_title_line1'] }}<br>
+                    <span class="text-emerald-100">{{ $site['welcome_hero_title_line2'] }}</span>
                 </h1>
-                <p class="mt-4 max-w-lg text-lg leading-relaxed text-blue-100">
-                    Bringing Barangay Services Closer to the Community. Request certificates, file complaints, and track permits — all online.
+                <p class="mt-4 max-w-lg text-lg leading-relaxed text-white/90">
+                    {{ $site['welcome_hero_subtitle'] }}
                 </p>
                 <div class="mt-8 flex flex-wrap gap-3">
                     @auth
-                        <a href="{{ route('resident.dashboard') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-blue-600 shadow-lg hover:bg-blue-50 transition-all duration-200 hover:shadow-xl">
+                        <a href="{{ route('resident.dashboard') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-[var(--brand-700)] shadow-lg transition-all duration-200 hover:bg-[var(--brand-100)] hover:shadow-xl">
                             Go to Dashboard
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                         </a>
                     @else
-                        <a href="{{ route('register') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-blue-600 shadow-lg hover:bg-blue-50 transition-all duration-200 hover:shadow-xl">
+                        <a href="{{ route('register') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-[var(--brand-700)] shadow-lg transition-all duration-200 hover:bg-[var(--brand-100)] hover:shadow-xl">
                             Get Started
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                         </a>
@@ -127,7 +130,7 @@
                                 <div><p class="text-sm font-semibold text-white">Certificate Ready</p><p class="text-xs text-white/60">Barangay Clearance approved</p></div>
                             </div>
                             <div class="flex items-center gap-3 rounded-xl bg-white/15 p-3">
-                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-400/20"><svg class="h-5 w-5 text-blue-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg></div>
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20"><svg class="h-5 w-5 text-white/85" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg></div>
                                 <div><p class="text-sm font-semibold text-white">Permit Processing</p><p class="text-xs text-white/60">Business permit under review</p></div>
                             </div>
                             <div class="flex items-center gap-3 rounded-xl bg-white/15 p-3">
@@ -151,22 +154,22 @@
 <section id="services" class="bg-white py-20 px-4 md:px-6">
     <div class="mx-auto max-w-7xl">
         <div class="mb-12 text-center fade-in">
-            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">What We Offer</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-700)]">What We Offer</p>
             <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-800 md:text-4xl">Core Services</h2>
             <p class="mx-auto mt-3 max-w-2xl text-gray-500">Access all essential barangay services from your device — no long lines, no wasted time.</p>
         </div>
         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <a href="{{ route('login') }}" class="fade-in fade-delay-1 group block rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30">
+            <a href="{{ route('login') }}" class="fade-in fade-delay-1 group block rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-[var(--brand-300)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-100)]">
                 <div class="mb-4 overflow-hidden rounded-xl border border-gray-100">
                     <img src="{{ asset('images/ui design/barangayhall.jpg') }}" alt="Barangay Hall Services" class="h-32 w-full object-cover transition-transform duration-300 group-hover:scale-105">
                 </div>
-                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--brand-100)] text-[var(--brand-700)] transition-colors group-hover:bg-[var(--brand-700)] group-hover:text-white">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-800">Certificate Requests</h3>
                 <p class="mt-2 text-sm text-gray-500 leading-relaxed">Request barangay clearance, indigency certificates, and more with just a few clicks.</p>
             </a>
-            <a href="{{ route('login') }}" class="fade-in fade-delay-2 group block rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-green-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30">
+            <a href="{{ route('login') }}" class="fade-in fade-delay-2 group block rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-green-200 focus:outline-none focus:ring-2 focus:ring-[var(--brand-100)]">
                 <div class="mb-4 overflow-hidden rounded-xl border border-gray-100">
                     <img src="{{ asset('images/ui design/health center.jpg') }}" alt="Health Center Service" class="h-32 w-full object-cover transition-transform duration-300 group-hover:scale-105">
                 </div>
@@ -176,7 +179,7 @@
                 <h3 class="text-lg font-semibold text-gray-800">Permit Applications</h3>
                 <p class="mt-2 text-sm text-gray-500 leading-relaxed">Apply for business and construction permits online. Track status in real time.</p>
             </a>
-            <a href="{{ route('login') }}" class="fade-in fade-delay-3 group block rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-amber-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30">
+            <a href="{{ route('login') }}" class="fade-in fade-delay-3 group block rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-amber-200 focus:outline-none focus:ring-2 focus:ring-[var(--brand-100)]">
                 <div class="mb-4 overflow-hidden rounded-xl border border-gray-100">
                     <img src="{{ asset('images/ui design/street1.jpg') }}" alt="Street Community Access" class="h-32 w-full object-cover transition-transform duration-300 group-hover:scale-105">
                 </div>
@@ -196,7 +199,7 @@
 <section id="announcements" class="scroll-mt-24 bg-gray-50 py-20 px-4 md:px-6">
     <div class="mx-auto max-w-7xl">
         <div class="mb-12 text-center fade-in">
-            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">Latest Updates</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-700)]">Latest Updates</p>
             <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-800 md:text-4xl">Announcements</h2>
             <p class="mx-auto mt-3 max-w-2xl text-gray-500">See the most recent barangay announcements and community notices.</p>
         </div>
@@ -208,7 +211,7 @@
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($latestAnnouncements as $index => $announcement)
                     <article class="fade-in fade-delay-{{ min($index + 1, 4) }} rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-[var(--brand-700)]">
                             {{ optional($announcement->published_at)->format('M d, Y') ?? $announcement->created_at->format('M d, Y') }}
                         </p>
                         <h3 class="mt-2 text-lg font-semibold leading-snug text-gray-800 line-clamp-2">{{ $announcement->title }}</h3>
@@ -228,7 +231,7 @@
 <section class="bg-white py-16 px-4 md:px-6">
     <div class="mx-auto max-w-7xl">
         <div class="mb-10 text-center fade-in">
-            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">Community Spaces</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-700)]">Community Spaces</p>
             <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-800 md:text-4xl">Barangay Highlights</h2>
             <p class="mx-auto mt-3 max-w-2xl text-gray-500">A quick look at key places around Barangay Paguiruan, Floridablanca.</p>
         </div>
@@ -260,14 +263,14 @@
 <section id="how-it-works" class="bg-gray-50 py-20 px-4 md:px-6">
     <div class="mx-auto max-w-7xl">
         <div class="mb-14 text-center fade-in">
-            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">Simple Process</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-700)]">Simple Process</p>
             <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-800 md:text-4xl">How It Works</h2>
             <p class="mx-auto mt-3 max-w-xl text-gray-500">Get your barangay services done in four easy steps.</p>
         </div>
         <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             @php
                 $steps = [
-                    ['num' => '01', 'title' => 'Register', 'desc' => 'Create your account with your personal details for verification.', 'color' => 'blue'],
+                    ['num' => '01', 'title' => 'Register', 'desc' => 'Create your account with your personal details for verification.', 'color' => 'emerald'],
                     ['num' => '02', 'title' => 'Submit Request', 'desc' => 'Choose the service you need and fill out the online form.', 'color' => 'green'],
                     ['num' => '03', 'title' => 'Processing', 'desc' => 'Barangay staff reviews and processes your request promptly.', 'color' => 'amber'],
                     ['num' => '04', 'title' => 'Get Result', 'desc' => 'Receive notification when your document is ready for release.', 'color' => 'indigo'],
@@ -291,10 +294,10 @@
      ============================================================ --}}
 <section class="bg-white py-20 px-4 md:px-6">
     <div class="mx-auto max-w-7xl">
-        <div class="fade-in rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 p-10 md:p-14 shadow-xl">
+        <div class="fade-in rounded-2xl bg-gradient-to-r from-[var(--brand-800)] via-[var(--brand-700)] to-[var(--brand-600)] p-10 md:p-14 shadow-xl">
             <div class="mb-8 text-center">
                 <h2 class="text-3xl font-bold text-white md:text-4xl">Trusted by the Community</h2>
-                <p class="mt-2 text-blue-200">Delivering efficient barangay services to the people of Paguiruan.</p>
+                <p class="mt-2 text-emerald-100/95">Delivering efficient barangay services to the people of Paguiruan.</p>
             </div>
             <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
                 @php
@@ -308,7 +311,7 @@
                 @foreach ($stats as $i => $stat)
                     <div class="fade-in fade-delay-{{ $i + 1 }} text-center">
                         <p class="text-3xl font-extrabold text-white md:text-4xl">{{ $stat['value'] }}</p>
-                        <p class="mt-1 text-sm font-medium text-blue-200 uppercase tracking-wide">{{ $stat['label'] }}</p>
+                        <p class="mt-1 text-sm font-medium uppercase tracking-wide text-emerald-100/90">{{ $stat['label'] }}</p>
                     </div>
                 @endforeach
             </div>
@@ -323,31 +326,32 @@
     <div class="mx-auto max-w-7xl">
         <div class="grid items-center gap-12 lg:grid-cols-2">
             <div class="fade-in">
-                <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">About the System</p>
-                <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-800 md:text-4xl">Modernizing Barangay Governance</h2>
+                <p class="text-sm font-semibold uppercase tracking-wider text-[var(--brand-700)]">{{ $site['welcome_about_kicker'] }}</p>
+                <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-800 md:text-4xl">{{ $site['welcome_about_heading'] }}</h2>
                 <p class="mt-4 text-gray-500 leading-relaxed">
-                    The e-Governance System is a digital platform designed to streamline barangay operations in Paguiruan, Floridablanca, Pampanga. It empowers residents with convenient online access to government services while providing officials with modern tools for transparent and efficient governance.
+                    {{ $site['welcome_about_body'] }}
                 </p>
                 <ul class="mt-6 space-y-3">
-                    @foreach (['Faster service delivery with digital workflows', 'Real-time tracking of requests and complaints', 'Transparent and accountable governance'] as $item)
+                    @foreach (collect(preg_split('/\r\n|\r|\n/', $site['welcome_about_bullets']))->map(fn ($l) => trim((string) $l))->filter() as $item)
                         <li class="flex items-start gap-3">
                             <svg class="mt-0.5 h-5 w-5 shrink-0 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             <span class="text-sm text-gray-600">{{ $item }}</span>
                         </li>
                     @endforeach
                     </ul>
+                <a href="{{ route('about') }}" class="ui-btn ui-btn-primary ui-btn-lg mt-8 inline-flex gap-2 rounded-xl">
+                    Read more
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                </a>
                 @auth
-                    <a href="{{ route('about') }}" class="mt-8 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition">
-                        Learn More
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-                    </a>
+                    <a href="{{ route('about') }}" class="ui-link mt-3 block text-sm">Dashboard: About &amp; officials →</a>
                 @endauth
             </div>
             <div class="fade-in fade-delay-2">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-4">
                         <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 mb-3">
+                            <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--brand-100)] text-[var(--brand-700)]">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             </div>
                             <p class="text-2xl font-bold text-gray-800">24/7</p>
@@ -384,82 +388,24 @@
 </section>
 
 {{-- ============================================================
-     MAP SECTION
-     ============================================================ --}}
-<section id="contact" class="bg-white py-20 px-4 md:px-6">
-    <div class="mx-auto max-w-7xl">
-        <div class="mb-12 text-center fade-in">
-            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">Find Us</p>
-            <h2 class="mt-2 text-3xl font-bold tracking-tight text-gray-800 md:text-4xl">Our Location</h2>
-            <p class="mt-3 text-gray-500">Barangay Paguiruan, Floridablanca, Pampanga, Philippines</p>
-        </div>
-        <div class="fade-in grid gap-8 lg:grid-cols-3">
-            <div class="lg:col-span-2">
-                <iframe
-                    src="https://maps.google.com/maps?q=Barangay%20Paguiruan%20Floridablanca%20Pampanga&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                    class="w-full h-[400px] rounded-2xl border border-gray-200 shadow-sm"
-                    loading="lazy"
-                    allowfullscreen>
-                </iframe>
-            </div>
-            <div class="space-y-5">
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <div class="flex items-start gap-4">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-gray-800">Address</p>
-                            <p class="mt-1 text-sm text-gray-500">Barangay Paguiruan, Floridablanca, Pampanga, Philippines</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <div class="flex items-start gap-4">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-600">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-gray-800">Phone</p>
-                            <p class="mt-1 text-sm text-gray-500">(096) 1254-9690</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <div class="flex items-start gap-4">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-gray-800">Email</p>
-                            <p class="mt-1 text-sm text-gray-500">barangaypaguiruan2024@gmail.com</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{{-- ============================================================
      CALL TO ACTION
      ============================================================ --}}
 <section class="bg-gray-50 py-20 px-4 md:px-6">
     <div class="mx-auto max-w-3xl text-center fade-in">
         <div class="rounded-2xl border border-gray-200 bg-white p-10 shadow-sm md:p-14">
-            <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
+            <div class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-100)] text-[var(--brand-700)]">
                 <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18"/></svg>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800 md:text-3xl">Experience Faster and More Transparent Barangay Services</h2>
-            <p class="mx-auto mt-3 max-w-lg text-gray-500">Join thousands of Paguiruan residents who are already using the e-Governance System for convenient, digital government services.</p>
+            <h2 class="text-2xl font-bold text-gray-800 md:text-3xl">{{ $site['welcome_cta_heading'] }}</h2>
+            <p class="mx-auto mt-3 max-w-lg text-gray-500">{{ $site['welcome_cta_subtitle'] }}</p>
             @guest
-                <a href="{{ route('register') }}" class="mt-8 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-200">
+                <a href="{{ route('register') }}" class="ui-btn ui-btn-primary ui-btn-lg mt-8 inline-flex gap-2 rounded-xl shadow-lg">
                     Register Now
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                 </a>
             @endguest
             @auth
-                <a href="{{ route('resident.dashboard') }}" class="mt-8 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-200">
+                <a href="{{ route('resident.dashboard') }}" class="ui-btn ui-btn-primary ui-btn-lg mt-8 inline-flex gap-2 rounded-xl shadow-lg">
                     Go to Dashboard
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                 </a>
@@ -467,6 +413,8 @@
         </div>
     </div>
 </section>
+
+</main>
 
 {{-- ============================================================
      FOOTER

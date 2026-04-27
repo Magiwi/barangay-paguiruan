@@ -75,6 +75,9 @@
                                      class="h-12 w-12 rounded-full border border-gray-200 object-cover bg-white" alt="Official">
                                 <div class="min-w-0">
                                     <p class="text-sm font-medium text-gray-800 truncate">{{ $official?->user?->full_name ?? 'NO RESIDENT ASSIGNED' }}</p>
+                                    @if ($official && $official->committee)
+                                        <p class="text-xs font-medium text-indigo-700 truncate">{{ \App\Support\OfficialCommittees::label($position->name, $official->committee) }}</p>
+                                    @endif
                                     <p class="text-xs text-gray-500 truncate">
                                         @if (! $official)
                                             Assign a staff/admin user to this slot.
@@ -94,6 +97,20 @@
                                 <input type="hidden" name="official_id" value="{{ $official?->id }}">
                                 <input type="hidden" name="term_start" class="js-term-start" data-group="barangay" value="{{ old('term_start', $barangayTerm['term_start']) }}">
                                 <input type="hidden" name="term_end" class="js-term-end" data-group="barangay" value="{{ old('term_end', $barangayTerm['term_end']) }}">
+
+                                @php $barangayCommittees = \App\Support\OfficialCommittees::forPositionName($position->name); @endphp
+                                @if ($barangayCommittees !== [])
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Committee</label>
+                                        <select name="committee" required class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">Select committee</option>
+                                            @foreach ($barangayCommittees as $key => $label)
+                                                <option value="{{ $key }}" @selected(old('committee', $official?->committee) === $key)>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        <p class="mt-1 text-[11px] text-gray-500">One committee per Kagawad slot (matches certificates).</p>
+                                    </div>
+                                @endif
 
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Assign / Update Resident</label>
@@ -122,7 +139,7 @@
                                 @endif
 
                                 <div class="flex items-center justify-start gap-2">
-                                    <button type="submit" class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition">
+                                    <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm inline-flex rounded-lg">
                                         Save Assignment
                                     </button>
                                 </div>
@@ -180,6 +197,9 @@
                                      class="h-12 w-12 rounded-full border border-gray-200 object-cover bg-white" alt="Official">
                                 <div class="min-w-0">
                                     <p class="text-sm font-medium text-gray-800 truncate">{{ $official?->user?->full_name ?? 'NO RESIDENT ASSIGNED' }}</p>
+                                    @if ($official && $official->committee)
+                                        <p class="text-xs font-medium text-indigo-700 truncate">{{ \App\Support\OfficialCommittees::label($position->name, $official->committee) }}</p>
+                                    @endif
                                     <p class="text-xs text-gray-500 truncate">
                                         @if (! $official)
                                             Assign a staff/admin user to this slot.
@@ -199,6 +219,20 @@
                                 <input type="hidden" name="official_id" value="{{ $official?->id }}">
                                 <input type="hidden" name="term_start" class="js-term-start" data-group="sk" value="{{ old('term_start', $skTerm['term_start']) }}">
                                 <input type="hidden" name="term_end" class="js-term-end" data-group="sk" value="{{ old('term_end', $skTerm['term_end']) }}">
+
+                                @php $skCommittees = \App\Support\OfficialCommittees::forPositionName($position->name); @endphp
+                                @if ($skCommittees !== [])
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Committee</label>
+                                        <select name="committee" required class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                            <option value="">Select committee</option>
+                                            @foreach ($skCommittees as $key => $label)
+                                                <option value="{{ $key }}" @selected(old('committee', $official?->committee) === $key)>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        <p class="mt-1 text-[11px] text-gray-500">SK Chairman / Kagawad committee (for certificates).</p>
+                                    </div>
+                                @endif
 
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Assign / Update Resident</label>
@@ -227,7 +261,7 @@
                                 @endif
 
                                 <div class="flex items-center justify-start gap-2">
-                                    <button type="submit" class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition">
+                                    <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm inline-flex rounded-lg">
                                         Save Assignment
                                     </button>
                                 </div>

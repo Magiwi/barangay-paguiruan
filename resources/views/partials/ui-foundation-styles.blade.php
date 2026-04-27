@@ -5,6 +5,7 @@
        ======================================================== */
     :root {
         /* Brand (Green — Government identity) */
+        --brand-800: #1B5E20;
         --brand-700: #2E7D32;
         --brand-600: #388E3C;
         --brand-400: #66BB6A;
@@ -207,6 +208,16 @@
         font-size: 0.9375rem;
     }
 
+    /* Phase 4 — larger tap targets for primary actions on narrow viewports */
+    @media (max-width: 1023px) {
+        .ui-btn.ui-btn-sm,
+        .ui-btn.ui-btn-xs {
+            min-height: 2.75rem;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+    }
+
     /* ========================================================
        UTILITY CLASSES — Badges
        ======================================================== */
@@ -252,6 +263,19 @@
     .ui-link:hover {
         color: var(--brand-600);
         text-decoration: underline;
+    }
+
+    /* Underline tabs — active state uses brand primary */
+    .ui-tab-active {
+        border-bottom-color: var(--brand-700) !important;
+        color: var(--brand-700) !important;
+    }
+
+    /* Form fields — focus ring aligned with brand (use with border-gray-300 inputs) */
+    .ui-form-focus:focus {
+        outline: none;
+        border-color: var(--brand-600) !important;
+        box-shadow: 0 0 0 2px var(--brand-100);
     }
 
     /* ========================================================

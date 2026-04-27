@@ -48,40 +48,6 @@
         @endif
     </section>
 
-    {{-- SK Secretary & Treasurer --}}
-    @if ($skSecretary || $skTreasurer)
-        <section class="mb-10">
-            <h2 class="mb-6 text-xs uppercase tracking-wider text-gray-500">Executive Officers</h2>
-            <div class="mx-auto grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-2">
-                @foreach ([$skSecretary, $skTreasurer] as $officer)
-                    @if ($officer)
-                        @php
-                            $roleLabel = str_starts_with($officer->position->name, 'SK ')
-                                ? substr($officer->position->name, 3)
-                                : $officer->position->name;
-                        @endphp
-                        <div class="group rounded-xl bg-white p-6 text-center shadow-sm ring-1 ring-gray-200/60 transition hover:shadow-md">
-                            <img src="{{ $officer->photoUrl() }}"
-                                alt="{{ $officer->user->full_name }}"
-                                class="mx-auto h-32 w-32 rounded-full border-2 border-gray-200 object-cover bg-gray-100 transition group-hover:border-blue-400">
-                            <span class="mt-4 inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-700">
-                                {{ $roleLabel }}
-                            </span>
-                            <h3 class="mt-2 text-base font-semibold tracking-tight text-gray-800">{{ $officer->user->full_name }}</h3>
-                            <p class="mt-0.5 text-xs text-gray-600">
-                                @if ($officer->term_start || $officer->term_end)
-                                    {{ optional($officer->term_start)->format('M Y') }}@if ($officer->term_end) &ndash; {{ $officer->term_end->format('M Y') }}@endif
-                                @else
-                                    —
-                                @endif
-                            </p>
-                        </div>
-                    @endif
-                @endforeach
-            </div>
-        </section>
-    @endif
-
     {{-- SK Kagawad Members --}}
     <section class="mb-12">
         <h2 class="mb-6 text-xs uppercase tracking-wider text-gray-500">SK Kagawad Members</h2>

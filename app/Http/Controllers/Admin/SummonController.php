@@ -7,6 +7,8 @@ use App\Models\Blotter;
 use App\Models\Summon;
 use App\Models\User;
 use App\Services\AuditService;
+use App\Services\BarangayOfficialRosterService;
+use App\Support\OfficialsPdfSnapshot;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +18,10 @@ use Illuminate\View\View;
 
 class SummonController extends Controller
 {
+    public function __construct(
+        private readonly BarangayOfficialRosterService $officialRoster,
+    ) {}
+
     public function index(Blotter $blotter): View
     {
         $summons = $blotter->summons()->orderBy('summon_number')->get();
@@ -93,7 +99,7 @@ class SummonController extends Controller
             "Generated summon #{$created->summon_number} for blotter {$blotter->blotter_number}"
         );
 
-        return redirect()->route($this->routePrefix() . '.blotters.summons.index', $blotter)
+        return redirect()->route($this->routePrefix().'.blotters.summons.index', $blotter)
             ->with('success', "Summon #{$created->summon_number} created successfully.");
     }
 
@@ -102,7 +108,7 @@ class SummonController extends Controller
         abort_unless($summon->blotter_id === $blotter->id, 404);
 
         $validated = $request->validate([
-            'status' => ['required', 'string', 'in:' . implode(',', Summon::STATUSES)],
+            'status' => ['required', 'string', 'in:'.implode(',', Summon::STATUSES)],
         ]);
 
         $summon->status = $validated['status'];
@@ -124,7 +130,7 @@ class SummonController extends Controller
             $message .= ' Case is now tagged as uncooperative; Certification to File Action is available.';
         }
 
-        return redirect()->route($this->routePrefix() . '.blotters.summons.index', $blotter)
+        return redirect()->route($this->routePrefix().'.blotters.summons.index', $blotter)
             ->with('success', $message);
     }
 
@@ -141,6 +147,7 @@ class SummonController extends Controller
         $pdf = Pdf::loadView('summons.print', [
             'blotter' => $blotter,
             'summon' => $summon,
+            'officialsPdf' => $this->officialsPdfForBlotterDocuments(),
         ])->setPaper('a4');
 
         return $pdf->stream("summon_{$blotter->blotter_number}_{$summon->summon_number}.pdf");
@@ -170,9 +177,21 @@ class SummonController extends Controller
         $pdf = Pdf::loadView('admin.blotters.certification-pdf', [
             'blotter' => $blotter,
             'summons' => $summons,
+            'officialsPdf' => $this->officialsPdfForBlotterDocuments(),
         ])->setPaper('a4');
 
         return $pdf->stream("certification_{$blotter->blotter_number}.pdf");
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function officialsPdfForBlotterDocuments(): array
+    {
+        return OfficialsPdfSnapshot::forPrint(
+            null,
+            $this->officialRoster->pdfRosters()
+        );
     }
 
     private function routePrefix(): string
@@ -202,7 +221,7 @@ class SummonController extends Controller
             ->orderBy('last_name')
             ->get()
             ->mapWithKeys(function (User $user): array {
-                return [(int) $user->id => trim($user->full_name . ' - ' . $user->position->name)];
+                return [(int) $user->id => trim($user->full_name.' - '.$user->position->name)];
             })
             ->all();
     }

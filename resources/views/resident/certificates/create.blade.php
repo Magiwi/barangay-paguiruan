@@ -160,18 +160,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const certificateFields = {
         residency: [
             { name: 'purpose', type: 'select-purpose', label: 'Purpose' },
-            { name: 'residency_start_year', type: 'select-year', label: 'Start Year of Residency' }
+            { name: 'residency_start_year', type: 'select-year', label: 'Start Year of Residency' },
+            { name: 'valid_id', type: 'file', label: 'Upload valid government ID (PDF, JPG, or PNG)' }
         ],
         indigency: [
             { name: 'purpose', type: 'select-indigency-purpose', label: 'Purpose' },
-            { name: 'monthly_income', type: 'select-income', label: 'Monthly Income' }
+            { name: 'monthly_income', type: 'select-income', label: 'Monthly Income' },
+            { name: 'valid_id', type: 'file', label: 'Upload valid government ID (PDF, JPG, or PNG)' }
         ],
         clearance: [
             { name: 'purpose', type: 'select-purpose', label: 'Purpose' },
-            { name: 'valid_id', type: 'file', label: 'Upload Valid ID' }
+            { name: 'valid_id', type: 'file', label: 'Upload valid government ID (PDF, JPG, or PNG)' }
         ],
         certificate: [
-            { name: 'purpose', type: 'select-purpose', label: 'Purpose' }
+            { name: 'purpose', type: 'select-purpose', label: 'Purpose' },
+            { name: 'valid_id', type: 'file', label: 'Upload valid government ID (PDF, JPG, or PNG)' }
         ]
     };
 

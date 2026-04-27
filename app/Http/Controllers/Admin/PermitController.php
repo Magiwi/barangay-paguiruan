@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Permit;
+use App\Services\BarangayOfficialRosterService;
 use App\Services\NotificationService;
 use App\Services\SmsService;
+use App\Support\OfficialsPdfSnapshot;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +15,10 @@ use Illuminate\Support\Facades\Storage;
 
 class PermitController extends Controller
 {
+    public function __construct(
+        private readonly BarangayOfficialRosterService $officialRoster,
+    ) {}
+
     public function index(Request $request)
     {
         $query = Permit::with('applicant')->latest();
@@ -90,11 +96,19 @@ class PermitController extends Controller
             return back()->with('error', 'Only approved permits can be released.');
         }
 
-        $permit->update([
+        $payload = [
             'status' => 'released',
             'released_at' => now(),
             'released_by' => Auth::id(),
-        ]);
+        ];
+
+        if ($permit->officials_snapshot === null) {
+            $payload['officials_snapshot'] = OfficialsPdfSnapshot::fromPdfRosters(
+                $this->officialRoster->pdfRosters()
+            );
+        }
+
+        $permit->update($payload);
 
         if ($permit->applicant) {
             NotificationService::notify(
@@ -121,10 +135,12 @@ class PermitController extends Controller
 
         $permit->load(['applicant.purokRelation', 'releasedBy']);
 
-        $pdf = Pdf::loadView('permits.templates.business', compact('permit'))
+        $officialsPdf = $this->officialsPdfForPermit($permit);
+
+        $pdf = Pdf::loadView('permits.templates.business', compact('permit', 'officialsPdf'))
             ->setPaper('a4', 'portrait');
 
-        return $pdf->stream('business_permit_' . $permit->id . '.pdf');
+        return $pdf->stream('business_permit_'.$permit->id.'.pdf');
     }
 
     public function printEventTemplate(Permit $permit)
@@ -133,10 +149,12 @@ class PermitController extends Controller
 
         $permit->load(['applicant.purokRelation', 'releasedBy']);
 
-        $pdf = Pdf::loadView('permits.templates.event', compact('permit'))
+        $officialsPdf = $this->officialsPdfForPermit($permit);
+
+        $pdf = Pdf::loadView('permits.templates.event', compact('permit', 'officialsPdf'))
             ->setPaper('a4', 'portrait');
 
-        return $pdf->stream('event_permit_' . $permit->id . '.pdf');
+        return $pdf->stream('event_permit_'.$permit->id.'.pdf');
     }
 
     public function printBuildingTemplate(Permit $permit)
@@ -145,10 +163,12 @@ class PermitController extends Controller
 
         $permit->load(['applicant.purokRelation', 'releasedBy']);
 
-        $pdf = Pdf::loadView('permits.templates.building', compact('permit'))
+        $officialsPdf = $this->officialsPdfForPermit($permit);
+
+        $pdf = Pdf::loadView('permits.templates.building', compact('permit', 'officialsPdf'))
             ->setPaper('a4', 'portrait');
 
-        return $pdf->stream('building_permit_' . $permit->id . '.pdf');
+        return $pdf->stream('building_permit_'.$permit->id.'.pdf');
     }
 
     /**
@@ -166,6 +186,17 @@ class PermitController extends Controller
 
         return response()->file(
             Storage::disk('public')->path($permit->document_path)
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function officialsPdfForPermit(Permit $permit): array
+    {
+        return OfficialsPdfSnapshot::forPrint(
+            $permit->officials_snapshot,
+            $this->officialRoster->pdfRosters()
         );
     }
 

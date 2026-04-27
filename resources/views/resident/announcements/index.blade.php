@@ -43,7 +43,7 @@
                             </div>
                         @endif
                         @if ($announcement->image)
-                            <img src="{{ asset('storage/' . $announcement->image) }}" alt="" class="h-40 w-full object-cover object-center">
+                            <img src="{{ asset('storage/' . $announcement->image) }}" alt="{{ $announcement->title }}" class="h-40 w-full object-cover object-center">
                         @else
                             <div class="h-2 {{ $isEmergency ? 'bg-gradient-to-r from-red-500 to-red-600' : 'bg-gradient-to-r from-blue-600 to-blue-700' }}" aria-hidden="true"></div>
                         @endif

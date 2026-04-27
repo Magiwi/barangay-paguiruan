@@ -69,9 +69,12 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-1.5 text-xs text-gray-500">Only records linked to your account are shown.</p>
+                        <p class="mt-1.5 text-xs text-gray-500">Only active blotter entries where you are listed as the linked complainant appear here.</p>
                         @if ($blotters->isEmpty())
-                            <p class="mt-1.5 text-xs text-amber-600">No linked blotter records found for your account.</p>
+                            <div class="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900 space-y-2">
+                                <p class="font-medium">Walang makitang naka-link na blotter sa account mo.</p>
+                                <p class="text-amber-800">Kung nakapag-file ka sa barangay pero hindi pa naka-link ang record mo, bisitahin ang barangay hall o tumawag sa opisina para i-update ang iyong resident profile at blotter entry. Pagkatapos noon, lalabas ang case dito at makakapag-request ka ng kopya.</p>
+                            </div>
                         @endif
                         @error('blotter_id')
                             <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>

@@ -22,10 +22,10 @@
             @endif
         </div>
         <div class="header-office">
-            <div class="office-line-1">Republic of the Philippines</div>
-            <div class="office-line-2">Office of the Barangay Chairman</div>
-            <div class="office-line-3">Barangay Paguiruan, Floridablanca</div>
-            <div class="office-line-4">Province of Pampanga</div>
+            <div class="office-line-1">{{ \App\Models\SiteSetting::getValue('doc_header_line_1') }}</div>
+            <div class="office-line-2">{{ \App\Models\SiteSetting::getValue('doc_header_line_2') }}</div>
+            <div class="office-line-3">{{ \App\Models\SiteSetting::getValue('doc_header_line_3') }}</div>
+            <div class="office-line-4">{{ \App\Models\SiteSetting::getValue('doc_header_line_4') }}</div>
         </div>
         <div class="header-right-logos">
             @if ($logo2)

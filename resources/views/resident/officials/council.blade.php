@@ -27,7 +27,7 @@
                              class="mx-auto h-48 w-48 rounded-full border-2 border-gray-200 object-cover bg-gray-100 hover:border-blue-400 transition-all duration-200">
                     </div>
                     <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800 ring-1 ring-inset ring-blue-600/20">
-                        Punong Barangay
+                        {{ \App\Support\OfficialPrint::punongBarangayTitle() }}
                     </span>
                     <h3 class="mt-3 text-xl font-semibold tracking-tight text-gray-800">{{ $chairman->user->full_name }}</h3>
                     <p class="mt-1 text-sm text-gray-600">
@@ -66,7 +66,7 @@
                                  alt="{{ $officer->user->full_name }}"
                                  class="mx-auto h-32 w-32 rounded-full border-2 border-gray-200 object-cover bg-gray-100 hover:border-blue-400 transition-all duration-200">
                             <span class="mt-4 inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-700">
-                                {{ $roleLabel }}
+                                {{ \App\Support\OfficialPrint::executiveShortRole($officer->position->name) }}
                             </span>
                             <h3 class="mt-2 text-base font-semibold tracking-tight text-gray-800">{{ $officer->user->full_name }}</h3>
                             <p class="mt-0.5 text-xs text-gray-600">

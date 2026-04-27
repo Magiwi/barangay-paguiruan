@@ -9,8 +9,10 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet">
     <style>[x-cloak]{display:none!important}</style>
     @include('partials.ui-foundation-styles')
+    @include('partials.a11y-skip-link-styles')
 </head>
 <body class="min-h-screen bg-gray-50 font-[Inter,sans-serif] antialiased">
+    @include('partials.a11y-skip-link')
 
     {{-- Sticky Glass Navbar --}}
     <header class="sticky top-0 z-50 border-b border-gray-200/80 bg-white/80 backdrop-blur-lg">
@@ -19,7 +21,7 @@
 
                 {{-- Left: Logo --}}
                 <a href="{{ route('resident.dashboard') }}" class="flex items-center gap-2.5 group">
-                    <img src="{{ asset('images/logo1.png') }}" alt="Logo" class="h-9 w-auto shrink-0 object-contain">
+                    <img src="{{ asset('images/logo1.png') }}" alt="Barangay Paguiruan official seal" class="h-9 w-auto shrink-0 object-contain">
                     <span class="text-sm md:text-base font-semibold tracking-tight text-gray-800 group-hover:text-gray-900 transition">Barangay Paguiruan, Floridablanca</span>
                 </a>
 
@@ -82,8 +84,8 @@
                     {{-- Notification Bell --}}
                     @php $unreadCount = auth()->user()->unreadNotificationsCount(); @endphp
                     <details class="relative group" id="notif-bell">
-                        <summary class="flex list-none items-center justify-center h-9 w-9 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 cursor-pointer transition [&::-webkit-details-marker]:hidden relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-200">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <summary class="flex list-none items-center justify-center h-9 w-9 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 cursor-pointer transition [&::-webkit-details-marker]:hidden relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-200" aria-label="Notifications">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
                             </svg>
                             @if ($unreadCount > 0)
@@ -161,9 +163,9 @@
 
                     {{-- Mobile Menu --}}
                     <details class="relative lg:hidden group">
-                        <summary class="flex list-none items-center justify-center h-9 w-9 rounded-lg text-gray-500 hover:bg-gray-100 cursor-pointer transition [&::-webkit-details-marker]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-200">
-                            <svg class="h-5 w-5 group-open:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
-                            <svg class="h-5 w-5 hidden group-open:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <summary class="flex list-none items-center justify-center h-9 w-9 rounded-lg text-gray-500 hover:bg-gray-100 cursor-pointer transition [&::-webkit-details-marker]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-200" aria-label="Open navigation menu">
+                            <svg class="h-5 w-5 group-open:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+                            <svg class="h-5 w-5 hidden group-open:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                         </summary>
                         <div class="absolute right-0 z-50 mt-3 hidden w-72 rounded-xl border border-gray-200 bg-white py-2 shadow-lg ring-1 ring-gray-100 group-open:block">
                             <div class="px-4 py-2 border-b border-gray-100 mb-1">
@@ -209,7 +211,7 @@
     </header>
 
     {{-- Main --}}
-    <main class="min-h-[calc(100vh-8rem)] flex flex-col">
+    <main id="main-content" class="min-h-[calc(100vh-8rem)] flex flex-col">
         @yield('content')
     </main>
 

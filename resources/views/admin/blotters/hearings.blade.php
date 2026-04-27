@@ -43,11 +43,21 @@
             </x-ui.alert>
         @endif
 
+        @if ($blotter->trashed())
+            <x-ui.alert type="info">
+                This blotter record is <strong>archived</strong>. You can review the hearing timeline below, but scheduling and hearing actions are disabled.
+            </x-ui.alert>
+        @endif
+
         <div class="grid gap-6 lg:grid-cols-3">
             <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                 <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Create Hearing</h2>
 
-                @if ($summons->isEmpty())
+                @if ($blotter->trashed())
+                    <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                        Archived cases cannot have new hearings scheduled. Restore the blotter from the e-Blotter list if corrections are required.
+                    </div>
+                @elseif ($summons->isEmpty())
                     <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
                         Cannot create hearing without an existing summon.
                     </div>
@@ -57,6 +67,7 @@
                     </div>
                 @endif
 
+                @if (! $blotter->trashed())
                 <form method="POST" action="{{ route($rp . '.blotters.hearings.store', $blotter) }}" class="mt-4 space-y-4">
                     @csrf
                     <div>
@@ -110,11 +121,12 @@
                     </div>
 
                     <button type="submit"
-                            class="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            class="ui-btn ui-btn-primary w-full rounded-lg py-2.5 disabled:cursor-not-allowed disabled:opacity-60"
                             @disabled($summons->isEmpty() || empty($luponAssignees))>
                         Schedule Hearing
                     </button>
                 </form>
+                @endif
             </div>
 
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm lg:col-span-2">
@@ -180,9 +192,10 @@
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="inline-flex flex-wrap justify-end gap-2">
+                                            @if (! $blotter->trashed())
                                             @if ($hearing->status === 'scheduled' && ! $notesOnlyActions)
                                                 <button type="button"
-                                                    class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+                                                    class="ui-btn ui-btn-primary ui-btn-sm rounded-lg"
                                                     data-hearing-action="start"
                                                     data-hearing-id="{{ $hearing->id }}"
                                                     data-hearing-status="{{ $hearing->status }}"
@@ -234,6 +247,9 @@
                                             >
                                                 Notes
                                             </button>
+                                            @else
+                                                <span class="text-xs text-gray-400">—</span>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -292,7 +308,7 @@
                 <p class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
                     This will mark the hearing as <strong>ongoing</strong>.
                 </p>
-                <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
+                <button type="submit" class="ui-btn ui-btn-primary w-full rounded-lg py-2.5">
                     Confirm Start Hearing
                 </button>
             </form>

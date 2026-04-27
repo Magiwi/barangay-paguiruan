@@ -47,6 +47,10 @@
                                             <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Pending</span>
                                         @elseif ($req->status === 'approved')
                                             <span class="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Approved</span>
+                                            <div class="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                                                <p class="font-semibold">Pickup at barangay hall</p>
+                                                <p class="mt-0.5 text-amber-800">Please bring a <strong>valid ID</strong> when you claim your document. Ask the barangay staff if you need the exact office hours.</p>
+                                            </div>
                                         @elseif ($req->status === 'released')
                                             <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium bg-blue-100 text-blue-700">Released</span>
                                         @else

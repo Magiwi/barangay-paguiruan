@@ -25,9 +25,11 @@
         }
     </style>
     @include('partials.ui-foundation-styles')
+    @include('partials.a11y-skip-link-styles')
     @stack('styles')
 </head>
 <body class="min-h-screen bg-gray-50 antialiased">
+    @include('partials.a11y-skip-link')
 
 @php
     $authUser = auth()->user();
@@ -44,7 +46,7 @@
 
     {{-- Brand header --}}
     <a href="{{ route('staff.dashboard') }}" class="flex h-16 shrink-0 items-center gap-3 border-b border-gray-200 px-5 group">
-        <img src="{{ asset('images/logo1.png') }}" alt="Logo" class="h-9 w-auto shrink-0 object-contain">
+        <img src="{{ asset('images/logo1.png') }}" alt="Barangay Paguiruan official seal" class="h-9 w-auto shrink-0 object-contain">
         <span class="truncate text-sm font-semibold tracking-tight text-gray-800 group-hover:text-gray-900 transition">Barangay Paguiruan, Floridablanca</span>
     </a>
 
@@ -289,8 +291,8 @@
 
     {{-- Left: Mobile hamburger + page title --}}
     <div class="flex items-center gap-3">
-        <button type="button" onclick="toggleSidebar()" class="inline-flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition lg:hidden">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <button type="button" onclick="toggleSidebar()" class="inline-flex items-center justify-center rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition lg:hidden" aria-label="Open navigation menu">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
         </button>
@@ -342,7 +344,7 @@
 {{-- ============================================================ --}}
 {{-- MAIN CONTENT --}}
 {{-- ============================================================ --}}
-<main class="staff-main min-h-screen pt-16 lg:ml-64">
+<main id="main-content" class="staff-main min-h-screen pt-16 lg:ml-64">
     @yield('content')
 </main>
 

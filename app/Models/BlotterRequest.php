@@ -127,7 +127,7 @@ class BlotterRequest extends Model
 
     public function blotter(): BelongsTo
     {
-        return $this->belongsTo(Blotter::class);
+        return $this->belongsTo(Blotter::class)->withTrashed();
     }
 
     public function user(): BelongsTo

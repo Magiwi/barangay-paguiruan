@@ -43,6 +43,18 @@
                             </option>
                         @endforeach
                     </select>
+                    @error('committee')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                @php $committeeMap = $positions->mapWithKeys(fn ($p) => [$p->id => \App\Support\OfficialCommittees::forPositionName($p->name)]); @endphp
+                <div id="committee-field-wrap" class="hidden space-y-1">
+                    <label for="committee_select" class="block text-sm font-medium text-gray-700 mb-1">Committee</label>
+                    <select id="committee_select" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select committee...</option>
+                    </select>
+                    <p class="text-xs text-gray-500">Required for Kagawad, SK Chairman, and SK Kagawad.</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -68,7 +80,7 @@
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
                     <a href="{{ route('admin.officials.index') }}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</a>
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Appoint Official</button>
+                    <button type="submit" class="ui-btn ui-btn-primary rounded-lg">Appoint Official</button>
                 </div>
             </form>
         </div>
@@ -76,47 +88,85 @@
 </section>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const officialCommitteeMap = @json($committeeMap);
+    const oldCommittee = @json(old('committee'));
+
+    const positionSelect = document.getElementById('position_id');
+    const committeeWrap = document.getElementById('committee-field-wrap');
+    const committeeSelect = document.getElementById('committee_select');
+
+    function syncCommitteeSelect() {
+        const posId = positionSelect.value;
+        const opts = officialCommitteeMap[posId] || {};
+        const keys = Object.keys(opts);
+        if (keys.length === 0) {
+            committeeWrap.classList.add('hidden');
+            committeeSelect.removeAttribute('name');
+            committeeSelect.required = false;
+            committeeSelect.innerHTML = '<option value="">Select committee...</option>';
+            return;
+        }
+        committeeWrap.classList.remove('hidden');
+        committeeSelect.setAttribute('name', 'committee');
+        committeeSelect.required = true;
+        committeeSelect.innerHTML = '<option value="">Select committee...</option>';
+        keys.forEach(function (k) {
+            const o = document.createElement('option');
+            o.value = k;
+            o.textContent = opts[k];
+            if (oldCommittee === k) {
+                o.selected = true;
+            }
+            committeeSelect.appendChild(o);
+        });
+    }
+
+    positionSelect.addEventListener('change', syncCommitteeSelect);
+    syncCommitteeSelect();
+
     const templateSelect = document.getElementById('term_template');
     const applyButton = document.getElementById('apply_term_template');
     const termStartInput = document.getElementById('term_start');
     const termEndInput = document.getElementById('term_end');
 
-    function toDateInputValue(date) {
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
+    if (templateSelect && applyButton && termStartInput && termEndInput) {
+        function toDateInputValue(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
 
-        return `${yyyy}-${mm}-${dd}`;
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function parseOrToday(value) {
+            if (!value) {
+                return new Date();
+            }
+            const parsed = new Date(value + 'T00:00:00');
+            return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+        }
+
+        applyButton.addEventListener('click', function () {
+            const template = templateSelect.value;
+            if (!template) {
+                return;
+            }
+
+            const start = parseOrToday(termStartInput.value);
+            const end = new Date(start.getTime());
+
+            if (template === '6m') {
+                end.setMonth(end.getMonth() + 6);
+            } else if (template === '1y') {
+                end.setFullYear(end.getFullYear() + 1);
+            } else if (template === '3y') {
+                end.setFullYear(end.getFullYear() + 3);
+            }
+
+            termStartInput.value = toDateInputValue(start);
+            termEndInput.value = toDateInputValue(end);
+        });
     }
-
-    function parseOrToday(value) {
-        if (!value) {
-            return new Date();
-        }
-        const parsed = new Date(value + 'T00:00:00');
-        return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
-    }
-
-    applyButton.addEventListener('click', function () {
-        const template = templateSelect.value;
-        if (!template) {
-            return;
-        }
-
-        const start = parseOrToday(termStartInput.value);
-        const end = new Date(start.getTime());
-
-        if (template === '6m') {
-            end.setMonth(end.getMonth() + 6);
-        } else if (template === '1y') {
-            end.setFullYear(end.getFullYear() + 1);
-        } else if (template === '3y') {
-            end.setFullYear(end.getFullYear() + 3);
-        }
-
-        termStartInput.value = toDateInputValue(start);
-        termEndInput.value = toDateInputValue(end);
-    });
 });
 </script>
 @endsection

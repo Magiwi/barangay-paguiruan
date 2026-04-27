@@ -217,6 +217,11 @@ class ReportController extends Controller
         $genderLabel = $this->resolvePopulationGenderLabel($gender);
         $activePopulationFilterLabel = "Purok: {$purokLabel} | Age: {$ageRangeLabel} | Gender: {$genderLabel}";
 
+        $filteredPopulationCount = (int) (clone $populationBase)->count();
+        $scopePopulationTotal = $this->populationService->getTotalResidents($purokId);
+        $activePerPurokFootSum = (int) $puroks->sum(fn (Purok $p) => (int) ($activePerPurok[$p->id] ?? 0));
+        $activeAccountsOutsidePurokTable = max(0, $activeCount - $activePerPurokFootSum);
+
         return view('admin.reports.population', compact(
             'residentsPerPurok',
             'residentTypePerPurok',
@@ -231,7 +236,11 @@ class ReportController extends Controller
             'purokId',
             'ageRange',
             'gender',
-            'activePopulationFilterLabel'
+            'activePopulationFilterLabel',
+            'filteredPopulationCount',
+            'scopePopulationTotal',
+            'activePerPurokFootSum',
+            'activeAccountsOutsidePurokTable'
         ));
     }
 

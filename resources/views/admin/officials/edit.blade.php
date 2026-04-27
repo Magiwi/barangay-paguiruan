@@ -49,6 +49,17 @@
                             </option>
                         @endforeach
                     </select>
+                    @error('committee')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                @php $committeeMap = $positions->mapWithKeys(fn ($p) => [$p->id => \App\Support\OfficialCommittees::forPositionName($p->name)]); @endphp
+                <div id="committee-field-wrap" class="hidden space-y-1">
+                    <label for="committee_select" class="block text-sm font-medium text-gray-700 mb-1">Committee</label>
+                    <select id="committee_select" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select committee...</option>
+                    </select>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -85,10 +96,49 @@
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
                     <a href="{{ route('admin.officials.index') }}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</a>
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Save Changes</button>
+                    <button type="submit" class="ui-btn ui-btn-primary rounded-lg">Save Changes</button>
                 </div>
             </form>
         </div>
     </div>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const officialCommitteeMap = @json($committeeMap);
+    const oldCommittee = @json(old('committee', $official->committee));
+
+    const positionSelect = document.getElementById('position_id');
+    const committeeWrap = document.getElementById('committee-field-wrap');
+    const committeeSelect = document.getElementById('committee_select');
+
+    function syncCommitteeSelect() {
+        const posId = positionSelect.value;
+        const opts = officialCommitteeMap[posId] || {};
+        const keys = Object.keys(opts);
+        if (keys.length === 0) {
+            committeeWrap.classList.add('hidden');
+            committeeSelect.removeAttribute('name');
+            committeeSelect.required = false;
+            committeeSelect.innerHTML = '<option value="">Select committee...</option>';
+            return;
+        }
+        committeeWrap.classList.remove('hidden');
+        committeeSelect.setAttribute('name', 'committee');
+        committeeSelect.required = true;
+        committeeSelect.innerHTML = '<option value="">Select committee...</option>';
+        keys.forEach(function (k) {
+            const o = document.createElement('option');
+            o.value = k;
+            o.textContent = opts[k];
+            if (oldCommittee === k) {
+                o.selected = true;
+            }
+            committeeSelect.appendChild(o);
+        });
+    }
+
+    positionSelect.addEventListener('change', syncCommitteeSelect);
+    syncCommitteeSelect();
+});
+</script>
 @endsection

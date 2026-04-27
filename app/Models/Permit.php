@@ -17,6 +17,7 @@ class Permit extends Model
         'remarks',
         'released_at',
         'released_by',
+        'officials_snapshot',
     ];
 
     protected $attributes = [
@@ -28,6 +29,7 @@ class Permit extends Model
         return [
             'released_at' => 'datetime',
             'extra_fields' => 'array',
+            'officials_snapshot' => 'array',
         ];
     }
 

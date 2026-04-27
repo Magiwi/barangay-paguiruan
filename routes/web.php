@@ -1,48 +1,72 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\Resident\CertificateController as ResidentCertificateController;
-use App\Http\Controllers\Resident\IssueController as ResidentIssueController;
-use App\Http\Controllers\Resident\AnnouncementController as ResidentAnnouncementController;
-use App\Http\Controllers\Resident\PermitController as ResidentPermitController;
-use App\Http\Controllers\Admin\CertificateController as AdminCertificateController;
+use App\Http\Controllers\AboutController;
+use App\Http\Controllers\Admin\AboutPageBuilderController;
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
-use App\Http\Controllers\Admin\IssueController as AdminIssueController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\PendingRegistrationsController;
-use App\Http\Controllers\Admin\ApprovalHistoryController;
-use App\Http\Controllers\Admin\VerificationController;
-use App\Http\Controllers\Admin\PurokController;
-use App\Http\Controllers\Admin\PermitController as AdminPermitController;
-use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\HouseholdHeadTransferRequestController;
-use App\Http\Controllers\Admin\BlotterController;
-use App\Http\Controllers\Admin\SummonController;
-use App\Http\Controllers\Admin\HearingController;
-use App\Http\Controllers\Admin\BlotterRequestController as AdminBlotterRequestController;
 use App\Http\Controllers\Admin\AnnouncementLabelController;
+use App\Http\Controllers\Admin\ApprovalHistoryController;
 use App\Http\Controllers\Admin\AuditController;
+use App\Http\Controllers\Admin\BlotterController;
+use App\Http\Controllers\Admin\BlotterRequestController as AdminBlotterRequestController;
+use App\Http\Controllers\Admin\CertificateController as AdminCertificateController;
+use App\Http\Controllers\Admin\HearingController;
+use App\Http\Controllers\Admin\HouseholdHeadTransferRequestController;
+use App\Http\Controllers\Admin\IssueController as AdminIssueController;
 use App\Http\Controllers\Admin\LoginActivityController;
 use App\Http\Controllers\Admin\OfficialController;
+use App\Http\Controllers\Admin\PageController as AdminPageController;
+use App\Http\Controllers\Admin\PendingRegistrationsController;
+use App\Http\Controllers\Admin\PermitController as AdminPermitController;
+use App\Http\Controllers\Admin\PurokController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SmsManagementController;
+use App\Http\Controllers\Admin\SummonController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\VerificationController;
+use App\Http\Controllers\Api\ResidentSearchController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FamilyMemberController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicPageController;
+use App\Http\Controllers\Resident\AnnouncementController as ResidentAnnouncementController;
 use App\Http\Controllers\Resident\BlotterRequestController as ResidentBlotterRequestController;
+use App\Http\Controllers\Resident\CertificateController as ResidentCertificateController;
 use App\Http\Controllers\Resident\DashboardController as ResidentDashboardController;
+use App\Http\Controllers\Resident\IssueController as ResidentIssueController;
 use App\Http\Controllers\Resident\NotificationController as ResidentNotificationController;
 use App\Http\Controllers\Resident\OfficialController as ResidentOfficialController;
-use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
-use App\Http\Controllers\Staff\BlotterController as StaffBlotterController;
-use App\Http\Controllers\Staff\SummonController as StaffSummonController;
-use App\Http\Controllers\Staff\HearingController as StaffHearingController;
+use App\Http\Controllers\Resident\PermitController as ResidentPermitController;
 use App\Http\Controllers\Staff\AnnouncementController as StaffAnnouncementController;
+use App\Http\Controllers\Staff\BlotterController as StaffBlotterController;
 use App\Http\Controllers\Staff\ComplaintController as StaffComplaintController;
+use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
+use App\Http\Controllers\Staff\HearingController as StaffHearingController;
 use App\Http\Controllers\Staff\RegistrationController as StaffRegistrationController;
 use App\Http\Controllers\Staff\ReportController as StaffReportController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\FamilyMemberController;
+use App\Http\Controllers\Staff\SummonController as StaffSummonController;
+use App\Models\CertificateRequest;
+use App\Models\IssueReport;
+use App\Models\Permit;
+use App\Services\PopulationService;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index']);
+
+Route::get('/locale/{locale}', function (string $locale) {
+    if (! in_array($locale, ['en', 'fil'], true)) {
+        abort(404);
+    }
+    session(['locale' => $locale]);
+
+    return redirect()->back(fallback: url('/'));
+})->name('locale.switch');
+
+// CMS: public published pages (Phase 1)
+Route::get('/p/{slug}', [PublicPageController::class, 'show'])
+    ->where('slug', '[a-z0-9]+(?:-[a-z0-9]+)*')
+    ->name('cms.page');
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
@@ -76,63 +100,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/family/{member}/restore', [FamilyMemberController::class, 'restore'])->name('family.restore');
 
     // JSON API: resident name search (used by blotter autocomplete)
-    Route::get('/api/residents/search', [App\Http\Controllers\Api\ResidentSearchController::class, 'search'])->name('api.residents.search');
+    Route::get('/api/residents/search', [ResidentSearchController::class, 'search'])->name('api.residents.search');
 });
 
-// About (auth only; resident navbar links here)
-Route::middleware('auth')->get('/about', function () {
-    $communityStats = [
-        'total_people' => \App\Models\User::countable()
-            ->where('status', \App\Models\User::STATUS_APPROVED)
-            ->count(),
-        'total_households' => \App\Models\User::countable()
-            ->where('status', \App\Models\User::STATUS_APPROVED)
-            ->where('head_of_family', 'yes')
-            ->count(),
-        'total_puroks' => \App\Models\Purok::active()->count(),
-    ];
-
-    $officialCards = \App\Models\Official::query()
-        ->with([
-            'user:id,first_name,middle_name,last_name,suffix',
-            'position:id,name,sort_order',
-        ])
-        ->currentlyServing()
-        ->get()
-        ->sortBy(function ($official) {
-            return [
-                $official->position->sort_order ?? 999,
-                $official->position->name ?? '',
-                $official->user->last_name ?? '',
-                $official->user->first_name ?? '',
-            ];
-        })
-        ->values()
-        ->map(function ($official) {
-            $fullName = $official->user?->full_name
-                ?? trim(implode(' ', array_filter([
-                    $official->user?->first_name,
-                    $official->user?->middle_name,
-                    $official->user?->last_name,
-                    $official->user?->suffix,
-                ])));
-
-            $nameParts = preg_split('/\s+/', trim((string) $fullName)) ?: [];
-            $initials = collect($nameParts)
-                ->filter()
-                ->take(2)
-                ->map(fn ($part) => strtoupper(substr($part, 0, 1)))
-                ->implode('');
-
-            return [
-                'name' => $fullName !== '' ? $fullName : 'Barangay Official',
-                'role' => $official->position->name ?? 'Barangay Official',
-                'initials' => $initials !== '' ? $initials : 'BO',
-            ];
-        });
-
-    return view('about', compact('communityStats', 'officialCards'));
-})->name('about');
+// About — public; same URL for residents (layouts.resident) and guests (about-guest). Content from published site_page_layouts.
+Route::get('/about', [AboutController::class, 'show'])->name('about');
 
 // Resident routes (auth only)
 Route::middleware('auth')->prefix('resident')->name('resident.')->group(function () {
@@ -175,6 +147,7 @@ Route::middleware(['auth', 'role:staff,admin'])->prefix('staff')->name('staff.')
 
     // Registration Management
     Route::get('/pending-registrations', [StaffRegistrationController::class, 'index'])->name('pending-registrations.index');
+    Route::get('/pending-registrations/{user}/preview', [StaffRegistrationController::class, 'preview'])->name('pending-registrations.preview');
     Route::post('/pending-registrations/{user}/approve', [StaffRegistrationController::class, 'approve'])->name('pending-registrations.approve');
     Route::post('/pending-registrations/{user}/reject', [StaffRegistrationController::class, 'reject'])->name('pending-registrations.reject');
     Route::post('/pending-registrations/{user}/suspend', [StaffRegistrationController::class, 'suspend'])->name('pending-registrations.suspend');
@@ -269,6 +242,7 @@ Route::middleware(['auth', 'role:staff,admin'])->prefix('admin')->name('admin.')
     // Registration Management (module access enforced)
     Route::middleware('module:registrations')->group(function () {
         Route::get('/pending-registrations', [PendingRegistrationsController::class, 'index'])->name('pending-registrations.index');
+        Route::get('/pending-registrations/{user}/preview', [PendingRegistrationsController::class, 'preview'])->name('pending-registrations.preview');
         Route::post('/pending-registrations/{user}/approve', [PendingRegistrationsController::class, 'approve'])->name('pending-registrations.approve');
         Route::post('/pending-registrations/{user}/reject', [PendingRegistrationsController::class, 'reject'])->name('pending-registrations.reject');
         Route::post('/pending-registrations/{user}/suspend', [PendingRegistrationsController::class, 'suspend'])->name('pending-registrations.suspend');
@@ -322,16 +296,16 @@ Route::middleware(['auth', 'role:staff,admin'])->prefix('admin')->name('admin.')
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', function () {
         $stats = [
-            'total_residents' => app(\App\Services\PopulationService::class)->getTotalResidents(),
-            'pending_requests' => \App\Models\CertificateRequest::where('status', 'pending')->count(),
-            'approved_certificates' => \App\Models\CertificateRequest::where('status', 'approved')->count(),
-            'released_certificates' => \App\Models\CertificateRequest::where('status', 'released')->count(),
-            'reported_issues' => \App\Models\IssueReport::count(),
-            'pending_permits' => \App\Models\Permit::where('status', 'pending')->count(),
+            'total_residents' => app(PopulationService::class)->getTotalResidents(),
+            'pending_requests' => CertificateRequest::where('status', 'pending')->count(),
+            'approved_certificates' => CertificateRequest::where('status', 'approved')->count(),
+            'released_certificates' => CertificateRequest::where('status', 'released')->count(),
+            'reported_issues' => IssueReport::count(),
+            'pending_permits' => Permit::where('status', 'pending')->count(),
         ];
 
-        $recentCertificates = \App\Models\CertificateRequest::with('user')->latest()->take(5)->get();
-        $recentIssues = \App\Models\IssueReport::with('user')->latest()->take(5)->get();
+        $recentCertificates = CertificateRequest::with('user')->latest()->take(5)->get();
+        $recentIssues = IssueReport::with('user')->latest()->take(5)->get();
 
         return view('admin.dashboard', compact('stats', 'recentCertificates', 'recentIssues'));
     })->name('dashboard');
@@ -425,6 +399,28 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
     });
     // Purok Management
+    // CMS — site pages (admin only)
+    Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
+    Route::get('/pages/create', [AdminPageController::class, 'create'])->name('pages.create');
+    Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
+    Route::get('/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
+    Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
+    Route::delete('/pages/{page}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
+
+    Route::get('/about-page', [AboutPageBuilderController::class, 'edit'])->name('about-page.edit');
+    Route::put('/about-page/draft', [AboutPageBuilderController::class, 'saveDraft'])->name('about-page.draft');
+    Route::post('/about-page/publish', [AboutPageBuilderController::class, 'publish'])->name('about-page.publish');
+    Route::post('/about-page/revisions/{revision}/restore', [AboutPageBuilderController::class, 'restoreRevision'])->name('about-page.restore-revision');
+    Route::post('/about-page/preview', [AboutPageBuilderController::class, 'preview'])
+        ->middleware('throttle:120,1')
+        ->name('about-page.preview');
+    Route::post('/about-page/upload-image', [AboutPageBuilderController::class, 'uploadImage'])
+        ->middleware('throttle:20,1')
+        ->name('about-page.upload-image');
+
+    Route::get('/site-settings', [SiteSettingController::class, 'edit'])->name('site-settings.edit');
+    Route::put('/site-settings', [SiteSettingController::class, 'update'])->name('site-settings.update');
+
     Route::get('/puroks', [PurokController::class, 'index'])->name('puroks.index');
     Route::get('/puroks/create', [PurokController::class, 'create'])->name('puroks.create');
     Route::post('/puroks', [PurokController::class, 'store'])->name('puroks.store');

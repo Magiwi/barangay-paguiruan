@@ -118,7 +118,7 @@
 
                     <button
                         type="submit"
-                        class="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        class="ui-btn ui-btn-primary w-full rounded-lg py-2.5 disabled:cursor-not-allowed disabled:opacity-60"
                         @disabled(! $canGenerateNext || $summonCount >= 3 || empty($luponAssignees))
                     >
                         Generate Summon {{ min($summonCount + 1, 3) }} of 3
@@ -204,7 +204,7 @@
                                                         </option>
                                                     @endforeach
                                                 </select>
-                                                <button type="submit" class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700">
+                                                <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm rounded-lg">
                                                     Update
                                                 </button>
                                             </form>

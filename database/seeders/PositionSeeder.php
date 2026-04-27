@@ -16,13 +16,11 @@ class PositionSeeder extends Seeder
             ['name' => 'Barangay Investigator', 'max_seats' => 1, 'sort_order' => 4],
             ['name' => 'Kagawad', 'max_seats' => 7, 'sort_order' => 5],
             ['name' => 'SK Chairman', 'max_seats' => 1, 'sort_order' => 6],
-            ['name' => 'SK Secretary', 'max_seats' => 1, 'sort_order' => 7],
-            ['name' => 'SK Treasurer', 'max_seats' => 1, 'sort_order' => 8],
-            ['name' => 'SK Kagawad', 'max_seats' => 7, 'sort_order' => 9],
-            ['name' => 'Staff Admin Officer', 'max_seats' => 1, 'sort_order' => 10],
-            ['name' => 'Staff Records Officer', 'max_seats' => 1, 'sort_order' => 11],
-            ['name' => 'Staff Public Assistance Officer', 'max_seats' => 1, 'sort_order' => 12],
-            ['name' => 'Staff Blotter Officer', 'max_seats' => 1, 'sort_order' => 13],
+            ['name' => 'SK Kagawad', 'max_seats' => 7, 'sort_order' => 7],
+            ['name' => 'Staff Admin Officer', 'max_seats' => 1, 'sort_order' => 8],
+            ['name' => 'Staff Records Officer', 'max_seats' => 1, 'sort_order' => 9],
+            ['name' => 'Staff Public Assistance Officer', 'max_seats' => 1, 'sort_order' => 10],
+            ['name' => 'Staff Blotter Officer', 'max_seats' => 1, 'sort_order' => 11],
         ];
 
         foreach ($positions as $position) {

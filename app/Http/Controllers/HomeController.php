@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Announcement;
 use App\Models\CertificateRequest;
 use App\Models\IssueReport;
+use App\Models\SiteSetting;
 use App\Models\User;
 use Illuminate\View\View;
 
@@ -37,6 +38,8 @@ class HomeController extends Controller
                 ->count(),
         ];
 
-        return view('welcome', compact('communityStats', 'latestAnnouncements'));
+        $site = SiteSetting::allForPublic();
+
+        return view('welcome', compact('communityStats', 'latestAnnouncements', 'site'));
     }
 }

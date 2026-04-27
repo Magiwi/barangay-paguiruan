@@ -17,10 +17,10 @@
 </head>
 <body>
     <div class="header">
-        <div>Republic of the Philippines</div>
-        <div>Barangay Paguiruan, Floridablanca, Pampanga</div>
+        <div>{{ \App\Models\SiteSetting::getValue('doc_header_line_1') }}</div>
+        <div>{{ \App\Models\SiteSetting::getValue('doc_jurisdiction_short') }}</div>
         <div class="title">CERTIFICATION TO FILE ACTION</div>
-        <div class="subtitle">Katarungang Pambarangay</div>
+        <div class="subtitle">{{ \App\Models\SiteSetting::getValue('doc_blotter_certification_subtitle') }}</div>
     </div>
 
     <div class="section">
@@ -59,10 +59,10 @@
     </div>
 
     <div class="section" style="margin-top: 48px;">
-        <p>Issued this {{ now()->format('F d, Y') }} at Barangay Paguiruan.</p>
+        <p>Issued this {{ now()->format('F d, Y') }} {{ \App\Models\SiteSetting::getValue('doc_issued_at_suffix') }}</p>
         <br><br>
-        <p>______________________________</p>
-        <p><strong>Punong Barangay / Authorized Officer</strong></p>
+        <p><strong>{{ $officialsPdf['signature_name_upper'] }}</strong></p>
+        <p><strong>{{ \App\Models\SiteSetting::getValue('doc_summon_signatory_role') }}</strong></p>
     </div>
 
     <div class="footer">

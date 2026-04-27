@@ -145,6 +145,7 @@ class BlotterController extends Controller
             'scheduled_hearing_date' => ['nullable', 'date'],
             'incident_date' => ['required', 'date', 'before_or_equal:today'],
             'file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:10240'],
+            'video' => ['nullable', 'file', 'mimes:mp4,webm,quicktime', 'max:51200'],
             'handwritten_salaysay' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'remarks' => ['nullable', 'string', 'max:3000'],
         ], [
@@ -155,6 +156,8 @@ class BlotterController extends Controller
             'handwritten_salaysay.max' => 'Handwritten Salaysay image must not exceed 10MB.',
             'file.mimes' => 'Only PDF, JPG, JPEG, PNG, and WEBP files are allowed.',
             'file.max' => 'File must not exceed 10MB.',
+            'video.mimes' => 'Video must be MP4, WEBM, or MOV.',
+            'video.max' => 'Video must not exceed 50MB.',
         ]);
 
         $complainantName = trim((string) ($validated['complainant_name'] ?? ''));
@@ -209,6 +212,9 @@ class BlotterController extends Controller
             $filePath = $request->hasFile('file')
                 ? $request->file('file')->store('blotters', 'local')
                 : null;
+            $videoPath = $request->hasFile('video')
+                ? $request->file('video')->store('blotters/video', 'local')
+                : null;
             $handwrittenSalaysayPath = $request->file('handwritten_salaysay')->store('blotters/handwritten-salaysay', 'local');
 
             $blotter = new Blotter([
@@ -217,6 +223,7 @@ class BlotterController extends Controller
                 'incident_date' => $validated['incident_date'],
                 'file_path' => $filePath,
                 'handwritten_salaysay_path' => $handwrittenSalaysayPath,
+                'video_path' => $videoPath,
                 'remarks' => $remarks !== '' ? $remarks : null,
             ]);
 
@@ -247,8 +254,13 @@ class BlotterController extends Controller
             'remarks' => ['nullable', 'string', 'max:5000'],
             'file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:10240'],
             'remove_file' => ['nullable', 'boolean'],
+            'video' => ['nullable', 'file', 'mimes:mp4,webm,quicktime', 'max:51200'],
+            'remove_video' => ['nullable', 'boolean'],
             'handwritten_salaysay' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'correction_note' => ['required', 'string', 'min:5', 'max:1000'],
+        ], [
+            'video.mimes' => 'Video must be MP4, WEBM, or MOV.',
+            'video.max' => 'Video must not exceed 50MB.',
         ]);
 
         $beforeData = [
@@ -258,6 +270,7 @@ class BlotterController extends Controller
             'remarks' => (string) ($blotter->remarks ?? ''),
             'file_path' => (string) ($blotter->file_path ?? ''),
             'handwritten_salaysay_path' => (string) ($blotter->handwritten_salaysay_path ?? ''),
+            'video_path' => (string) ($blotter->video_path ?? ''),
         ];
 
         $blotter->complainant_name = trim((string) $validated['complainant_name']);
@@ -275,6 +288,18 @@ class BlotterController extends Controller
                 Storage::disk('local')->delete($blotter->file_path);
             }
             $blotter->file_path = null;
+        }
+
+        if ($request->hasFile('video')) {
+            if ($blotter->video_path && Storage::disk('local')->exists($blotter->video_path)) {
+                Storage::disk('local')->delete($blotter->video_path);
+            }
+            $blotter->video_path = $request->file('video')->store('blotters/video', 'local');
+        } elseif ((bool) ($validated['remove_video'] ?? false)) {
+            if ($blotter->video_path && Storage::disk('local')->exists($blotter->video_path)) {
+                Storage::disk('local')->delete($blotter->video_path);
+            }
+            $blotter->video_path = null;
         }
 
         if ($request->hasFile('handwritten_salaysay')) {
@@ -297,6 +322,7 @@ class BlotterController extends Controller
             'remarks' => (string) ($blotter->remarks ?? ''),
             'file_path' => (string) ($blotter->file_path ?? ''),
             'handwritten_salaysay_path' => (string) ($blotter->handwritten_salaysay_path ?? ''),
+            'video_path' => (string) ($blotter->video_path ?? ''),
         ];
 
         $changedFields = [];
@@ -357,6 +383,7 @@ class BlotterController extends Controller
         $path = match ($type) {
             'handwritten' => $blotter->handwritten_salaysay_path,
             'evidence' => $blotter->file_path,
+            'video' => $blotter->video_path,
             default => null,
         };
 

@@ -110,7 +110,7 @@
                     <a href="{{ route('admin.residents.index') }}" class="text-xs font-medium text-gray-500 hover:text-gray-700">
                         Reset
                     </a>
-                    <button type="submit" class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition">
+                    <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm inline-flex rounded-lg">
                         Apply
                     </button>
                 </div>
@@ -131,16 +131,29 @@
                     <tbody class="divide-y divide-gray-200">
                         @forelse ($users as $user)
                             <tr>
-                                <td class="px-6 py-4 text-sm text-gray-900">
-                                    {{ $user->last_name }}, {{ $user->first_name }}
-                                    @if ($user->middle_name)
-                                        <span class="text-gray-500">{{ $user->middle_name }}</span>
-                                    @endif
+                                <td class="px-6 py-4 text-sm">
+                                    <a href="{{ route('admin.residents.show', $user) }}"
+                                       class="font-medium text-gray-900 hover:text-blue-700 hover:underline">
+                                        {{ $user->last_name }}, {{ $user->first_name }}
+                                        @if ($user->middle_name)
+                                            <span class="font-normal text-gray-500">{{ $user->middle_name }}</span>
+                                        @endif
+                                    </a>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900">
-                                    <a href="{{ route('admin.residents.show', $user) }}" class="text-blue-600 hover:text-blue-700">
-                                        {{ $user->email }}
-                                    </a>
+                                    <div class="flex max-w-xs flex-col gap-1.5">
+                                        @if (trim((string) $user->email) !== '')
+                                            <a href="mailto:{{ $user->email }}"
+                                               class="break-all text-blue-600 hover:text-blue-800 hover:underline"
+                                               title="Open in your email app">{{ $user->email }}</a>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
+                                        <a href="{{ route('admin.residents.show', $user) }}"
+                                           class="inline-flex w-fit items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800">
+                                            View profile
+                                        </a>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 text-sm">
                                     @php
@@ -166,7 +179,7 @@
                                                     <option value="staff" @selected($user->role === 'staff')>Staff</option>
                                                     <option value="admin" @selected($user->role === 'admin')>Admin</option>
                                                 </select>
-                                                <button type="submit" class="inline-flex items-center rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition">
+                                                <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm inline-flex rounded-lg">
                                                     Update Role
                                                 </button>
                                             </form>

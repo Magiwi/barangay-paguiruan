@@ -40,7 +40,7 @@
                     <div>
                         <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">First name <span class="text-red-600">*</span></label>
                         <input type="text" name="first_name" id="first_name" value="{{ old('first_name') }}" required
-                               class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('first_name') border-red-500 @else border-gray-300 @enderror">
+                               class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('first_name') border-red-500 @else border-gray-300 @enderror">
                         @error('first_name')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -48,12 +48,12 @@
                     <div>
                         <label for="middle_name" class="block text-sm font-medium text-gray-700 mb-1">Middle name</label>
                         <input type="text" name="middle_name" id="middle_name" value="{{ old('middle_name') }}"
-                               class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition">
+                               class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus">
                     </div>
                     <div>
                         <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Last name <span class="text-red-600">*</span></label>
                         <input type="text" name="last_name" id="last_name" value="{{ old('last_name') }}" required
-                               class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('last_name') border-red-500 @else border-gray-300 @enderror">
+                               class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('last_name') border-red-500 @else border-gray-300 @enderror">
                         @error('last_name')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -61,7 +61,7 @@
                     <div>
                         <label for="suffix" class="block text-sm font-medium text-gray-700 mb-1">Suffix</label>
                         <select name="suffix" id="suffix"
-                                class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition">
+                                class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus">
                             <option value="">None</option>
                             <option value="Jr." @selected(old('suffix') === 'Jr.')>Jr.</option>
                             <option value="Sr." @selected(old('suffix') === 'Sr.')>Sr.</option>
@@ -84,7 +84,7 @@
                     <div>
                         <label for="house_no" class="block text-sm font-medium text-gray-700 mb-1">House number <span class="text-red-600">*</span></label>
                         <input type="text" name="house_no" id="house_no" value="{{ old('house_no') }}" required
-                               class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('house_no') border-red-500 @else border-gray-300 @enderror">
+                               class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('house_no') border-red-500 @else border-gray-300 @enderror">
                         @error('house_no')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -92,7 +92,7 @@
                     <div>
                         <label for="purok_id" class="block text-sm font-medium text-gray-700 mb-1">Purok <span class="text-red-600">*</span></label>
                         <select name="purok_id" id="purok_id" required
-                                class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('purok_id') border-red-500 @else border-gray-300 @enderror">
+                                class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('purok_id') border-red-500 @else border-gray-300 @enderror">
                             <option value="">Select</option>
                             @foreach ($puroks ?? [] as $purok)
                                 <option value="{{ $purok->id }}" @selected(old('purok_id') == $purok->id)>{{ $purok->name }}</option>
@@ -105,7 +105,7 @@
                     <div class="sm:col-span-2">
                         <label for="sitio_subdivision" class="block text-sm font-medium text-gray-700 mb-1">Sitio / Subdivision <span class="text-gray-400">(optional)</span></label>
                         <input type="text" name="sitio_subdivision" id="sitio_subdivision" value="{{ old('sitio_subdivision') }}"
-                               class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('sitio_subdivision') border-red-500 @else border-gray-300 @enderror">
+                               class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('sitio_subdivision') border-red-500 @else border-gray-300 @enderror">
                         @error('sitio_subdivision')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -127,7 +127,7 @@
                             <span class="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-600">+63</span>
                             <input type="tel" name="contact_number" id="contact_number" value="{{ old('contact_number') }}" required
                                    maxlength="10" placeholder="9171234567"
-                                   class="block w-full rounded-r-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('contact_number') border-red-500 @else border-gray-300 @enderror">
+                                   class="block w-full rounded-r-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('contact_number') border-red-500 @else border-gray-300 @enderror">
                         </div>
                         @error('contact_number')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -138,7 +138,7 @@
                     <div>
                         <label for="gender" class="block text-sm font-medium text-gray-700 mb-1">Gender <span class="text-red-600">*</span></label>
                         <select name="gender" id="gender" required
-                                class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('gender') border-red-500 @else border-gray-300 @enderror">
+                                class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('gender') border-red-500 @else border-gray-300 @enderror">
                             <option value="">Select</option>
                             <option value="male" @selected(old('gender') === 'male')>Male</option>
                             <option value="female" @selected(old('gender') === 'female')>Female</option>
@@ -156,7 +156,7 @@
                         <div class="dob-grid">
                             <div>
                                 <label for="birth_month" class="sr-only">Birth month</label>
-                                <select name="birth_month" id="birth_month" class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('birthdate') border-red-500 @else border-gray-300 @enderror">
+                                <select name="birth_month" id="birth_month" class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('birthdate') border-red-500 @else border-gray-300 @enderror">
                                     <option value="">Month</option>
                                     <option value="1">January</option>
                                     <option value="2">February</option>
@@ -174,7 +174,7 @@
                             </div>
                             <div>
                                 <label for="birth_day" class="sr-only">Birth day</label>
-                                <select name="birth_day" id="birth_day" class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('birthdate') border-red-500 @else border-gray-300 @enderror">
+                                <select name="birth_day" id="birth_day" class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('birthdate') border-red-500 @else border-gray-300 @enderror">
                                     <option value="">Day</option>
                                 </select>
                             </div>
@@ -189,7 +189,7 @@
                                     step="1"
                                     inputmode="numeric"
                                     placeholder="Year (1850-{{ now('Asia/Manila')->format('Y') }})"
-                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('birthdate') border-red-500 @else border-gray-300 @enderror">
+                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('birthdate') border-red-500 @else border-gray-300 @enderror">
                             </div>
                         </div>
                         <p id="age_preview" class="mt-2 text-sm font-medium text-gray-600">Age: —</p>
@@ -203,7 +203,7 @@
                     <div>
                         <label for="civil_status" class="block text-sm font-medium text-gray-700 mb-1">Civil status <span class="text-red-600">*</span></label>
                         <select name="civil_status" id="civil_status" required
-                                class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('civil_status') border-red-500 @else border-gray-300 @enderror">
+                                class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('civil_status') border-red-500 @else border-gray-300 @enderror">
                             <option value="">Select</option>
                             <option value="single" @selected(old('civil_status') === 'single')>Single</option>
                             <option value="married" @selected(old('civil_status') === 'married')>Married</option>
@@ -220,7 +220,7 @@
                     <div>
                         <label for="head_of_family" class="block text-sm font-medium text-gray-700 mb-1">Head of family <span class="text-red-600">*</span></label>
                         <select name="head_of_family" id="head_of_family" required
-                                class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition">
+                                class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus">
                             <option value="">Select</option>
                             <option value="yes" @selected(old('head_of_family') === 'yes')>Yes</option>
                             <option value="no" @selected(old('head_of_family') === 'no')>No</option>
@@ -234,7 +234,7 @@
                             <div>
                                 <label for="head_first_name" class="block text-sm font-medium text-gray-700 mb-1">First name <span class="text-red-600">*</span></label>
                                 <input type="text" name="head_first_name" id="head_first_name" value="{{ old('head_first_name') }}"
-                                       class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('head_first_name') border-red-500 @else border-gray-300 @enderror">
+                                       class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('head_first_name') border-red-500 @else border-gray-300 @enderror">
                                 @error('head_first_name')
                                     <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                 @enderror
@@ -242,12 +242,12 @@
                             <div>
                                 <label for="head_middle_name" class="block text-sm font-medium text-gray-700 mb-1">Middle name</label>
                                 <input type="text" name="head_middle_name" id="head_middle_name" value="{{ old('head_middle_name') }}"
-                                       class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition">
+                                       class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus">
                             </div>
                             <div>
                                 <label for="head_last_name" class="block text-sm font-medium text-gray-700 mb-1">Last name <span class="text-red-600">*</span></label>
                                 <input type="text" name="head_last_name" id="head_last_name" value="{{ old('head_last_name') }}"
-                                       class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('head_last_name') border-red-500 @else border-gray-300 @enderror">
+                                       class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('head_last_name') border-red-500 @else border-gray-300 @enderror">
                                 @error('head_last_name')
                                     <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                 @enderror
@@ -260,7 +260,7 @@
                                     Household connection type <span class="text-red-600">*</span>
                                 </label>
                                 <select name="household_connection_type" id="household_connection_type"
-                                        class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('household_connection_type') border-red-500 @else border-gray-300 @enderror">
+                                        class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('household_connection_type') border-red-500 @else border-gray-300 @enderror">
                                     <option value="">Select</option>
                                     <option value="family_member" @selected(old('household_connection_type') === 'family_member')>Family Member</option>
                                     <option value="boarder" @selected(old('household_connection_type') === 'boarder')>Boarder</option>
@@ -278,7 +278,7 @@
                                     Relationship to head <span class="text-red-600">*</span>
                                 </label>
                                 <select name="relationship_to_head" id="relationship_to_head"
-                                        class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('relationship_to_head') border-red-500 @else border-gray-300 @enderror">
+                                        class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('relationship_to_head') border-red-500 @else border-gray-300 @enderror">
                                     <option value="">Select</option>
                                     <option value="son" @selected(old('relationship_to_head') === 'son')>Son</option>
                                     <option value="daughter" @selected(old('relationship_to_head') === 'daughter')>Daughter</option>
@@ -311,7 +311,7 @@
                             </label>
                             <input type="text" name="connection_note" id="connection_note" value="{{ old('connection_note') }}"
                                    placeholder="Provide details for Other connection type"
-                                   class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('connection_note') border-red-500 @else border-gray-300 @enderror">
+                                   class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('connection_note') border-red-500 @else border-gray-300 @enderror">
                             @error('connection_note')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
@@ -322,7 +322,7 @@
                     <div>
                         <label for="resident_type" class="block text-sm font-medium text-gray-700 mb-1">Resident type <span class="text-red-600">*</span></label>
                         <select name="resident_type" id="resident_type" required
-                                class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition">
+                                class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus">
                             <option value="">Select</option>
                             <option value="permanent" @selected(old('resident_type') === 'permanent')>Permanent</option>
                             <option value="non-permanent" @selected(old('resident_type') === 'non-permanent')>Non-permanent</option>
@@ -337,7 +337,7 @@
                         <div>
                             <label for="permanent_house_no" class="block text-sm font-medium text-gray-700 mb-1">House number <span class="text-red-600">*</span></label>
                             <input type="text" name="permanent_house_no" id="permanent_house_no" value="{{ old('permanent_house_no') }}"
-                                   class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('permanent_house_no') border-red-500 @else border-gray-300 @enderror">
+                                   class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_house_no') border-red-500 @else border-gray-300 @enderror">
                             @error('permanent_house_no')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
@@ -345,7 +345,7 @@
                         <div>
                             <label for="permanent_street" class="block text-sm font-medium text-gray-700 mb-1">Street <span class="text-red-600">*</span></label>
                             <input type="text" name="permanent_street" id="permanent_street" value="{{ old('permanent_street') }}"
-                                   class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('permanent_street') border-red-500 @else border-gray-300 @enderror">
+                                   class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_street') border-red-500 @else border-gray-300 @enderror">
                             @error('permanent_street')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
@@ -353,7 +353,7 @@
                         <div>
                             <label for="permanent_region" class="block text-sm font-medium text-gray-700 mb-1">Region <span class="text-red-600">*</span></label>
                             <select name="permanent_region" id="permanent_region"
-                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('permanent_region') border-red-500 @else border-gray-300 @enderror">
+                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_region') border-red-500 @else border-gray-300 @enderror">
                                 <option value="">Select region</option>
                             </select>
                             @error('permanent_region')
@@ -363,7 +363,7 @@
                         <div>
                             <label for="permanent_barangay" class="block text-sm font-medium text-gray-700 mb-1">Barangay <span class="text-red-600">*</span></label>
                             <select name="permanent_barangay" id="permanent_barangay"
-                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('permanent_barangay') border-red-500 @else border-gray-300 @enderror">
+                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_barangay') border-red-500 @else border-gray-300 @enderror">
                                 <option value="">Select barangay</option>
                             </select>
                             @error('permanent_barangay')
@@ -373,7 +373,7 @@
                         <div>
                             <label for="permanent_city" class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-600">*</span></label>
                             <select name="permanent_city" id="permanent_city"
-                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('permanent_city') border-red-500 @else border-gray-300 @enderror">
+                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_city') border-red-500 @else border-gray-300 @enderror">
                                 <option value="">Select city / municipality</option>
                             </select>
                             @error('permanent_city')
@@ -383,7 +383,7 @@
                         <div class="sm:col-span-2">
                             <label for="permanent_province" class="block text-sm font-medium text-gray-700 mb-1">Province <span class="text-red-600">*</span></label>
                             <select name="permanent_province" id="permanent_province"
-                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('permanent_province') border-red-500 @else border-gray-300 @enderror">
+                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_province') border-red-500 @else border-gray-300 @enderror">
                                 <option value="">Select province</option>
                             </select>
                             @error('permanent_province')
@@ -409,12 +409,12 @@
                         <div class="flex items-center gap-6">
                             <label class="inline-flex items-center">
                                 <input type="radio" name="is_pwd" value="yes" {{ old('is_pwd') === 'yes' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                       class="h-4 w-4 rounded border-gray-300 text-[var(--brand-700)] focus:ring-[var(--brand-100)]">
                                 <span class="ml-2 text-sm text-gray-700">Yes</span>
                             </label>
                             <label class="inline-flex items-center">
                                 <input type="radio" name="is_pwd" value="no" {{ old('is_pwd', 'no') === 'no' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                       class="h-4 w-4 rounded border-gray-300 text-[var(--brand-700)] focus:ring-[var(--brand-100)]">
                                 <span class="ml-2 text-sm text-gray-700">No</span>
                             </label>
                         </div>
@@ -423,7 +423,7 @@
                                 PWD ID / Supporting Document <span class="text-red-600">*</span>
                             </label>
                             <input type="file" name="pwd_proof" id="pwd_proof" accept=".jpg,.jpeg,.png,.pdf" data-auto-compress="true"
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[var(--brand-100)] file:text-[var(--brand-800)] hover:file:bg-emerald-200/70">
                             <p class="mt-1 text-xs text-gray-500">Accepted: JPG, PNG, PDF (max 2MB)</p>
                             @error('pwd_proof')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -437,12 +437,12 @@
                         <div class="flex items-center gap-6">
                             <label class="inline-flex items-center">
                                 <input type="radio" name="is_senior" value="yes" {{ old('is_senior') === 'yes' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                       class="h-4 w-4 rounded border-gray-300 text-[var(--brand-700)] focus:ring-[var(--brand-100)]">
                                 <span class="ml-2 text-sm text-gray-700">Yes</span>
                             </label>
                             <label class="inline-flex items-center">
                                 <input type="radio" name="is_senior" value="no" {{ old('is_senior', 'no') === 'no' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                       class="h-4 w-4 rounded border-gray-300 text-[var(--brand-700)] focus:ring-[var(--brand-100)]">
                                 <span class="ml-2 text-sm text-gray-700">No</span>
                             </label>
                         </div>
@@ -451,7 +451,7 @@
                                 Senior Citizen ID / Supporting Document <span class="text-red-600">*</span>
                             </label>
                             <input type="file" name="senior_proof" id="senior_proof" accept=".jpg,.jpeg,.png,.pdf" data-auto-compress="true"
-                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[var(--brand-100)] file:text-[var(--brand-800)] hover:file:bg-emerald-200/70">
                             <p class="mt-1 text-xs text-gray-500">Accepted: JPG, PNG, PDF (max 2MB)</p>
                             @error('senior_proof')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -460,12 +460,12 @@
                     </div>
 
                     {{-- Government ID (required) --}}
-                    <div id="government-id-section" class="rounded-lg border border-blue-100 bg-blue-50/60 p-4">
+                    <div id="government-id-section" class="rounded-lg border border-[var(--brand-100)] bg-[var(--brand-100)]/70 p-4">
                         <label for="government_id_type" class="block text-sm font-medium text-gray-700 mb-1">
                             Government ID Type <span class="text-red-600">*</span>
                         </label>
                         <select name="government_id_type" id="government_id_type" required
-                                class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('government_id_type') border-red-500 @else border-gray-300 @enderror">
+                                class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('government_id_type') border-red-500 @else border-gray-300 @enderror">
                             <option value="">Select ID type</option>
                             <option value="national_id" @selected(old('government_id_type') === 'national_id')>National ID</option>
                             <option value="passport" @selected(old('government_id_type') === 'passport')>Passport</option>
@@ -489,7 +489,7 @@
                                accept=".jpg,.jpeg,.png"
                                capture="environment"
                                data-auto-compress="true"
-                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-800 hover:file:bg-blue-200 @error('government_id_proof') border-red-500 @enderror">
+                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[var(--brand-100)] file:text-[var(--brand-800)] hover:file:bg-emerald-200/80 @error('government_id_proof') border-red-500 @enderror">
                         <p class="mt-1 text-xs text-gray-500">Capture from camera (mobile) or upload JPG/PNG image. Max file size: 2MB.</p>
                         @error('government_id_proof')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -511,7 +511,7 @@
                     <div class="sm:col-span-2">
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-600">*</span></label>
                         <input type="email" name="email" id="email" value="{{ old('email') }}" required autocomplete="email"
-                               class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('email') border-red-500 @else border-gray-300 @enderror">
+                               class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('email') border-red-500 @else border-gray-300 @enderror">
                         @error('email')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
@@ -520,9 +520,9 @@
                         <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-600">*</span></label>
                         <div class="relative">
                             <input type="password" name="password" id="password" required autocomplete="new-password" minlength="8"
-                                   class="block w-full rounded-lg border px-4 py-2.5 pr-10 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition @error('password') border-red-500 @else border-gray-300 @enderror">
-                            <button type="button" onclick="togglePassword('password', this)" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   class="block w-full rounded-lg border px-4 py-2.5 pr-10 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('password') border-red-500 @else border-gray-300 @enderror">
+                            <button type="button" onclick="togglePassword('password', this)" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600" aria-label="Show password" aria-pressed="false">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
@@ -537,9 +537,9 @@
                         <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirm password <span class="text-red-600">*</span></label>
                         <div class="relative">
                             <input type="password" name="password_confirmation" id="password_confirmation" required autocomplete="new-password" minlength="8"
-                                   class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition">
-                            <button type="button" onclick="togglePassword('password_confirmation', this)" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus">
+                            <button type="button" onclick="togglePassword('password_confirmation', this)" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600" aria-label="Show confirm password" aria-pressed="false">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
@@ -551,15 +551,15 @@
 
             {{-- Data Privacy Consent --}}
             <section class="pb-6">
-                <div class="rounded-lg bg-blue-50 border border-blue-100 p-4">
+                <div class="rounded-lg border border-[var(--brand-100)] bg-[var(--brand-100)]/80 p-4">
                     <label class="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" name="privacy_consent" value="1" {{ old('privacy_consent') ? 'checked' : '' }}
-                               class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                               class="mt-0.5 h-4 w-4 rounded border-gray-300 text-[var(--brand-700)] focus:ring-[var(--brand-100)]">
                         <span class="text-sm text-gray-700">
                             I agree to the
                             <button type="button"
                                     onclick="openPrivacyModal()"
-                                    class="text-blue-600 hover:text-blue-700 underline font-medium">
+                                    class="ui-link cursor-pointer border-0 bg-transparent p-0 text-left underline font-medium">
                                 Data Privacy Act
                             </button>
                             and consent to the collection and processing of my personal data for barangay services.
@@ -573,11 +573,11 @@
             </section>
 
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-gray-200">
-                <a href="{{ route('login') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700 order-2 sm:order-1">
+                <a href="{{ route('login') }}" class="ui-link order-2 text-sm sm:order-1">
                     Back to Login
                 </a>
                 <button type="submit"
-                        class="w-full sm:w-auto rounded-lg bg-gradient-to-r from-red-600 to-red-700 py-3 px-6 font-semibold text-white shadow-md hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition order-1 sm:order-2">
+                        class="ui-btn ui-btn-primary ui-btn-lg order-1 w-full rounded-lg py-3 px-6 shadow-sm sm:order-2 sm:w-auto">
                     Register
                 </button>
             </div>
@@ -615,7 +615,7 @@
             <button type="button" onclick="closePrivacyModal()" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                 Close
             </button>
-            <button type="button" onclick="acceptPrivacyAndClose()" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+            <button type="button" onclick="acceptPrivacyAndClose()" class="ui-btn ui-btn-primary rounded-lg px-4 py-2 text-sm">
                 I Understand
             </button>
         </div>
@@ -1535,12 +1535,18 @@ function acceptPrivacyAndClose() {
 // === Show/hide password toggle ===
 function togglePassword(fieldId, btn) {
     var input = document.getElementById(fieldId);
+    var showLabel = fieldId === 'password_confirmation' ? 'Show confirm password' : 'Show password';
+    var hideLabel = fieldId === 'password_confirmation' ? 'Hide confirm password' : 'Hide password';
     if (input.type === 'password') {
         input.type = 'text';
-        btn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" /></svg>';
+        btn.setAttribute('aria-label', hideLabel);
+        btn.setAttribute('aria-pressed', 'true');
+        btn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" /></svg>';
     } else {
         input.type = 'password';
-        btn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>';
+        btn.setAttribute('aria-label', showLabel);
+        btn.setAttribute('aria-pressed', 'false');
+        btn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>';
     }
 }
 </script>

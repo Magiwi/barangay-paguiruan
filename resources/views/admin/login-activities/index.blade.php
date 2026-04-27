@@ -66,7 +66,7 @@
                            class="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
                 <div class="flex items-end gap-2">
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 transition">
+                    <button type="submit" class="ui-btn ui-btn-primary rounded-lg py-1.5">
                         Filter
                     </button>
                     <a href="{{ route('admin.login-activities.index') }}" class="rounded-lg border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">

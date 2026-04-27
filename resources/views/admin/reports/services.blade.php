@@ -20,7 +20,7 @@
                     filter-label="Exports include current filters"
                     :filter-value="$allPuroks->firstWhere('id', $purokId)?->name ?? 'All Puroks'"
                     :show-print="true"
-                    print-button-class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 transition"
+                    print-button-class="ui-btn ui-btn-primary inline-flex rounded-lg px-4 py-2.5 text-sm shadow-sm"
                 />
             </x-slot:actions>
         </x-ui.report-topbar>

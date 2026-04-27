@@ -66,28 +66,13 @@
 <div class="header">
     <div class="logo-left">@if($leftLogo)<img src="{{ $leftLogo }}" alt="Left Logo">@endif</div>
     <div class="logo-right">@if($rightLogo)<img src="{{ $rightLogo }}" alt="Right Logo">@endif</div>
-    <p class="gov-line gov-sm">Republic of the Philippines</p>
-    <p class="gov-line gov-md">Province of Pampanga</p>
-    <p class="gov-line gov-md">MUNICIPALITY OF FLORIDABLANCA</p>
-    <p class="gov-line gov-lg">BARANGAY PAGUIRUAN</p>
-    <p class="office-line">OFFICE OF THE PUNONG BARANGAY</p>
+    @include('partials.document-pdf-header-lines')
 </div>
 
 <div class="frame">
     <div class="col-left">
-        <div class="official"><div class="name">Hon. Jose C. Basa</div><div class="role">Punong Barangay</div></div>
-        <div class="dash">- Kagawad -</div>
-        <div class="official"><div class="name">Rex R. Rodil</div><div class="role">Committee on Environment</div></div>
-        <div class="official"><div class="name">Ronnie P. Medina</div><div class="role">Committee on Transportation</div></div>
-        <div class="official"><div class="name">Jim Arthur P. Santos</div><div class="role">Committee on Appropriation and Agriculture</div></div>
-        <div class="official"><div class="name">Edward R. Naquiat</div><div class="role">Committee on Peace and Order</div></div>
-        <div class="official"><div class="name">Arnold I. Alfaro</div><div class="role">Committee on Public Works</div></div>
-        <div class="official"><div class="name">Georgina R. Baul</div><div class="role">Committee on Education</div></div>
-        <div class="official"><div class="name">Robin B. Almario</div><div class="role">Committee on Health</div></div>
-        <div class="official"><div class="name">Diether M. Santos</div><div class="role">SK Chairman<br>Committee on Sports, Youth, and Development</div></div>
-        <div class="official"><div class="name">Jalvin M. Rodil</div><div class="role">Barangay Treasurer</div></div>
-        <div class="official"><div class="name">Nadine S. Castor</div><div class="role">Barangay Secretary</div></div>
-        <div class="seal-note">*NOT VALID WITHOUT SEAL*</div>
+        @include('partials.document-pdf-officials-left-column', ['officialsPdf' => $officialsPdf])
+        @include('partials.document-pdf-seal-note')
     </div>
 
     <div class="col-right">
@@ -110,13 +95,10 @@
         </div>
 
         <p class="paragraph">
-            This document is issued for official barangay verification and processing purposes only.
+            {{ \App\Models\SiteSetting::getValue('doc_permit_disclaimer_general') }}
         </p>
 
-        <div class="signature">
-            <div class="name">HON. JOSE C. BASA</div>
-            <div class="role">Punong Barangay</div>
-        </div>
+        @include('partials.document-pdf-signature-punong-barangay', ['officialsPdf' => $officialsPdf])
     </div>
 </div>
 </body>

@@ -3,7 +3,10 @@
 @section('title', 'Announcements - e-Governance')
 
 @section('content')
-@php $rp = $routePrefix ?? 'admin'; @endphp
+@php
+    $rp = $routePrefix ?? 'admin';
+    $canModerateAnnouncements = in_array(auth()->user()->role ?? '', [\App\Models\User::ROLE_ADMIN, \App\Models\User::ROLE_SUPER_ADMIN], true);
+@endphp
 <section class="px-4 py-8 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
         <div class="flex items-center justify-between mb-6">
@@ -11,7 +14,7 @@
                 <h1 class="text-xl font-semibold tracking-tight text-gray-800">Announcements</h1>
                 <p class="text-sm text-gray-600 mt-1">Create and manage barangay announcements.</p>
             </div>
-            <a href="{{ route($rp . '.announcements.create') }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">
+            <a href="{{ route($rp . '.announcements.create') }}" class="ui-btn ui-btn-primary rounded-lg">
                 Create Announcement
             </a>
         </div>
@@ -25,7 +28,7 @@
         {{-- Status Tabs --}}
         <div class="mb-6 flex items-center gap-1 overflow-x-auto border-b border-gray-200">
             <a href="{{ route($rp . '.announcements.index', array_merge(request()->except('tab', 'page'), ['tab' => 'active'])) }}"
-               class="whitespace-nowrap px-4 py-2.5 text-sm font-medium border-b-2 transition {{ $filter === 'active' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+               class="whitespace-nowrap px-4 py-2.5 text-sm font-medium border-b-2 transition {{ $filter === 'active' ? 'ui-tab-active' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                 All Active
                 <span class="ml-1 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{{ $counts['active'] }}</span>
             </a>
@@ -44,7 +47,7 @@
                 <span class="ml-1 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{{ $counts['rejected'] }}</span>
             </a>
             <a href="{{ route($rp . '.announcements.index', array_merge(request()->except('tab', 'page'), ['tab' => 'archived'])) }}"
-               class="whitespace-nowrap px-4 py-2.5 text-sm font-medium border-b-2 transition {{ $filter === 'archived' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+               class="whitespace-nowrap px-4 py-2.5 text-sm font-medium border-b-2 transition {{ $filter === 'archived' ? 'ui-tab-active' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                 Archived
                 <span class="ml-1 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{{ $counts['archived'] }}</span>
             </a>
@@ -57,7 +60,7 @@
                     <input type="hidden" name="tab" value="{{ $filter }}">
                     <div class="flex-1 min-w-[180px]">
                         <label for="label" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Filter by Label</label>
-                        <select name="label" id="label" onchange="this.form.submit()" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <select name="label" id="label" onchange="this.form.submit()" class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 ui-form-focus">
                             <option value="">All Labels</option>
                             @foreach ($labels as $label)
                                 <option value="{{ $label->slug }}" @selected(request('label') === $label->slug)>{{ $label->name }}</option>
@@ -79,7 +82,7 @@
                     <p>No archived announcements.</p>
                 @else
                     <p>No announcements yet.</p>
-                    <a href="{{ route($rp . '.announcements.create') }}" class="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-700">Create one</a>
+                    <a href="{{ route($rp . '.announcements.create') }}" class="ui-link mt-3 inline-block text-sm">Create one</a>
                 @endif
             </div>
         @else
@@ -88,7 +91,7 @@
                     @php $isEmergency = $announcement->labels->contains('slug', 'emergency'); @endphp
                     <article class="flex flex-col overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-shadow {{ $announcement->trashed() ? 'opacity-60 border border-gray-300 bg-gray-50' : ($isEmergency ? 'border-2 border-red-300 bg-red-50/50' : 'border border-gray-200 bg-white') }}">
                         @if ($announcement->image)
-                            <img src="{{ asset('storage/' . $announcement->image) }}" alt="" class="h-40 w-full object-cover object-center">
+                            <img src="{{ asset('storage/' . $announcement->image) }}" alt="{{ $announcement->title }}" class="h-40 w-full object-cover object-center">
                         @else
                             @if ($isEmergency)
                                 <div class="h-2 bg-gradient-to-r from-red-500 to-red-600" aria-hidden="true"></div>
@@ -146,20 +149,26 @@
                                         <button type="submit" class="text-sm font-medium text-green-600 hover:text-green-700">Restore</button>
                                     </form>
                                 @else
-                                    {{-- Approve / Reject actions for pending or rejected --}}
-                                    @if (in_array($announcement->status, ['pending', 'rejected', 'draft']))
-                                        <form method="POST" action="{{ route($rp . '.announcements.approve', $announcement) }}" class="inline" onsubmit="return confirm('Approve and publish this announcement?');">
-                                            @csrf
-                                            <button type="submit" class="rounded-md bg-green-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-700 transition">Approve</button>
-                                        </form>
+                                    @if ($canModerateAnnouncements)
+                                        {{-- Approve / Reject: administrators only (staff may create/edit but not moderate) --}}
+                                        @if (in_array($announcement->status, ['pending', 'rejected', 'draft']))
+                                            <form method="POST" action="{{ route($rp . '.announcements.approve', $announcement) }}" class="inline" onsubmit="return confirm('Approve and publish this announcement?');">
+                                                @csrf
+                                                <button type="submit" class="rounded-md bg-green-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-700 transition">Approve</button>
+                                            </form>
+                                        @endif
+                                        @if (in_array($announcement->status, ['pending', 'approved']))
+                                            <form method="POST" action="{{ route($rp . '.announcements.reject', $announcement) }}" class="inline" onsubmit="return confirm('Reject this announcement?');">
+                                                @csrf
+                                                <button type="submit" class="rounded-md bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700 transition">Reject</button>
+                                            </form>
+                                        @endif
+                                    @else
+                                        @if (in_array($announcement->status, ['pending', 'draft']))
+                                            <p class="text-xs text-amber-700">Awaiting administrator approval.</p>
+                                        @endif
                                     @endif
-                                    @if (in_array($announcement->status, ['pending', 'approved']))
-                                        <form method="POST" action="{{ route($rp . '.announcements.reject', $announcement) }}" class="inline" onsubmit="return confirm('Reject this announcement?');">
-                                            @csrf
-                                            <button type="submit" class="rounded-md bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700 transition">Reject</button>
-                                        </form>
-                                    @endif
-                                    <a href="{{ route($rp . '.announcements.edit', $announcement) }}" class="text-sm font-medium text-blue-600 hover:text-blue-700">Edit</a>
+                                    <a href="{{ route($rp . '.announcements.edit', $announcement) }}" class="ui-link text-sm">Edit</a>
                                     <span class="text-gray-300">|</span>
                                     <form method="POST" action="{{ route($rp . '.announcements.destroy', $announcement) }}" class="inline" onsubmit="return confirm('Archive this announcement?');">
                                         @csrf

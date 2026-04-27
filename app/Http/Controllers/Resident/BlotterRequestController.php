@@ -8,6 +8,7 @@ use App\Models\BlotterRequest;
 use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class BlotterRequestController extends Controller
@@ -32,7 +33,9 @@ class BlotterRequestController extends Controller
     {
         $userId = auth()->id();
 
-        $blotters = Blotter::where('status', Blotter::STATUS_ACTIVE)
+        $blotters = Blotter::query()
+            ->where('status', Blotter::STATUS_ACTIVE)
+            ->whereNull('deleted_at')
             ->whereNotNull('complainant_user_id')
             ->where('complainant_user_id', $userId)
             ->orderByDesc('incident_date')
@@ -47,19 +50,21 @@ class BlotterRequestController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'blotter_id' => ['required', 'integer', 'exists:blotters,id'],
+            'blotter_id' => [
+                'required',
+                'integer',
+                Rule::exists('blotters', 'id')->where(function ($query): void {
+                    $query->whereNull('deleted_at')->where('status', Blotter::STATUS_ACTIVE);
+                }),
+            ],
             'purpose' => ['required', 'string', 'min:10', 'max:5000'],
         ], [
             'blotter_id.required' => 'Please select a blotter record.',
-            'blotter_id.exists' => 'The selected blotter record does not exist.',
+            'blotter_id.exists' => 'The selected blotter record is not available for request.',
             'purpose.min' => 'Purpose must be at least 10 characters.',
         ]);
 
-        // Verify the blotter is active (not archived)
         $blotter = Blotter::findOrFail($validated['blotter_id']);
-        if ($blotter->isArchived()) {
-            return back()->withErrors(['blotter_id' => 'This blotter record is archived and cannot be requested.'])->withInput();
-        }
 
         // Privacy guard: resident can only request their own complainant-linked blotter.
         if ((int) $blotter->complainant_user_id !== (int) auth()->id()) {

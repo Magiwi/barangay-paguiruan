@@ -66,7 +66,7 @@
                     <option value="released" @selected(request('status') === 'released')>Released</option>
                 </select>
             </div>
-            <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition">
+            <button type="submit" class="ui-btn ui-btn-primary rounded-lg">
                 Filter
             </button>
             @if (request()->hasAny(['search', 'status']))
@@ -189,7 +189,7 @@
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="status" value="released">
-                                                <button type="submit" class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition"
+                                                <button type="submit" class="ui-btn ui-btn-primary ui-btn-sm rounded-lg"
                                                         onclick="return confirm('Mark as released?')">
                                                     Release
                                                 </button>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\AnnouncementLabel;
+use App\Models\User;
 use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -145,8 +146,8 @@ class AnnouncementController extends Controller
 
     public function approve(Announcement $announcement)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Only admin can approve announcements.');
+        if (! in_array(auth()->user()->role, [User::ROLE_ADMIN, User::ROLE_SUPER_ADMIN], true)) {
+            abort(403, 'Only administrators can approve announcements.');
         }
 
         $announcement->forceFill([
@@ -162,8 +163,8 @@ class AnnouncementController extends Controller
 
     public function reject(Announcement $announcement)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Only admin can reject announcements.');
+        if (! in_array(auth()->user()->role, [User::ROLE_ADMIN, User::ROLE_SUPER_ADMIN], true)) {
+            abort(403, 'Only administrators can reject announcements.');
         }
 
         $announcement->forceFill([
