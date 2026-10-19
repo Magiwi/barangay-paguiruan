@@ -17,8 +17,8 @@ Details: {{ $reasonDetails }}
 
 Please review your submitted information and register again with correct and complete details.
 
-<x-mail::button :url="$loginUrl" color="primary">
-Open Portal
+<x-mail::button :url="$registerUrl" color="primary">
+Register again
 </x-mail::button>
 
 If you need help, coordinate with the barangay office for verification support.

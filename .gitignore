@@ -6,12 +6,16 @@
 .env.*
 !.env.example
 !.env.production.example
-vendor/
+/vendor/
 node_modules/
 .phpunit.result.cache
 
 # Local DB dumps (keep backups off-repo)
 /backup*.sql
+
+# Generated email HTML previews (local only)
+/storage/app/mail-previews/
+/public/mail-previews/
 
 # Local-only seeder (not committed; optional for Registration UI testing)
 /database/seeders/PendingRegistrationUsersSeeder.php

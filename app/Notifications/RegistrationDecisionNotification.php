@@ -42,7 +42,8 @@ class RegistrationDecisionNotification extends Notification implements ShouldQue
             ->subject($subject)
             ->markdown($view, [
                 'residentName' => $this->user->first_name ?: 'Resident',
-                'loginUrl' => url('/login'),
+                'loginUrl' => route('login'),
+                'registerUrl' => route('register'),
                 'reasonLabel' => $this->user->registrationRejectionReasonLabel(),
                 'reasonDetails' => $this->user->rejection_reason_details,
             ]);
