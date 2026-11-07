@@ -57,9 +57,9 @@
     {{-- Navigation --}}
     <nav class="flex-1 overflow-y-auto px-3 py-4">
 
-        {{-- ===================== GOVERNANCE ===================== --}}
+        {{-- ===================== DAILY ===================== --}}
         <div class="px-3 mb-2">
-            <p class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Governance</p>
+            <p class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Daily</p>
         </div>
 
         {{-- Dashboard --}}
@@ -125,68 +125,6 @@
             @endif
         @endif
 
-        {{-- Officials Management --}}
-        <a href="{{ route('admin.officials.index') }}"
-           class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150
-                  {{ request()->routeIs('admin.officials.*') ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-            <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('admin.officials.*') ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-            </svg>
-            Officials & Staff
-        </a>
-
-        {{-- Purok Management --}}
-        <a href="{{ route('admin.puroks.index') }}"
-           class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150
-                  {{ request()->routeIs('admin.puroks.*') ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-            <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('admin.puroks.*') ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            Purok Management
-        </a>
-
-        {{-- CMS: public website --}}
-        @php
-            $onWebsite = request()->routeIs('admin.pages.*')
-                || request()->routeIs('admin.about-page.*')
-                || request()->routeIs('admin.site-settings.*');
-        @endphp
-        <a href="{{ route('admin.pages.index') }}"
-           class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150
-                  {{ $onWebsite ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-            <svg class="h-5 w-5 shrink-0 {{ $onWebsite ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
-            </svg>
-            Website
-        </a>
-        @if ($onWebsite)
-            <div class="ml-8 space-y-0.5 border-l-2 border-gray-200 pl-3 mb-1">
-                <a href="{{ route('admin.pages.index') }}"
-                   class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.pages.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
-                    Site pages
-                </a>
-                <a href="{{ route('admin.about-page.edit') }}"
-                   class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.about-page.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
-                    About page
-                </a>
-                <a href="{{ route('admin.site-settings.edit') }}"
-                   class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.site-settings.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
-                    Home & contact
-                </a>
-            </div>
-        @endif
-
-        {{-- Household --}}
-        <a href="{{ route('admin.reports.households') }}"
-           class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150
-                  {{ request()->routeIs('admin.reports.households') || request()->routeIs('admin.reports.households.view*') ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-            <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('admin.reports.households') || request()->routeIs('admin.reports.households.view*') ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5l9-7.5 9 7.5M5.25 9.75V20.25h13.5V9.75M9 20.25V14.25h6v6"/>
-            </svg>
-            Household
-        </a>
-
         {{-- ===================== SERVICES ===================== --}}
         <div class="px-3 mt-6 mb-2">
             <p class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Services</p>
@@ -226,6 +164,16 @@
         <div class="px-3 mt-6 mb-2">
             <p class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Operations</p>
         </div>
+
+        {{-- Household --}}
+        <a href="{{ route('admin.reports.households') }}"
+           class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150
+                  {{ request()->routeIs('admin.reports.households') || request()->routeIs('admin.reports.households.view*') ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+            <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('admin.reports.households') || request()->routeIs('admin.reports.households.view*') ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5l9-7.5 9 7.5M5.25 9.75V20.25h13.5V9.75M9 20.25V14.25h6v6"/>
+            </svg>
+            Household
+        </a>
 
         {{-- e-Blotter --}}
         @php $isBlotterActive = request()->routeIs('admin.blotters.*') || request()->routeIs('admin.blotter-requests.*'); @endphp
@@ -275,10 +223,31 @@
             </div>
         @endif
 
-        {{-- ===================== ANALYTICS ===================== --}}
+        {{-- ===================== ADMINISTRATION ===================== --}}
         <div class="px-3 mt-6 mb-2">
-            <p class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Analytics</p>
+            <p class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Administration</p>
         </div>
+
+        {{-- Officials Management --}}
+        <a href="{{ route('admin.officials.index') }}"
+           class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150
+                  {{ request()->routeIs('admin.officials.*') ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+            <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('admin.officials.*') ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            Officials & Staff
+        </a>
+
+        {{-- Purok Management --}}
+        <a href="{{ route('admin.puroks.index') }}"
+           class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150
+                  {{ request()->routeIs('admin.puroks.*') ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+            <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('admin.puroks.*') ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Purok Management
+        </a>
 
         {{-- Reports --}}
         <a href="{{ route('admin.reports.index') }}"
@@ -323,6 +292,37 @@
         <div class="px-3 mt-6 mb-2">
             <p class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">System</p>
         </div>
+
+        {{-- CMS: public website --}}
+        @php
+            $onWebsite = request()->routeIs('admin.pages.*')
+                || request()->routeIs('admin.about-page.*')
+                || request()->routeIs('admin.site-settings.*');
+        @endphp
+        <a href="{{ route('admin.pages.index') }}"
+           class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150
+                  {{ $onWebsite ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+            <svg class="h-5 w-5 shrink-0 {{ $onWebsite ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+            </svg>
+            Website
+        </a>
+        @if ($onWebsite)
+            <div class="ml-8 space-y-0.5 border-l-2 border-gray-200 pl-3 mb-1">
+                <a href="{{ route('admin.pages.index') }}"
+                   class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.pages.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
+                    Site pages
+                </a>
+                <a href="{{ route('admin.about-page.edit') }}"
+                   class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.about-page.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
+                    About page
+                </a>
+                <a href="{{ route('admin.site-settings.edit') }}"
+                   class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.site-settings.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
+                    Home & contact
+                </a>
+            </div>
+        @endif
 
         {{-- Audit Log --}}
         <a href="{{ route('admin.audit.index') }}"
