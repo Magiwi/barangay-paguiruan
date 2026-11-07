@@ -45,8 +45,19 @@ class PendingRegistrationsController extends Controller
                 ->withQueryString();
 
             $users = User::query()->whereRaw('0 = 1')->paginate(15)->withQueryString();
+        } elseif ($status === 'registered') {
+            $query = User::countable()->awaitingWalkInSetup();
+            foreach ($this->nameSearchParts($request) as $part) {
+                $like = '%'.$part.'%';
+                $query->where(function ($name) use ($like) {
+                    $name->where('first_name', 'like', $like)
+                        ->orWhere('middle_name', 'like', $like)
+                        ->orWhere('last_name', 'like', $like);
+                });
+            }
+            $users = $query->orderBy('last_name')->orderBy('first_name')->paginate(15)->withQueryString();
         } else {
-            $query = User::countable();
+            $query = User::countable()->whereNull('registered_by');
 
             if (in_array($status, ['pending', 'approved', 'suspended'], true)) {
                 $query->where('status', $status);
@@ -70,17 +81,18 @@ class PendingRegistrationsController extends Controller
         }
 
         $counts = [
-            'pending' => User::countable()->where('status', User::STATUS_PENDING)->count(),
-            'approved' => User::countable()->where('status', User::STATUS_APPROVED)->count(),
+            'pending' => User::countable()->whereNull('registered_by')->where('status', User::STATUS_PENDING)->count(),
+            'approved' => User::countable()->whereNull('registered_by')->where('status', User::STATUS_APPROVED)->count(),
             'rejected' => ApprovalLog::query()->where('action', ApprovalLog::ACTION_REJECTED)->count(),
-            'suspended' => User::countable()->where('status', User::STATUS_SUSPENDED)->count(),
+            'suspended' => User::countable()->whereNull('registered_by')->where('status', User::STATUS_SUSPENDED)->count(),
+            'registered' => User::countable()->awaitingWalkInSetup()->count(),
         ];
 
         $rejectionReasonOptions = User::REGISTRATION_REJECTION_REASON_LABELS;
         $pendingQueueStats = [
-            'overdue' => User::countable()->where('status', User::STATUS_PENDING)->where('created_at', '<=', now()->subHours($settings['overdue_hours']))->count(),
-            'due_soon' => User::countable()->where('status', User::STATUS_PENDING)->where('created_at', '<=', now()->subHours($settings['due_soon_hours']))->where('created_at', '>', now()->subHours($settings['overdue_hours']))->count(),
-            'missing_id' => User::countable()->where('status', User::STATUS_PENDING)->where(function ($q) {
+            'overdue' => User::countable()->whereNull('registered_by')->where('status', User::STATUS_PENDING)->where('created_at', '<=', now()->subHours($settings['overdue_hours']))->count(),
+            'due_soon' => User::countable()->whereNull('registered_by')->where('status', User::STATUS_PENDING)->where('created_at', '<=', now()->subHours($settings['due_soon_hours']))->where('created_at', '>', now()->subHours($settings['overdue_hours']))->count(),
+            'missing_id' => User::countable()->whereNull('registered_by')->where('status', User::STATUS_PENDING)->where(function ($q) {
                 $q->whereNull('government_id_path')->orWhereNull('government_id_type');
             })->count(),
         ];
@@ -93,6 +105,24 @@ class PendingRegistrationsController extends Controller
         $failedQueueStats = $this->failedQueueStats();
 
         return view('admin.pending-registrations.index', compact('users', 'rejectionLogs', 'status', 'counts', 'rejectionReasonOptions', 'pendingQueueStats', 'latestEscalationRun', 'manualReminderCooldownSeconds', 'escalationAnalytics', 'failedQueueStats', 'settings'));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function nameSearchParts(Request $request): array
+    {
+        $search = trim((string) $request->query('q', ''));
+        if ($search === '') {
+            return [];
+        }
+
+        $parts = preg_split('/\s+/', $search) ?: [];
+
+        return array_values(array_filter(array_map(
+            fn (string $part) => str_replace(['%', '_'], '', $part),
+            $parts
+        )));
     }
 
     /**
@@ -559,7 +589,7 @@ class PendingRegistrationsController extends Controller
     /**
      * Attempt to auto-link a non-head resident to their declared head of family.
      */
-    private function attemptFamilyLink(User $user): void
+    public function attemptFamilyLink(User $user): void
     {
         if ($user->head_of_family === 'yes') {
             $household = $this->resolveHeadHousehold($user);

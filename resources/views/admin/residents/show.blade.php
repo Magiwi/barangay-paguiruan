@@ -371,7 +371,7 @@
                     <dl class="space-y-2 text-sm">
                         <div>
                             <dt class="font-medium text-gray-600">Email</dt>
-                            <dd class="text-gray-900">{{ $user->email }}</dd>
+                            <dd class="text-gray-900">{{ $user->email ?: 'Not activated yet' }}</dd>
                         </div>
                         <div>
                             <dt class="font-medium text-gray-600">Role</dt>
@@ -403,6 +403,45 @@
                             <dd class="text-gray-900">{{ $user->created_at->format('M d, Y H:i') }}</dd>
                         </div>
                     </dl>
+
+                    @if ($user->hasUnclaimedAccount())
+                        <form method="POST" action="{{ route('admin.pending-registrations.claim-code', $user) }}" class="mt-5 border-t border-gray-200 pt-4">
+                            @csrf
+                            <p class="text-xs text-gray-500">The resident has not created a login yet. A new code replaces the old one.</p>
+                            <button type="submit" class="mt-3 inline-flex items-center rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100">
+                                Issue new claim code
+                            </button>
+                        </form>
+                    @endif
+
+                    @if (auth()->user()?->role === \App\Models\User::ROLE_SUPER_ADMIN && $user->role === \App\Models\User::ROLE_RESIDENT)
+                        <form method="POST" action="{{ route('admin.residents.destroy', $user) }}" class="mt-5 space-y-3 border-t border-gray-200 pt-4">
+                            @csrf
+                            <h3 class="text-sm font-semibold text-red-700">Delete resident</h3>
+                            <p class="text-xs text-gray-500">This permanently removes the resident account and related records. It cannot be undone.</p>
+                            @if ($user->email)
+                            <div>
+                                <label for="confirm_email" class="mb-1 block text-xs font-medium text-gray-600">Type the resident email to confirm</label>
+                                <input type="email" name="confirm_email" id="confirm_email" value="{{ old('confirm_email') }}" required autocomplete="off"
+                                       class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20">
+                            </div>
+                            @else
+                            <div>
+                                <label for="confirm_name" class="mb-1 block text-xs font-medium text-gray-600">Type the resident full name to confirm</label>
+                                <input type="text" name="confirm_name" id="confirm_name" value="{{ old('confirm_name') }}" required autocomplete="off"
+                                       class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20">
+                            </div>
+                            @endif
+                            <div>
+                                <label for="delete_reason" class="mb-1 block text-xs font-medium text-gray-600">Reason</label>
+                                <input type="text" name="reason" id="delete_reason" value="{{ old('reason') }}" required maxlength="255"
+                                       class="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20">
+                            </div>
+                            <button type="submit" class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+                                Delete resident
+                            </button>
+                        </form>
+                    @endif
                 </div>
 
                 {{-- Official Position --}}

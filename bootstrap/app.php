@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'module' => \App\Http\Middleware\CheckModuleAccess::class,
+            'resident.government-id' => \App\Http\Middleware\RequireGovernmentIdCopy::class,
         ]);
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,

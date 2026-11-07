@@ -81,10 +81,19 @@
             </a>
 
             @if ($isRegActive)
+                @php
+                    $onRegisterResident = request()->routeIs('staff.pending-registrations.create')
+                        || request()->routeIs('staff.pending-registrations.created')
+                        || (request()->routeIs('staff.pending-registrations.index') && request('status') === 'registered');
+                @endphp
                 <div class="ml-8 space-y-0.5 border-l-2 border-gray-200 pl-3 mb-1">
                     <a href="{{ route('staff.pending-registrations.index') }}"
-                       class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('staff.pending-registrations.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
+                       class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('staff.pending-registrations.*') && ! $onRegisterResident ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
                         Pending
+                    </a>
+                    <a href="{{ route('staff.pending-registrations.index', ['status' => 'registered']) }}"
+                       class="block rounded-md px-2 py-1.5 text-[13px] transition {{ $onRegisterResident ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
+                        Register Resident
                     </a>
                     <a href="{{ route('staff.approval-history.index') }}"
                        class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('staff.approval-history.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">

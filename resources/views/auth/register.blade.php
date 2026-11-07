@@ -1,10 +1,22 @@
-@extends('layouts.auth')
+@extends($layout ?? 'layouts.auth')
 
-@section('title', 'Register - e-Governance System')
+@section('title', ($assisted ?? false) ? 'Register Resident - e-Governance' : 'Register - e-Governance System')
 
 @section('content')
+@php $assistedRegistration = (bool) ($assisted ?? false); @endphp
+@if ($assistedRegistration)
+<section class="px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+        <div class="mb-6">
+            <h1 class="text-xl font-semibold tracking-tight text-gray-800">Registration Management</h1>
+        </div>
+        @include('admin.pending-registrations.partials.tabs', ['activeTab' => 'register'])
+        <div class="mx-auto max-w-3xl">
+@else
 <div class="w-full max-w-2xl">
+@endif
 
+    @unless ($assistedRegistration)
     {{-- Logo & Branding --}}
     <div class="flex flex-col items-center mb-8">
         <img src="{{ asset('images/logo1.png') }}"
@@ -13,6 +25,7 @@
         <h1 class="text-xl font-semibold tracking-tight text-gray-800">Barangay Paguiruan, Floridablanca</h1>
         <p class="mt-1 text-sm text-gray-500">Resident Registration</p>
     </div>
+    @endunless
 
     <div class="bg-white rounded-2xl shadow-xl shadow-gray-200/50 p-8 border border-gray-100">
 
@@ -27,7 +40,12 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('register') }}" enctype="multipart/form-data" class="space-y-8">
+        <form method="POST"
+              action="{{ $assistedRegistration ? route(($routePrefix ?? 'admin') . '.pending-registrations.store') : route('register') }}"
+              enctype="multipart/form-data"
+              class="space-y-8"
+              data-registration-form
+              @if ($assistedRegistration) data-assisted="1" @endif>
             @csrf
 
             {{-- Section 1: Personal Information --}}
@@ -480,20 +498,40 @@
                         @enderror
 
                         <label for="government_id_proof" class="mt-4 block text-sm font-medium text-gray-700 mb-1">
-                            Government ID Upload <span class="text-red-600">*</span>
+                            Government ID Upload
+                            @unless ($assistedRegistration)
+                                <span class="text-red-600">*</span>
+                            @endunless
                         </label>
                         <input type="file"
                                name="government_id_proof"
                                id="government_id_proof"
-                               required
                                accept=".jpg,.jpeg,.png"
                                capture="environment"
                                data-auto-compress="true"
                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[var(--brand-100)] file:text-[var(--brand-800)] hover:file:bg-emerald-200/80 @error('government_id_proof') border-red-500 @enderror">
-                        <p class="mt-1 text-xs text-gray-500">Capture from camera (mobile) or upload JPG/PNG image. Max file size: 2MB.</p>
+                        <p class="mt-1 text-xs text-gray-500">
+                            @if ($assistedRegistration)
+                                Optional when the ID was checked in person. JPG or PNG, max 2MB.
+                            @else
+                                Capture from camera (mobile) or upload JPG/PNG image. Max file size: 2MB.
+                            @endif
+                        </p>
                         @error('government_id_proof')
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
+                        @if ($assistedRegistration)
+                            <label class="mt-4 flex items-start gap-3">
+                                <input type="checkbox" name="id_verified_in_person" id="id_verified_in_person" value="1"
+                                       @checked(old('id_verified_in_person'))
+                                       class="mt-0.5 h-4 w-4 rounded border-gray-300 text-[var(--brand-700)] focus:ring-[var(--brand-100)]">
+                                <span class="text-sm text-gray-700">ID verified in person <span class="text-red-600">*</span></span>
+                            </label>
+                            <p class="mt-1 text-xs text-gray-500">Required only when no ID file is uploaded. The resident will be asked to upload a copy after login.</p>
+                            @error('id_verified_in_person')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        @endif
                     </div>
                     <div id="classification-proof-note" class="hidden rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-800">
                         Government ID fields are not required when PWD or Senior Citizen is set to Yes.
@@ -501,6 +539,7 @@
                 </div>
             </section>
 
+            @unless ($assistedRegistration)
             {{-- Section 5: Account Information --}}
             <section class="border-b border-gray-200 pb-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -548,6 +587,12 @@
                     </div>
                 </div>
             </section>
+            @else
+            <section class="border-b border-gray-200 pb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-2">Account activation</h2>
+                <p class="text-sm text-gray-600">No email or password is needed here. After you save, a one-time code appears so the resident can create their own login later.</p>
+            </section>
+            @endunless
 
             {{-- Data Privacy Consent --}}
             <section class="pb-6">
@@ -573,17 +618,29 @@
             </section>
 
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-gray-200">
-                <a href="{{ route('login') }}" class="ui-link order-2 text-sm sm:order-1">
-                    Back to Login
-                </a>
+                @if ($assistedRegistration)
+                    <a href="{{ route(($routePrefix ?? 'admin') . '.pending-registrations.index', ['status' => 'registered']) }}" class="ui-link order-2 text-sm sm:order-1">
+                        Back to registrations
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" class="ui-link order-2 text-sm sm:order-1">
+                        Back to Login
+                    </a>
+                @endif
                 <button type="submit"
                         class="ui-btn ui-btn-primary ui-btn-lg order-1 w-full rounded-lg py-3 px-6 shadow-sm sm:order-2 sm:w-auto">
-                    Register
+                    {{ $assistedRegistration ? 'Register Resident' : 'Register' }}
                 </button>
             </div>
         </form>
     </div>
+@if ($assistedRegistration)
+        </div>
+    </div>
+</section>
+@else
 </div>
+@endif
 
 {{-- Data Privacy Modal --}}
 <div id="privacyModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
@@ -621,6 +678,19 @@
         </div>
     </div>
 </div>
+
+@unless ($assistedRegistration)
+<div id="government-id-required-dialog" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+    <div class="absolute inset-0 bg-gray-900/60" data-close-id-dialog></div>
+    <div class="relative mx-auto mt-24 w-[92%] max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-gray-200" role="dialog" aria-modal="true" aria-labelledby="government-id-required-title">
+        <h3 id="government-id-required-title" class="text-base font-semibold text-gray-900">Government ID is required</h3>
+        <p class="mt-2 text-sm text-gray-600">Upload a JPG or PNG copy of your government ID before you register.</p>
+        <div class="mt-5 flex justify-end">
+            <button type="button" data-close-id-dialog class="ui-btn ui-btn-primary rounded-lg px-4 py-2 text-sm">OK</button>
+        </div>
+    </div>
+</div>
+@endunless
 
 <style>
 .dob-grid {
@@ -1270,11 +1340,35 @@
             }
         }
         if (governmentIdProof) {
-            governmentIdProof.required = shouldRequireGovernmentId;
+            governmentIdProof.required = false;
             if (!shouldRequireGovernmentId) {
                 governmentIdProof.value = '';
             }
         }
+        var verifiedInPerson = document.getElementById('id_verified_in_person');
+        if (verifiedInPerson && !shouldRequireGovernmentId) {
+            verifiedInPerson.checked = false;
+        }
+    }
+
+    var assistedRegistration = document.querySelector('form[data-assisted="1"]');
+    var registrationForm = document.querySelector('form[data-registration-form]');
+    var idRequiredDialog = document.getElementById('government-id-required-dialog');
+    if (registrationForm && !assistedRegistration && idRequiredDialog) {
+        registrationForm.addEventListener('submit', function (event) {
+            var sectionVisible = governmentIdSection && !governmentIdSection.classList.contains('hidden');
+            if (sectionVisible && governmentIdProof && governmentIdProof.files.length === 0) {
+                event.preventDefault();
+                idRequiredDialog.classList.remove('hidden');
+                idRequiredDialog.setAttribute('aria-hidden', 'false');
+            }
+        });
+        idRequiredDialog.querySelectorAll('[data-close-id-dialog]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                idRequiredDialog.classList.add('hidden');
+                idRequiredDialog.setAttribute('aria-hidden', 'true');
+            });
+        });
     }
 
     if (headOfFamilySelect) { headOfFamilySelect.addEventListener('change', toggleHeadOfFamilyFields); toggleHeadOfFamilyFields(); }

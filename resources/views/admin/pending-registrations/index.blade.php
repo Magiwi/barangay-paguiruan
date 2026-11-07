@@ -6,7 +6,9 @@
 @php $rp = $routePrefix ?? 'admin'; @endphp
 <section class="px-4 py-8 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
-        <h1 class="text-xl font-semibold tracking-tight text-gray-800 mb-6">Registration Management</h1>
+        <div class="mb-6">
+            <h1 class="text-xl font-semibold tracking-tight text-gray-800">Registration Management</h1>
+        </div>
 
         @if (session('success'))
             <x-ui.alert type="success">
@@ -29,29 +31,26 @@
             </x-ui.alert>
         @endif
 
-        {{-- Status filter tabs with counts --}}
-        <div class="mb-4 flex flex-wrap gap-2">
-            <a href="{{ route($rp . '.pending-registrations.index', ['status' => 'pending']) }}"
-               class="rounded-lg px-4 py-2 text-sm font-medium transition {{ $status === 'pending' ? 'bg-amber-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
-                Pending
-                <span class="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full {{ $status === 'pending' ? 'bg-white/25 text-white' : 'bg-gray-300 text-gray-600' }} px-1.5 text-xs font-bold">{{ $counts['pending'] ?? 0 }}</span>
-            </a>
-            <a href="{{ route($rp . '.pending-registrations.index', ['status' => 'approved']) }}"
-               class="rounded-lg px-4 py-2 text-sm font-medium transition {{ $status === 'approved' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
-                Approved
-                <span class="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full {{ $status === 'approved' ? 'bg-white/25 text-white' : 'bg-gray-300 text-gray-600' }} px-1.5 text-xs font-bold">{{ $counts['approved'] ?? 0 }}</span>
-            </a>
-            <a href="{{ route($rp . '.pending-registrations.index', ['status' => 'rejected']) }}"
-               class="rounded-lg px-4 py-2 text-sm font-medium transition {{ $status === 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
-                Rejected
-                <span class="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full {{ $status === 'rejected' ? 'bg-white/25 text-white' : 'bg-gray-300 text-gray-600' }} px-1.5 text-xs font-bold">{{ $counts['rejected'] ?? 0 }}</span>
-            </a>
-            <a href="{{ route($rp . '.pending-registrations.index', ['status' => 'suspended']) }}"
-               class="rounded-lg px-4 py-2 text-sm font-medium transition {{ $status === 'suspended' ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
-                Suspended
-                <span class="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full {{ $status === 'suspended' ? 'bg-white/25 text-white' : 'bg-gray-300 text-gray-600' }} px-1.5 text-xs font-bold">{{ $counts['suspended'] ?? 0 }}</span>
-            </a>
-        </div>
+        @include('admin.pending-registrations.partials.tabs')
+
+        @if ($status === 'registered')
+            <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <form method="GET" action="{{ route($rp . '.pending-registrations.index') }}" class="flex flex-wrap items-center gap-2">
+                    <input type="hidden" name="status" value="registered">
+                    <label for="walk-in-search" class="sr-only">Search name</label>
+                    <input id="walk-in-search" type="search" name="q" value="{{ request('q') }}" placeholder="Search name"
+                           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm sm:w-64">
+                    <button type="submit" class="rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-900">Search</button>
+                    @if (request('q'))
+                        <a href="{{ route($rp . '.pending-registrations.index', ['status' => 'registered']) }}" class="text-sm text-gray-600 hover:text-gray-900">Clear</a>
+                    @endif
+                </form>
+                <a href="{{ route($rp . '.pending-registrations.create') }}"
+                   class="inline-flex rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-800">
+                    Register Resident
+                </a>
+            </div>
+        @endif
 
         @if ($status === 'rejected')
             <x-ui.alert type="info" class="mb-4">
@@ -161,7 +160,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900">
-                                    {{ $user->email }}
+                                    {{ $user->email ?: 'Not activated yet' }}
                                 </td>
                                 <td class="px-6 py-4 text-sm">
                                     @php
@@ -283,6 +282,14 @@
                                            class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-800 hover:bg-gray-50">
                                             View profile
                                         </a>
+                                        @if ($user->hasUnclaimedAccount())
+                                            <form method="POST" action="{{ route($rp . '.pending-registrations.claim-code', $user) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100">
+                                                    New code
+                                                </button>
+                                            </form>
+                                        @endif
                                         {{-- PENDING: Approve + Reject --}}
                                         @if ($user->status === 'pending')
                                             <form method="POST" action="{{ route($rp . '.pending-registrations.approve', $user) }}" class="inline">

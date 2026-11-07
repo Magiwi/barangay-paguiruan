@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -134,6 +135,7 @@ class UserController extends Controller
     {
         $query = User::query()
             ->where('role', '!=', User::ROLE_SUPER_ADMIN)
+            ->where('status', '!=', User::STATUS_PENDING)
             ->orderBy('last_name')
             ->orderBy('first_name');
 
@@ -158,7 +160,9 @@ class UserController extends Controller
         }
 
         if ($status = request('status')) {
-            $query->where('status', $status);
+            if ($status !== User::STATUS_PENDING) {
+                $query->where('status', $status);
+            }
         }
 
         if ($residentType = request('resident_type')) {
@@ -613,6 +617,67 @@ class UserController extends Controller
         AuditService::log('account_suspended', $user, "Suspended account of {$user->full_name}");
 
         return back()->with('success', 'User account suspended successfully.');
+    }
+
+    /**
+     * Permanently delete a resident account. Super admin only.
+     */
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        if ($request->user()?->role !== User::ROLE_SUPER_ADMIN) {
+            abort(403, 'Only a super admin can delete a resident.');
+        }
+
+        if ($user->role !== User::ROLE_RESIDENT) {
+            abort(403, 'Only resident accounts can be deleted.');
+        }
+
+        $hasEmail = filled($user->email);
+        $validated = $request->validate([
+            'confirm_email' => $hasEmail ? ['required', 'string', 'email'] : ['nullable', 'string'],
+            'confirm_name' => $hasEmail ? ['nullable', 'string'] : ['required', 'string', 'max:255'],
+            'reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        $confirmed = $hasEmail
+            ? $validated['confirm_email'] === (string) $user->email
+            : strcasecmp(trim((string) $validated['confirm_name']), $user->full_name) === 0;
+
+        if (! $confirmed) {
+            throw ValidationException::withMessages([
+                $hasEmail ? 'confirm_email' : 'confirm_name' => $hasEmail
+                    ? 'The confirmation email does not match this resident.'
+                    : 'The confirmation name does not match this resident.',
+            ]);
+        }
+
+        $snapshot = sprintf(
+            'Deleted resident #%d %s <%s>. Reason: %s',
+            $user->id,
+            $user->full_name,
+            $user->email ?: 'no email yet',
+            trim($validated['reason'])
+        );
+
+        $filePaths = array_values(array_filter([
+            $user->government_id_path,
+            $user->pwd_proof_path,
+            $user->senior_proof_path,
+        ]));
+
+        DB::transaction(function () use ($user, $snapshot, $filePaths) {
+            AuditService::log('resident_deleted', $user, $snapshot);
+
+            if ($filePaths !== []) {
+                Storage::disk('public')->delete($filePaths);
+            }
+
+            $user->delete();
+        });
+
+        return redirect()
+            ->route('admin.residents.index')
+            ->with('success', 'Resident account deleted.');
     }
 
     /**

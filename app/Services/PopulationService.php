@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\FamilyMember;
 use App\Models\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -10,9 +9,8 @@ use Illuminate\Support\Facades\DB;
 class PopulationService
 {
     /**
-     * Population base source:
-     * - approved user accounts (excluding super admin via countable scope)
-     * - non-linked family member records (to avoid duplicate linked users)
+     * Approved accounts that appear in All Residents.
+     * Pending, rejected, and deleted accounts are excluded. Super admin is excluded.
      */
     public function populationPeopleBaseQuery(?int $purokId = null): Builder
     {
@@ -27,27 +25,7 @@ class PopulationService
                 users.gender
             ");
 
-        $standaloneFamilyMembers = FamilyMember::query()
-            ->whereNull('deleted_at')
-            ->whereNull('linked_user_id')
-            ->whereExists(function ($query) {
-                $query->selectRaw('1')
-                    ->from('users as heads')
-                    ->whereColumn('heads.id', 'family_members.head_user_id')
-                    ->where('heads.role', '!=', User::ROLE_SUPER_ADMIN);
-            })
-            ->selectRaw("
-                family_members.id as source_id,
-                family_members.purok_id,
-                family_members.resident_type,
-                family_members.birthdate,
-                family_members.gender
-            ");
-
-        $base = DB::query()->fromSub(
-            $approvedUsers->unionAll($standaloneFamilyMembers),
-            'population_people'
-        );
+        $base = DB::query()->fromSub($approvedUsers, 'population_people');
 
         if ($purokId !== null) {
             $base->where('purok_id', $purokId);

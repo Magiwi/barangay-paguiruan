@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\AccountClaimController;
 use App\Http\Controllers\Admin\AboutPageBuilderController;
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
+use App\Http\Controllers\Admin\AssistedRegistrationController;
 use App\Http\Controllers\Admin\AnnouncementLabelController;
 use App\Http\Controllers\Admin\ApprovalHistoryController;
 use App\Http\Controllers\Admin\AuditController;
@@ -34,6 +36,7 @@ use App\Http\Controllers\Resident\AnnouncementController as ResidentAnnouncement
 use App\Http\Controllers\Resident\BlotterRequestController as ResidentBlotterRequestController;
 use App\Http\Controllers\Resident\CertificateController as ResidentCertificateController;
 use App\Http\Controllers\Resident\DashboardController as ResidentDashboardController;
+use App\Http\Controllers\Resident\GovernmentIdController;
 use App\Http\Controllers\Resident\IssueController as ResidentIssueController;
 use App\Http\Controllers\Resident\NotificationController as ResidentNotificationController;
 use App\Http\Controllers\Resident\OfficialController as ResidentOfficialController;
@@ -74,6 +77,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+    Route::get('/activate', [AccountClaimController::class, 'create'])->name('account.claim');
+    Route::post('/activate', [AccountClaimController::class, 'store'])->middleware('throttle:10,1')->name('account.claim.store');
+    Route::get('/activate/account', [AccountClaimController::class, 'setup'])->name('account.claim.setup');
+    Route::post('/activate/account', [AccountClaimController::class, 'complete'])->middleware('throttle:10,1')->name('account.claim.complete');
 });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -108,6 +115,10 @@ Route::get('/about', [AboutController::class, 'show'])->name('about');
 
 // Resident routes (auth only)
 Route::middleware('auth')->prefix('resident')->name('resident.')->group(function () {
+    Route::get('/government-id', [GovernmentIdController::class, 'edit'])->name('government-id.edit');
+    Route::post('/government-id', [GovernmentIdController::class, 'update'])->name('government-id.update');
+
+    Route::middleware('resident.government-id')->group(function () {
     Route::get('/dashboard', [ResidentDashboardController::class, 'index'])->name('dashboard');
     // Barangay Officials (informational, read-only — powered by officials table)
     Route::get('/officials/council', [ResidentOfficialController::class, 'council'])->name('officials.council');
@@ -136,6 +147,7 @@ Route::middleware('auth')->prefix('resident')->name('resident.')->group(function
     Route::get('/notifications/{notification}/open', [ResidentNotificationController::class, 'open'])->name('notifications.open');
     Route::post('/notifications/{notification}/read', [ResidentNotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/mark-all-read', [ResidentNotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    });
 });
 
 // Staff routes (auth + role staff or admin)
@@ -147,6 +159,10 @@ Route::middleware(['auth', 'role:staff,admin'])->prefix('staff')->name('staff.')
 
     // Registration Management
     Route::get('/pending-registrations', [StaffRegistrationController::class, 'index'])->name('pending-registrations.index');
+    Route::get('/pending-registrations/create', [AssistedRegistrationController::class, 'create'])->name('pending-registrations.create');
+    Route::post('/pending-registrations', [AssistedRegistrationController::class, 'store'])->name('pending-registrations.store');
+    Route::get('/pending-registrations/created', [AssistedRegistrationController::class, 'created'])->name('pending-registrations.created');
+    Route::post('/pending-registrations/{user}/claim-code', [AssistedRegistrationController::class, 'reissue'])->name('pending-registrations.claim-code');
     Route::get('/pending-registrations/{user}/preview', [StaffRegistrationController::class, 'preview'])->name('pending-registrations.preview');
     Route::post('/pending-registrations/{user}/approve', [StaffRegistrationController::class, 'approve'])->name('pending-registrations.approve');
     Route::post('/pending-registrations/{user}/reject', [StaffRegistrationController::class, 'reject'])->name('pending-registrations.reject');
@@ -242,6 +258,10 @@ Route::middleware(['auth', 'role:staff,admin'])->prefix('admin')->name('admin.')
     // Registration Management (module access enforced)
     Route::middleware('module:registrations')->group(function () {
         Route::get('/pending-registrations', [PendingRegistrationsController::class, 'index'])->name('pending-registrations.index');
+        Route::get('/pending-registrations/create', [AssistedRegistrationController::class, 'create'])->name('pending-registrations.create');
+        Route::post('/pending-registrations', [AssistedRegistrationController::class, 'store'])->name('pending-registrations.store');
+        Route::get('/pending-registrations/created', [AssistedRegistrationController::class, 'created'])->name('pending-registrations.created');
+        Route::post('/pending-registrations/{user}/claim-code', [AssistedRegistrationController::class, 'reissue'])->name('pending-registrations.claim-code');
         Route::get('/pending-registrations/{user}/preview', [PendingRegistrationsController::class, 'preview'])->name('pending-registrations.preview');
         Route::post('/pending-registrations/{user}/approve', [PendingRegistrationsController::class, 'approve'])->name('pending-registrations.approve');
         Route::post('/pending-registrations/{user}/reject', [PendingRegistrationsController::class, 'reject'])->name('pending-registrations.reject');
@@ -316,6 +336,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/residents/{user}', [UserController::class, 'update'])->name('residents.update');
     Route::post('/residents/{user}/role', [UserController::class, 'updateRole'])->name('residents.updateRole');
     Route::post('/residents/{user}/suspend', [UserController::class, 'suspend'])->name('residents.suspend');
+    Route::post('/residents/{user}/delete', [UserController::class, 'destroy'])->name('residents.destroy');
     Route::post('/residents/{user}/unsuspend', [UserController::class, 'unsuspend'])->name('residents.unsuspend');
     Route::post('/residents/{user}/link-family', [UserController::class, 'linkFamily'])->name('residents.linkFamily');
     Route::post('/residents/{user}/unlink-family', [UserController::class, 'unlinkFamily'])->name('residents.unlinkFamily');

@@ -90,6 +90,10 @@
             Don't have an account?
             <a href="{{ route('register') }}" class="ui-link font-medium transition">Register</a>
         </p>
+        <p class="mt-3 text-center text-sm text-gray-500">
+            Registered at the barangay?
+            <a href="{{ route('account.claim') }}" class="ui-link font-medium transition">Activate your account</a>
+        </p>
     </div>
 </div>
 

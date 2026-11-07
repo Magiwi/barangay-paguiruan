@@ -121,7 +121,7 @@ class ReportController extends Controller
             ->get()
             ->keyBy(fn ($row) => (int) $row->purok_id);
 
-        // Total residents per purok (includes approved users + non-linked family members).
+        // Total residents per purok (approved accounts only).
         $residentsPerPurok = $puroks->map(function (Purok $purok) use ($demographicsRows) {
             $row = $demographicsRows->get((int) $purok->id);
 
@@ -614,9 +614,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Population base source for reports:
-     * - approved user accounts (excluding super admin)
-     * - non-linked family member records (to avoid duplicate linked users)
+     * Population base source for reports: approved accounts except super admin.
      */
     private function populationPeopleBaseQuery(?int $purokId = null): \Illuminate\Database\Query\Builder
     {

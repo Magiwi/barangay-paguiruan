@@ -57,7 +57,7 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1">Account Status</label>
                     <select name="status" class="block w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm">
                         <option value="">All</option>
-                        @foreach (['pending','approved','rejected'] as $status)
+                        @foreach (['approved','rejected'] as $status)
                             <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>
                         @endforeach
                     </select>

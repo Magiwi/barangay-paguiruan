@@ -6,6 +6,7 @@ use App\Notifications\ResetPasswordNotification;
 use App\Support\NameFormatter;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -114,6 +115,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'claim_code_hash',
         'remember_token',
     ];
 
@@ -132,7 +134,31 @@ class User extends Authenticatable
             'suspended_at' => 'datetime',
             'is_pwd' => 'boolean',
             'is_senior' => 'boolean',
+            'id_verified_in_person' => 'boolean',
         ];
+    }
+
+    public function registeredBy(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'registered_by');
+    }
+
+    public function hasUnclaimedAccount(): bool
+    {
+        return $this->claim_code_hash !== null && $this->claim_code_hash !== '';
+    }
+
+    /**
+     * Walk-in residents approved after an in-person ID check still owe a file copy.
+     */
+    public function mustUploadGovernmentId(): bool
+    {
+        return $this->role === self::ROLE_RESIDENT
+            && $this->status === self::STATUS_APPROVED
+            && ! $this->is_pwd
+            && ! $this->is_senior
+            && (bool) $this->id_verified_in_person
+            && ($this->government_id_path === null || $this->government_id_path === '');
     }
 
     public function userNotifications()
@@ -146,6 +172,34 @@ class User extends Authenticatable
     public function scopeCountable($query)
     {
         return $query->where('role', '!=', self::ROLE_SUPER_ADMIN);
+    }
+
+    /**
+     * Walk-in accounts that still need a login, or still owe a government ID copy.
+     */
+    public function scopeAwaitingWalkInSetup($query)
+    {
+        return $query->whereNotNull('registered_by')->where(function ($open) {
+            $open->whereNull('email')
+                ->orWhere('email', '')
+                ->orWhere(function ($code) {
+                    $code->whereNotNull('claim_code_hash')->where('claim_code_hash', '!=', '');
+                })
+                ->orWhere(function ($id) {
+                    $id->where('role', self::ROLE_RESIDENT)
+                        ->where('status', self::STATUS_APPROVED)
+                        ->where(function ($flag) {
+                            $flag->where('is_pwd', false)->orWhereNull('is_pwd');
+                        })
+                        ->where(function ($flag) {
+                            $flag->where('is_senior', false)->orWhereNull('is_senior');
+                        })
+                        ->where('id_verified_in_person', true)
+                        ->where(function ($path) {
+                            $path->whereNull('government_id_path')->orWhere('government_id_path', '');
+                        });
+                });
+        });
     }
 
     public function unreadNotificationsCount(): int

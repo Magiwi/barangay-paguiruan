@@ -95,10 +95,19 @@
 
             {{-- Sub-links for Registration (visible when section is active) --}}
             @if (request()->routeIs('admin.pending-registrations.*') || request()->routeIs('admin.approval-history.*') || request()->routeIs('admin.verifications.*') || request()->routeIs('admin.head-transfer-requests.*'))
+                @php
+                    $onRegisterResident = request()->routeIs('admin.pending-registrations.create')
+                        || request()->routeIs('admin.pending-registrations.created')
+                        || (request()->routeIs('admin.pending-registrations.index') && request('status') === 'registered');
+                @endphp
                 <div class="ml-8 space-y-0.5 border-l-2 border-gray-200 pl-3 mb-1">
                     <a href="{{ route('admin.pending-registrations.index') }}"
-                       class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.pending-registrations.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
+                       class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.pending-registrations.*') && ! $onRegisterResident ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
                         Pending
+                    </a>
+                    <a href="{{ route('admin.pending-registrations.index', ['status' => 'registered']) }}"
+                       class="block rounded-md px-2 py-1.5 text-[13px] transition {{ $onRegisterResident ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
+                        Register Resident
                     </a>
                     <a href="{{ route('admin.approval-history.index') }}"
                        class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.approval-history.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
