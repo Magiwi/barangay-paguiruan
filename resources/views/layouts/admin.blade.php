@@ -146,33 +146,36 @@
             Purok Management
         </a>
 
-        {{-- CMS: public site pages --}}
+        {{-- CMS: public website --}}
+        @php
+            $onWebsite = request()->routeIs('admin.pages.*')
+                || request()->routeIs('admin.about-page.*')
+                || request()->routeIs('admin.site-settings.*');
+        @endphp
         <a href="{{ route('admin.pages.index') }}"
            class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150
-                  {{ request()->routeIs('admin.pages.*') ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-            <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('admin.pages.*') ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  {{ $onWebsite ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+            <svg class="h-5 w-5 shrink-0 {{ $onWebsite ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
             </svg>
-            Site pages
+            Website
         </a>
-
-        <a href="{{ route('admin.about-page.edit') }}"
-           class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150
-                  {{ request()->routeIs('admin.about-page.*') ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-            <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('admin.about-page.*') ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 7.125A2.25 2.25 0 014.5 4.875h15a2.25 2.25 0 012.25 2.25v9.75a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25v-9.75zM4.5 9.75h.008v.008H4.5V9.75zm0 3h.008v.008H4.5v-.008zm0 3h.008v.008H4.5v-.008zm3-6h.008v.008H7.5V9.75zm0 3h.008v.008H7.5v-.008zm0 3h.008v.008H7.5v-.008zm3-6h3.75v3.75h-3.75V9.75zm0 3h3.75v3.75h-3.75v-3.75zm0 3h3.75v3.75h-3.75v-3.75zm6-6h.008v.008h-.008V9.75zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/>
-            </svg>
-            About page
-        </a>
-
-        <a href="{{ route('admin.site-settings.edit') }}"
-           class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150
-                  {{ request()->routeIs('admin.site-settings.*') ? 'ui-nav-active' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-            <svg class="h-5 w-5 shrink-0 {{ request()->routeIs('admin.site-settings.*') ? '' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/>
-            </svg>
-            Home & contact
-        </a>
+        @if ($onWebsite)
+            <div class="ml-8 space-y-0.5 border-l-2 border-gray-200 pl-3 mb-1">
+                <a href="{{ route('admin.pages.index') }}"
+                   class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.pages.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
+                    Site pages
+                </a>
+                <a href="{{ route('admin.about-page.edit') }}"
+                   class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.about-page.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
+                    About page
+                </a>
+                <a href="{{ route('admin.site-settings.edit') }}"
+                   class="block rounded-md px-2 py-1.5 text-[13px] transition {{ request()->routeIs('admin.site-settings.*') ? 'ui-nav-sub-active' : 'text-gray-500 hover:text-gray-700' }}">
+                    Home & contact
+                </a>
+            </div>
+        @endif
 
         {{-- Household --}}
         <a href="{{ route('admin.reports.households') }}"

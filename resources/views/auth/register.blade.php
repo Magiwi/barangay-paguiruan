@@ -353,28 +353,32 @@
                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Permanent Address</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label for="permanent_house_no" class="block text-sm font-medium text-gray-700 mb-1">House number <span class="text-red-600">*</span></label>
-                            <input type="text" name="permanent_house_no" id="permanent_house_no" value="{{ old('permanent_house_no') }}"
-                                   class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_house_no') border-red-500 @else border-gray-300 @enderror">
-                            @error('permanent_house_no')
-                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label for="permanent_street" class="block text-sm font-medium text-gray-700 mb-1">Street <span class="text-red-600">*</span></label>
-                            <input type="text" name="permanent_street" id="permanent_street" value="{{ old('permanent_street') }}"
-                                   class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_street') border-red-500 @else border-gray-300 @enderror">
-                            @error('permanent_street')
-                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
                             <label for="permanent_region" class="block text-sm font-medium text-gray-700 mb-1">Region <span class="text-red-600">*</span></label>
                             <select name="permanent_region" id="permanent_region"
                                     class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_region') border-red-500 @else border-gray-300 @enderror">
                                 <option value="">Select region</option>
                             </select>
                             @error('permanent_region')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="permanent_province" class="block text-sm font-medium text-gray-700 mb-1">Province <span class="text-red-600">*</span></label>
+                            <select name="permanent_province" id="permanent_province"
+                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_province') border-red-500 @else border-gray-300 @enderror">
+                                <option value="">Select province</option>
+                            </select>
+                            @error('permanent_province')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="permanent_city" class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-600">*</span></label>
+                            <select name="permanent_city" id="permanent_city"
+                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_city') border-red-500 @else border-gray-300 @enderror">
+                                <option value="">Select city / municipality</option>
+                            </select>
+                            @error('permanent_city')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -389,22 +393,18 @@
                             @enderror
                         </div>
                         <div>
-                            <label for="permanent_city" class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-600">*</span></label>
-                            <select name="permanent_city" id="permanent_city"
-                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_city') border-red-500 @else border-gray-300 @enderror">
-                                <option value="">Select city / municipality</option>
-                            </select>
-                            @error('permanent_city')
+                            <label for="permanent_house_no" class="block text-sm font-medium text-gray-700 mb-1">House number <span class="text-red-600">*</span></label>
+                            <input type="text" name="permanent_house_no" id="permanent_house_no" value="{{ old('permanent_house_no') }}"
+                                   class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_house_no') border-red-500 @else border-gray-300 @enderror">
+                            @error('permanent_house_no')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div class="sm:col-span-2">
-                            <label for="permanent_province" class="block text-sm font-medium text-gray-700 mb-1">Province <span class="text-red-600">*</span></label>
-                            <select name="permanent_province" id="permanent_province"
-                                    class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_province') border-red-500 @else border-gray-300 @enderror">
-                                <option value="">Select province</option>
-                            </select>
-                            @error('permanent_province')
+                        <div>
+                            <label for="permanent_street" class="block text-sm font-medium text-gray-700 mb-1">Street <span class="text-red-600">*</span></label>
+                            <input type="text" name="permanent_street" id="permanent_street" value="{{ old('permanent_street') }}"
+                                   class="block w-full rounded-lg border px-4 py-2.5 text-gray-900 shadow-sm transition ui-form-focus @error('permanent_street') border-red-500 @else border-gray-300 @enderror">
+                            @error('permanent_street')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
