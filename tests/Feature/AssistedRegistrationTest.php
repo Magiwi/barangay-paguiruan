@@ -69,6 +69,31 @@ class AssistedRegistrationTest extends TestCase
         ]);
     }
 
+    public function test_registration_stores_a_formatted_or_prefixed_mobile_as_ten_digits(): void
+    {
+        Storage::fake('public');
+        $admin = $this->createAdminUser();
+        $purok = $this->createAddress();
+
+        $this->actingAs($admin)->post(route('admin.pending-registrations.store'), $this->basePayload($purok, [
+            'last_name' => 'Spaced',
+            'contact_number' => '917 123 4567',
+            'government_id_proof' => null,
+            'id_verified_in_person' => '1',
+        ]))->assertSessionHasNoErrors();
+
+        $this->assertSame('+639171234567', User::where('last_name', 'Spaced')->firstOrFail()->contact_number);
+
+        $this->actingAs($admin)->post(route('admin.pending-registrations.store'), $this->basePayload($purok, [
+            'last_name' => 'Prefixed',
+            'contact_number' => '+63 917 123 4568',
+            'government_id_proof' => null,
+            'id_verified_in_person' => '1',
+        ]))->assertSessionHasNoErrors();
+
+        $this->assertSame('+639171234568', User::where('last_name', 'Prefixed')->firstOrFail()->contact_number);
+    }
+
     public function test_assisted_registration_issues_a_one_time_code_and_the_resident_sets_login(): void
     {
         Storage::fake('public');

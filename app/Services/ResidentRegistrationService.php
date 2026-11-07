@@ -132,6 +132,10 @@ class ResidentRegistrationService
                 : ['required', 'file', 'mimes:jpg,jpeg,png', 'max:2048'];
         }
 
+        $request->merge([
+            'contact_number' => $this->normalizePhilippineMobile($request->input('contact_number')),
+        ]);
+
         $validator = Validator::make($request->all(), $rules, $this->messages());
         $validator->after(function ($validator) use ($assisted, $requiresGovernmentId, $request) {
             if (! $assisted || ! $requiresGovernmentId || $request->hasFile('government_id_proof')) {
@@ -324,6 +328,19 @@ class ResidentRegistrationService
     /**
      * @return array<string, string>
      */
+    private function normalizePhilippineMobile(mixed $value): string
+    {
+        $digits = preg_replace('/\D+/', '', (string) $value) ?? '';
+
+        if (str_starts_with($digits, '63') && strlen($digits) >= 12) {
+            $digits = substr($digits, 2);
+        } elseif (str_starts_with($digits, '0') && strlen($digits) >= 11) {
+            $digits = substr($digits, 1);
+        }
+
+        return substr($digits, 0, 10);
+    }
+
     private function messages(): array
     {
         return [
@@ -333,7 +350,7 @@ class ResidentRegistrationService
             'purok_id.required' => 'Please select a purok.',
             'purok_id.exists' => 'The selected purok is invalid.',
             'contact_number.required' => 'Contact number is required.',
-            'contact_number.regex' => 'Enter exactly 10 digits (e.g. 9171234567).',
+            'contact_number.regex' => 'Enter a valid mobile number (e.g. 917 123 4567).',
             'gender.required' => 'Please select a gender.',
             'birthdate.required' => 'Birthdate is required.',
             'birthdate.before' => 'Birthdate cannot be today or in the future.',

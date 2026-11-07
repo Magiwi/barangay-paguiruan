@@ -144,7 +144,7 @@
                         <div class="flex">
                             <span class="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-600">+63</span>
                             <input type="tel" name="contact_number" id="contact_number" value="{{ old('contact_number') }}" required
-                                   maxlength="10" placeholder="9171234567"
+                                   maxlength="16" inputmode="numeric" autocomplete="tel" placeholder="917 123 4567"
                                    class="block w-full rounded-r-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('contact_number') border-red-500 @else border-gray-300 @enderror">
                         </div>
                         @error('contact_number')
@@ -1524,12 +1524,65 @@
     }
     initializeBirthdateDropdowns();
 
-    // === Contact number: digits only ===
+    // === Contact number: 917 123 4567 while typing, 10 digits on submit ===
+    function localMobileDigits(value) {
+        var digits = String(value || '').replace(/\D/g, '');
+        if (digits.indexOf('63') === 0 && digits.length >= 12) {
+            digits = digits.substring(2);
+        } else if (digits.charAt(0) === '0' && digits.length >= 11) {
+            digits = digits.substring(1);
+        }
+        return digits.substring(0, 10);
+    }
+
+    function formatLocalMobile(digits) {
+        var parts = [];
+        if (digits.length > 0) parts.push(digits.substring(0, 3));
+        if (digits.length > 3) parts.push(digits.substring(3, 6));
+        if (digits.length > 6) parts.push(digits.substring(6, 10));
+        return parts.join(' ');
+    }
+
+    function caretAfterDigits(formatted, digitCount) {
+        if (digitCount <= 0) return 0;
+        var seen = 0;
+        for (var i = 0; i < formatted.length; i++) {
+            if (/\d/.test(formatted.charAt(i))) {
+                seen++;
+                if (seen === digitCount) return i + 1;
+            }
+        }
+        return formatted.length;
+    }
+
+    function applyContactFormat(input) {
+        var oldValue = input.value;
+        var caret = input.selectionStart || 0;
+        var rawBeforeCaret = oldValue.slice(0, caret).replace(/\D/g, '');
+        var rawAll = oldValue.replace(/\D/g, '');
+        var digits = localMobileDigits(oldValue);
+        var prefixLength = Math.max(0, rawAll.length - digits.length);
+        var digitsBeforeCaret = Math.max(0, Math.min(digits.length, rawBeforeCaret.length - prefixLength));
+        var formatted = formatLocalMobile(digits);
+        input.value = formatted;
+        var nextCaret = caretAfterDigits(formatted, digitsBeforeCaret);
+        if (input === document.activeElement && input.setSelectionRange) {
+            input.setSelectionRange(nextCaret, nextCaret);
+        }
+    }
+
     var contactInput = document.getElementById('contact_number');
     if (contactInput) {
+        applyContactFormat(contactInput);
         contactInput.addEventListener('input', function () {
-            this.value = this.value.replace(/[^0-9]/g, '').substring(0, 10);
+            applyContactFormat(contactInput);
         });
+        if (registrationForm) {
+            registrationForm.addEventListener('submit', function (event) {
+                var digits = localMobileDigits(contactInput.value);
+                contactInput.value = event.defaultPrevented ? formatLocalMobile(digits) : digits;
+            });
+        }
     }
 
     // === Real-time blur validation ===
@@ -1541,6 +1594,7 @@
             if (rule.type === 'letters' && value && !/^[A-Za-zÀ-ÿ\s\-']+$/.test(value)) return rule.msg;
             if (rule.type === 'min' && value && value.length < rule.len) return rule.msg;
             if (rule.type === 'regex' && value && !rule.pattern.test(value)) return rule.msg;
+            if (rule.type === 'mobile' && value && !/^9[0-9]{9}$/.test(localMobileDigits(value))) return rule.msg;
             if (rule.type === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return rule.msg;
         }
         return null;
@@ -1579,7 +1633,7 @@
         { id: 'house_no',       rules: [{ type: 'required', msg: 'House number is required.' }] },
         { id: 'contact_number', rules: [
             { type: 'required', msg: 'Contact number is required.' },
-            { type: 'regex', pattern: /^9[0-9]{9}$/, msg: 'Enter valid Philippine mobile number.' }
+            { type: 'mobile', msg: 'Enter valid Philippine mobile number.' }
         ]},
         { id: 'gender',         rules: [{ type: 'required', msg: 'Please select a gender.' }] },
         { id: 'civil_status',   rules: [{ type: 'required', msg: 'Please select a civil status.' }] },
