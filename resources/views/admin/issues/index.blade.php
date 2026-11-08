@@ -144,7 +144,7 @@
                 </div>
             @else
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="phone-stack min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase">Complainant</th>
@@ -159,11 +159,11 @@
                         <tbody class="divide-y divide-gray-200">
                             @foreach ($issues as $issue)
                                 <tr class="hover:bg-gray-50/50 transition">
-                                    <td class="px-5 py-4">
+                                    <td class="phone-title px-5 py-4">
                                         <p class="text-sm font-medium text-gray-900">{{ $issue->user->first_name }} {{ $issue->user->last_name }}</p>
                                         <p class="text-xs text-gray-500">{{ $issue->user->email }}</p>
                                     </td>
-                                    <td class="px-5 py-4">
+                                    <td class="px-5 py-4" data-label="Subject">
                                         <p class="text-sm font-medium text-gray-900 flex items-center gap-1">
                                             @if ($issue->attachment_path)
                                                 <span title="Has attachment">📎</span>
@@ -177,7 +177,7 @@
                                             </p>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-4">
+                                    <td class="px-5 py-4" data-label="Category">
                                         @if ($issue->category)
                                             @php
                                                 $highPriority = in_array($issue->category, ['Safety', 'Illegal Activity'], true);
@@ -194,7 +194,7 @@
                                             <span class="text-xs text-gray-400">&mdash;</span>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-4">
+                                    <td class="px-5 py-4" data-label="Status">
                                         @if ($issue->status === 'pending')
                                             <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800">Pending</span>
                                         @elseif ($issue->status === 'in_progress')
@@ -205,20 +205,20 @@
                                             <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-200 text-gray-700">Closed</span>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-4">
+                                    <td class="px-5 py-4" data-label="Officer">
                                         @if ($issue->assignedOfficer)
                                             <p class="text-sm text-gray-900">{{ $issue->assignedOfficer->first_name }} {{ $issue->assignedOfficer->last_name }}</p>
                                         @else
                                             <span class="text-xs text-gray-400">Unassigned</span>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-4 text-sm">
+                                    <td class="px-5 py-4 text-sm" data-label="Days open">
                                         @php $daysOpen = $issue->daysOpen(); @endphp
                                         <span class="font-medium {{ $daysOpen > 7 ? 'text-red-600' : ($daysOpen > 3 ? 'text-amber-600' : 'text-gray-600') }}">
                                             {{ $daysOpen }} day{{ $daysOpen === 1 ? '' : 's' }}
                                         </span>
                                     </td>
-                                    <td class="px-5 py-4">
+                                    <td class="px-5 py-4" data-label="Actions">
                                         @php
                                             $canAct = in_array(auth()->user()->role, [\App\Models\User::ROLE_ADMIN, \App\Models\User::ROLE_SUPER_ADMIN], true)
                                                 || (int) $issue->assigned_to === (int) auth()->id();

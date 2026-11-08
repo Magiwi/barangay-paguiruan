@@ -112,7 +112,7 @@
                 </div>
             @else
                 <div class="overflow-x-auto overflow-y-visible pb-24">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="phone-stack min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blotter #</th>
@@ -126,26 +126,26 @@
                         <tbody class="divide-y divide-gray-200">
                             @foreach ($blotters as $blotter)
                                 <tr class="hover:bg-gray-50 transition {{ $blotter->trashed() ? 'bg-gray-50/60 opacity-75' : '' }}">
-                                    <td class="px-5 py-4 whitespace-nowrap">
+                                    <td class="phone-title px-5 py-4 whitespace-nowrap">
                                         <span class="text-sm font-semibold text-gray-900 font-mono">{{ $blotter->blotter_number }}</span>
                                     </td>
-                                    <td class="px-5 py-4 whitespace-nowrap">
+                                    <td class="px-5 py-4 whitespace-nowrap" data-label="Complainant">
                                         <p class="text-sm font-medium text-gray-900">{{ $blotter->complainant_name }}</p>
                                         @if ($blotter->remarks)
                                             <p class="text-xs text-gray-500 mt-0.5 max-w-xs truncate" title="{{ $blotter->remarks }}">{{ Str::limit($blotter->remarks, 40) }}</p>
                                         @endif
                                     </td>
-                                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700" data-label="Incident date">
                                         {{ $blotter->incident_date->format('M d, Y') }}
                                     </td>
-                                    <td class="px-5 py-4 whitespace-nowrap">
+                                    <td class="px-5 py-4 whitespace-nowrap" data-label="Uploaded by">
                                         @if ($blotter->uploadedBy)
                                             <p class="text-sm text-gray-900">{{ $blotter->uploadedBy->first_name }} {{ $blotter->uploadedBy->last_name }}</p>
                                         @else
                                             <span class="text-sm text-gray-400">--</span>
                                         @endif
                                     </td>
-                                    <td class="relative overflow-visible px-5 py-4 whitespace-nowrap text-center">
+                                    <td class="relative overflow-visible px-5 py-4 whitespace-nowrap text-center" data-label="Status">
                                         @php
                                             $statusLabel = 'Active';
                                             $statusClasses = 'bg-green-100 text-green-800';
@@ -199,7 +199,7 @@
                                         @endphp
                                         <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {{ $statusClasses }}">{{ $statusLabel }}</span>
                                     </td>
-                                    <td class="px-5 py-4 whitespace-nowrap text-center">
+                                    <td class="px-5 py-4 whitespace-nowrap text-center" data-label="Actions">
                                         <div class="flex items-center justify-center">
                                             @if ($blotter->trashed())
                                                 {{-- Restore button (admin only) --}}

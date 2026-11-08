@@ -119,7 +119,7 @@
 
         <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="phone-stack min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
@@ -131,7 +131,7 @@
                     <tbody class="divide-y divide-gray-200">
                         @forelse ($users as $user)
                             <tr>
-                                <td class="px-6 py-4 text-sm">
+                                <td class="phone-title px-6 py-4 text-sm">
                                     <a href="{{ route('admin.residents.show', $user) }}"
                                        class="font-medium text-gray-900 hover:text-blue-700 hover:underline">
                                         {{ $user->last_name }}, {{ $user->first_name }}
@@ -140,7 +140,7 @@
                                         @endif
                                     </a>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-900">
+                                <td class="px-6 py-4 text-sm text-gray-900" data-label="Email">
                                     <div class="flex max-w-xs flex-col gap-1.5">
                                         @if (trim((string) $user->email) !== '')
                                             <a href="mailto:{{ $user->email }}"
@@ -155,7 +155,7 @@
                                         </a>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-sm">
+                                <td class="px-6 py-4 text-sm" data-label="Role">
                                     @php
                                         $roleClasses = [
                                             'resident' => 'bg-blue-100 text-blue-800',
@@ -167,7 +167,7 @@
                                         {{ ucfirst($user->role) }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-700">
+                                <td class="px-6 py-4 text-sm text-gray-700" data-label="Actions">
                                     @if (auth()->id() === $user->id)
                                         <span class="text-xs text-gray-500">You cannot change your own role or suspension.</span>
                                     @else

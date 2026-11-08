@@ -80,7 +80,7 @@
 
         <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <table class="phone-stack min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
                         <tr class="text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                             <th class="px-4 py-3">Resident</th>
@@ -95,19 +95,19 @@
                     <tbody class="divide-y divide-gray-100 bg-white">
                         @forelse ($requests as $row)
                             <tr>
-                                <td class="px-4 py-3">
+                                <td class="phone-title px-4 py-3">
                                     <p class="font-medium text-gray-900">{{ $row->requester?->full_name ?? 'Unknown resident' }}</p>
                                     <p class="text-xs text-gray-500">{{ $row->requester?->email ?? '—' }}</p>
                                 </td>
-                                <td class="px-4 py-3 text-gray-700">{{ $row->currentHead?->full_name ?? 'None' }}</td>
-                                <td class="px-4 py-3 text-gray-700">{{ $row->newHead?->full_name ?? 'Unknown' }}</td>
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-3 text-gray-700" data-label="Current head">{{ $row->currentHead?->full_name ?? 'None' }}</td>
+                                <td class="px-4 py-3 text-gray-700" data-label="Requested head">{{ $row->newHead?->full_name ?? 'Unknown' }}</td>
+                                <td class="px-4 py-3" data-label="Reason">
                                     <p class="text-gray-800">{{ $row->reasonLabel() }}</p>
                                     @if ($row->details)
                                         <p class="text-xs text-gray-500">{{ $row->details }}</p>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-3" data-label="Status">
                                     @if ($row->status === 'pending')
                                         <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">Pending</span>
                                     @elseif ($row->status === 'approved')
@@ -116,8 +116,8 @@
                                         <span class="inline-flex rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-800">Rejected</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-gray-600">{{ optional($row->created_at)->format('M d, Y h:i A') }}</td>
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-3 text-gray-600" data-label="Submitted">{{ optional($row->created_at)->format('M d, Y h:i A') }}</td>
+                                <td class="px-4 py-3" data-label="Actions">
                                     @if ($row->status === 'pending')
                                         <div class="flex flex-wrap items-center gap-2">
                                             <form method="POST" action="{{ route('admin.head-transfer-requests.approve', $row) }}" class="inline-flex items-center gap-2">

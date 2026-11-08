@@ -64,6 +64,10 @@
         {{-- Bulk actions (pending tab only) --}}
         @if ($status === 'pending' && $users->isNotEmpty())
             <div class="mb-4 flex flex-wrap items-center gap-2">
+                <label class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 md:hidden">
+                    <input type="checkbox" id="select-all-phone" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" aria-label="Select all">
+                    Select all
+                </label>
                 <button type="submit" form="bulk-form-inline" formaction="{{ route($rp . '.pending-registrations.bulk-approve') }}"
                         class="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition">
                     Bulk Approve
@@ -79,7 +83,7 @@
         <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
             <div class="overflow-x-auto">
                 @if ($status === 'rejected' && $rejectionLogs)
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="phone-stack min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rejected</th>
@@ -90,13 +94,13 @@
                     <tbody class="divide-y divide-gray-200">
                         @forelse ($rejectionLogs as $log)
                             <tr>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
+                                <td class="phone-title whitespace-nowrap px-6 py-4 text-sm text-gray-600" data-label="Rejected">
                                     {{ $log->created_at->format('M d, Y H:i') }}
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-700">
+                                <td class="px-6 py-4 text-sm text-gray-700" data-label="Details">
                                     <div class="max-w-2xl whitespace-pre-wrap">{{ $log->remarks ?? '—' }}</div>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-900">
+                                <td class="px-6 py-4 text-sm text-gray-900" data-label="Rejected by">
                                     @if ($log->performer)
                                         {{ trim($log->performer->first_name . ' ' . ($log->performer->middle_name ?? '') . ' ' . $log->performer->last_name) }}
                                     @else
@@ -118,7 +122,7 @@
                     <form method="POST" action="{{ route($rp . '.pending-registrations.bulk-approve') }}" id="bulk-form-inline">
                         @csrf
                 @endif
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="phone-stack min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             @if ($status === 'pending')
@@ -145,24 +149,99 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @forelse ($users as $user)
+                            @php
+                                $rowAge = $user->birthdate ? $user->birthdate->age : null;
+                                $rowIsAdult = is_int($rowAge) && $rowAge >= 18;
+                                $rowIdTypeLabels = [
+                                    'national_id' => 'National ID',
+                                    'passport' => 'Passport',
+                                    'drivers_license' => "Driver's License",
+                                    'umid' => 'UMID',
+                                    'philhealth' => 'PhilHealth ID',
+                                    'postal_id' => 'Postal ID',
+                                    'voters_id' => "Voter's ID",
+                                    'other' => 'Other Government ID',
+                                ];
+                                $rowIdTypeLabel = $rowIdTypeLabels[$user->government_id_type] ?? ($user->government_id_type ?: '—');
+                                $rowPendingHours = $user->status === 'pending' ? (int) $user->created_at->diffInHours(now()) : null;
+                            @endphp
                             <tr>
                                 @if ($status === 'pending')
                                     <td class="px-4 py-4">
-                                        <label class="flex items-center cursor-pointer">
+                                        <label class="flex items-center gap-2 cursor-pointer">
                                             <input type="checkbox" name="ids[]" value="{{ $user->id }}" class="bulk-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500" form="bulk-form-inline">
+                                            <span class="phone-only text-xs font-medium text-gray-500">Select</span>
                                         </label>
                                     </td>
                                 @endif
-                                <td class="px-6 py-4 text-sm text-gray-900">
-                                    {{ $user->last_name }}, {{ $user->first_name }}
-                                    @if ($user->middle_name)
-                                        <span class="text-gray-500">{{ $user->middle_name }}</span>
-                                    @endif
+                                <td class="phone-title px-6 py-4 text-sm text-gray-900">
+                                    <p>
+                                        {{ $user->last_name }}, {{ $user->first_name }}
+                                        @if ($user->middle_name)
+                                            <span class="font-normal text-gray-500">{{ $user->middle_name }}</span>
+                                        @endif
+                                    </p>
+                                    <details class="phone-fold mt-2">
+                                        <summary class="cursor-pointer text-xs font-medium text-green-800">Age, proof, and ID</summary>
+                                        <div class="mt-2 space-y-1.5 rounded-lg bg-gray-50 p-3 text-xs text-gray-700">
+                                            <p><span class="font-medium text-gray-900">Email:</span> {{ $user->email ?: 'Not activated yet' }}</p>
+                                            <p>
+                                                <span class="font-medium text-gray-900">Age:</span>
+                                                @if ($rowAge === null)
+                                                    No birthdate
+                                                @elseif ($rowIsAdult)
+                                                    18+ verified ({{ $rowAge }})
+                                                @else
+                                                    Underage ({{ $rowAge }})
+                                                @endif
+                                            </p>
+                                            <p>
+                                                <span class="font-medium text-gray-900">PWD:</span>
+                                                @if ($user->is_pwd)
+                                                    {{ $user->pwd_proof_path ? 'proof uploaded' : 'claimed, no proof' }}
+                                                @else
+                                                    not claimed
+                                                @endif
+                                            </p>
+                                            <p>
+                                                <span class="font-medium text-gray-900">Senior:</span>
+                                                @if ($user->is_senior)
+                                                    {{ $user->senior_proof_path ? 'proof uploaded' : 'claimed, no proof' }}
+                                                @else
+                                                    not claimed
+                                                @endif
+                                            </p>
+                                            <p>
+                                                <span class="font-medium text-gray-900">Government ID:</span>
+                                                {{ $rowIdTypeLabel }} —
+                                                @if ($user->government_id_path)
+                                                    uploaded
+                                                    @php $rowIdStoragePath = ltrim((string) $user->government_id_path, '/'); @endphp
+                                                    <button type="button"
+                                                            class="ml-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-100"
+                                                            onclick="openIdPreview('{{ e($rowIdStoragePath) }}', '{{ e($user->full_name) }}')">
+                                                        View ID
+                                                    </button>
+                                                @else
+                                                    missing
+                                                @endif
+                                            </p>
+                                            <p>
+                                                <span class="font-medium text-gray-900">Registered:</span>
+                                                {{ $user->created_at->format('M d, Y H:i') }}
+                                                @if ($rowPendingHours !== null && $rowPendingHours >= 48)
+                                                    <span class="ml-1 inline-flex rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700">Overdue {{ $rowPendingHours }}h</span>
+                                                @elseif ($rowPendingHours !== null && $rowPendingHours >= 24)
+                                                    <span class="ml-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">Due soon {{ $rowPendingHours }}h</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                    </details>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-900">
+                                <td class="phone-desktop-only px-6 py-4 text-sm text-gray-900">
                                     {{ $user->email ?: 'Not activated yet' }}
                                 </td>
-                                <td class="px-6 py-4 text-sm">
+                                <td class="phone-desktop-only px-6 py-4 text-sm">
                                     @php
                                         $age = $user->birthdate ? $user->birthdate->age : null;
                                         $isAdult = is_int($age) && $age >= 18;
@@ -181,7 +260,7 @@
                                         </div>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-sm">
+                                <td class="phone-desktop-only px-6 py-4 text-sm">
                                     <div class="space-y-1 text-xs">
                                         <div>
                                             <span class="font-medium text-gray-700">PWD:</span>
@@ -209,7 +288,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-sm">
+                                <td class="phone-desktop-only px-6 py-4 text-sm">
                                     @php
                                         $idTypeLabels = [
                                             'national_id' => 'National ID',
@@ -246,7 +325,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="phone-desktop-only px-6 py-4 text-sm text-gray-600">
                                     <div class="space-y-1">
                                         <p>{{ $user->created_at->format('M d, Y H:i') }}</p>
                                         @if ($user->status === 'pending')
@@ -372,17 +451,30 @@
 <script>
 (function () {
     var selectAll = document.getElementById('select-all');
+    var selectAllPhone = document.getElementById('select-all-phone');
     var checkboxes = document.querySelectorAll('.bulk-checkbox');
-    if (selectAll && checkboxes.length) {
-        selectAll.addEventListener('change', function () {
-            checkboxes.forEach(function (cb) { cb.checked = selectAll.checked; });
+    function syncSelectAll(checked, indeterminate) {
+        [selectAll, selectAllPhone].forEach(function (box) {
+            if (!box) return;
+            box.checked = checked;
+            box.indeterminate = indeterminate;
         });
+    }
+    function bindSelectAll(box) {
+        if (!box) return;
+        box.addEventListener('change', function () {
+            checkboxes.forEach(function (cb) { cb.checked = box.checked; });
+            syncSelectAll(box.checked, false);
+        });
+    }
+    if (checkboxes.length) {
+        bindSelectAll(selectAll);
+        bindSelectAll(selectAllPhone);
         checkboxes.forEach(function (cb) {
             cb.addEventListener('change', function () {
                 var all = Array.prototype.every.call(checkboxes, function (c) { return c.checked; });
                 var none = Array.prototype.every.call(checkboxes, function (c) { return !c.checked; });
-                selectAll.checked = all;
-                selectAll.indeterminate = !all && !none;
+                syncSelectAll(all, !all && !none);
             });
         });
     }

@@ -41,7 +41,7 @@
                 </div>
             @else
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="phone-stack min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applicant</th>
@@ -56,12 +56,12 @@
                         <tbody class="divide-y divide-gray-200">
                             @foreach ($permits as $permit)
                                 <tr>
-                                    <td class="px-6 py-4">
+                                    <td class="phone-title px-6 py-4">
                                         <p class="text-sm font-medium text-gray-900">{{ $permit->applicant->first_name }} {{ $permit->applicant->last_name }}</p>
                                         <p class="text-xs text-gray-500">{{ $permit->applicant->email }}</p>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-900">{{ $permit->permit_type }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                                    <td class="px-6 py-4 text-sm text-gray-900" data-label="Permit type">{{ $permit->permit_type }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 max-w-xs" data-label="Purpose">
                                         <p>{{ Str::limit($permit->purpose, 50) }}</p>
                                         @if (!empty($permit->extra_fields) && is_array($permit->extra_fields))
                                             @php
@@ -130,7 +130,7 @@
                                             </div>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4" data-label="Document">
                                         @if ($permit->document_path)
                                             <a href="{{ route('admin.permits.document', $permit) }}" target="_blank" class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700">
                                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,7 +143,7 @@
                                             <span class="text-xs text-gray-400">None</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4" data-label="Status">
                                         @if ($permit->status === 'pending')
                                             <span class="inline-flex rounded-full px-3 py-1 text-xs font-medium bg-amber-100 text-amber-800">Pending</span>
                                         @elseif ($permit->status === 'approved')
@@ -154,8 +154,8 @@
                                             <span class="inline-flex rounded-full px-3 py-1 text-xs font-medium bg-red-100 text-red-800">Rejected</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">{{ $permit->created_at->format('M d, Y') }}</td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4 text-sm text-gray-500" data-label="Date">{{ $permit->created_at->format('M d, Y') }}</td>
+                                    <td class="px-6 py-4" data-label="Action">
                                         @if ($permit->status === 'pending')
                                             <div class="space-y-2">
                                                 <form method="POST" action="{{ route('admin.permits.approve', $permit) }}" class="flex items-center gap-2">

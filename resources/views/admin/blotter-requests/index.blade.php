@@ -87,7 +87,7 @@
                 </div>
             @else
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="phone-stack min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resident</th>
@@ -103,7 +103,7 @@
                             @foreach ($blotterRequests as $req)
                                 <tr class="hover:bg-gray-50 transition">
                                     {{-- Resident --}}
-                                    <td class="px-5 py-4 whitespace-nowrap">
+                                    <td class="phone-title px-5 py-4 whitespace-nowrap">
                                         @if ($req->user)
                                             <p class="text-sm font-medium text-gray-900">{{ $req->user->first_name }} {{ $req->user->last_name }}</p>
                                             <p class="text-xs text-gray-500">{{ $req->user->email }}</p>
@@ -113,17 +113,17 @@
                                     </td>
 
                                     {{-- Blotter number --}}
-                                    <td class="px-5 py-4 whitespace-nowrap">
+                                    <td class="px-5 py-4 whitespace-nowrap" data-label="Blotter #">
                                         <span class="text-sm font-semibold text-gray-900 font-mono">{{ $req->blotter->blotter_number ?? '—' }}</span>
                                     </td>
 
                                     {{-- Purpose --}}
-                                    <td class="px-5 py-4">
+                                    <td class="px-5 py-4" data-label="Purpose">
                                         <p class="text-sm text-gray-700 max-w-xs" title="{{ $req->purpose }}">{{ Str::limit($req->purpose, 60) }}</p>
                                     </td>
 
                                     {{-- Status badge --}}
-                                    <td class="px-5 py-4 whitespace-nowrap text-center">
+                                    <td class="px-5 py-4 whitespace-nowrap text-center" data-label="Status">
                                         @if ($req->status === 'pending')
                                             <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-amber-100 text-amber-800">Pending</span>
                                         @elseif ($req->status === 'approved')
@@ -136,7 +136,7 @@
                                     </td>
 
                                     {{-- Remarks --}}
-                                    <td class="px-5 py-4">
+                                    <td class="px-5 py-4" data-label="Remarks">
                                         @if ($req->remarks)
                                             @if ($req->rejectionReasonLabel())
                                                 <p class="text-xs font-semibold text-red-600 mb-1">{{ $req->rejectionReasonLabel() }}</p>
@@ -153,13 +153,13 @@
                                     </td>
 
                                     {{-- Date --}}
-                                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500" data-label="Requested">
                                         {{ $req->created_at->format('M d, Y') }}
                                         <br><span class="text-xs text-gray-400">{{ $req->created_at->format('h:i A') }}</span>
                                     </td>
 
                                     {{-- Actions --}}
-                                    <td class="px-5 py-4 whitespace-nowrap text-center">
+                                    <td class="px-5 py-4 whitespace-nowrap text-center" data-label="Actions">
                                         @if ($req->status === 'pending')
                                             <div class="flex flex-col items-center gap-2">
                                                 {{-- Approve (admin only) --}}

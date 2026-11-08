@@ -25,6 +25,7 @@
             @page { margin: 1.5cm; size: A4 landscape; }
         }
     </style>
+    @include('partials.phone-table-styles')
     @include('partials.ui-foundation-styles')
     @include('partials.a11y-skip-link-styles')
     @stack('styles')

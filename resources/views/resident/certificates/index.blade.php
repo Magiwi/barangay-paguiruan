@@ -27,7 +27,7 @@
                 </div>
             @else
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="phone-stack min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr class="bg-gray-50">
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Certificate Type</th>
@@ -40,9 +40,9 @@
                         <tbody class="divide-y divide-gray-200">
                             @foreach ($requests as $req)
                                 <tr class="transition-colors hover:bg-gray-50">
-                                    <td class="px-6 py-4 text-sm font-medium text-gray-800">{{ $req->certificate_type }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">{{ Str::limit($req->purpose, 80) }}</td>
-                                    <td class="px-6 py-4">
+                                    <td class="phone-title px-6 py-4 text-sm font-medium text-gray-800">{{ $req->certificate_type }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 max-w-xs" data-label="Purpose">{{ Str::limit($req->purpose, 80) }}</td>
+                                    <td class="px-6 py-4" data-label="Status">
                                         @if ($req->status === 'pending')
                                             <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Pending</span>
                                         @elseif ($req->status === 'approved')
@@ -60,8 +60,8 @@
                                             <p class="text-xs text-gray-500 mt-1">Released: {{ $req->released_at->format('M d, Y') }}</p>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">{{ $req->created_at->format('M d, Y H:i') }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-600">{{ $req->remarks ?? '—' }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600" data-label="Requested">{{ $req->created_at->format('M d, Y H:i') }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600" data-label="Remarks">{{ $req->remarks ?? '—' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

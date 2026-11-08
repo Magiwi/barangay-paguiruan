@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet">
     <style>[x-cloak]{display:none!important}</style>
+    @include('partials.phone-table-styles')
     @include('partials.ui-foundation-styles')
     @include('partials.a11y-skip-link-styles')
 </head>

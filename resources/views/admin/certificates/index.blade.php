@@ -53,7 +53,7 @@
                 </div>
             @else
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="phone-stack min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resident</th>
@@ -67,12 +67,12 @@
                         <tbody class="divide-y divide-gray-200">
                             @foreach ($requests as $req)
                                 <tr>
-                                    <td class="px-6 py-4">
+                                    <td class="phone-title px-6 py-4">
                                         <p class="text-sm font-medium text-gray-900">{{ $req->user->first_name }} {{ $req->user->last_name }}</p>
                                         <p class="text-xs text-gray-500">{{ $req->user->email }}</p>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-900">{{ $req->certificate_type }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                                    <td class="px-6 py-4 text-sm text-gray-900" data-label="Type">{{ $req->certificate_type }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 max-w-xs" data-label="Purpose">
                                         <p>{{ Str::limit($req->purpose, 50) }}</p>
                                         @if (!empty($req->extra_fields) && is_array($req->extra_fields))
                                             <div class="mt-1 space-y-0.5 text-xs text-gray-500">
@@ -86,7 +86,7 @@
                                             </div>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4" data-label="Status">
                                         @if ($req->status === 'pending')
                                             <span class="inline-flex rounded-full px-3 py-1 text-xs font-medium bg-amber-100 text-amber-800">Pending</span>
                                         @elseif ($req->status === 'approved')
@@ -97,8 +97,8 @@
                                             <span class="inline-flex rounded-full px-3 py-1 text-xs font-medium bg-red-100 text-red-800">Rejected</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">{{ $req->created_at->format('M d, Y') }}</td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4 text-sm text-gray-500" data-label="Date">{{ $req->created_at->format('M d, Y') }}</td>
+                                    <td class="px-6 py-4" data-label="Action">
                                         @if ($req->status === 'pending')
                                             <div class="space-y-2">
                                                 <a href="{{ route('admin.certificates.review.edit', $req) }}" class="inline-flex rounded border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100">
