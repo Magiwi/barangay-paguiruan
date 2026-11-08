@@ -140,10 +140,17 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {{-- Contact Number with +63 prefix --}}
                     <div>
-                        <label for="contact_number" class="block text-sm font-medium text-gray-700 mb-1">Contact number <span class="text-red-600">*</span></label>
+                        <label for="contact_number" class="block text-sm font-medium text-gray-700 mb-1">
+                            Contact number
+                            @if ($assistedRegistration)
+                                <span class="text-gray-400">(optional)</span>
+                            @else
+                                <span class="text-red-600">*</span>
+                            @endif
+                        </label>
                         <div class="flex">
                             <span class="inline-flex items-center rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 px-3 text-sm text-gray-600">+63</span>
-                            <input type="tel" name="contact_number" id="contact_number" value="{{ old('contact_number') }}" required
+                            <input type="tel" name="contact_number" id="contact_number" value="{{ old('contact_number') }}" @unless($assistedRegistration) required @endunless
                                    maxlength="16" inputmode="numeric" autocomplete="tel" placeholder="917 123 4567"
                                    class="block w-full rounded-r-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 shadow-sm transition ui-form-focus @error('contact_number') border-red-500 @else border-gray-300 @enderror">
                         </div>
@@ -1631,10 +1638,11 @@
             { type: 'min', len: 2, msg: 'Last name must be at least 2 characters.' }
         ]},
         { id: 'house_no',       rules: [{ type: 'required', msg: 'House number is required.' }] },
-        { id: 'contact_number', rules: [
-            { type: 'required', msg: 'Contact number is required.' },
+        { id: 'contact_number', rules: (assistedRegistration ? [] : [
+            { type: 'required', msg: 'Contact number is required.' }
+        ]).concat([
             { type: 'mobile', msg: 'Enter valid Philippine mobile number.' }
-        ]},
+        ]) },
         { id: 'gender',         rules: [{ type: 'required', msg: 'Please select a gender.' }] },
         { id: 'civil_status',   rules: [{ type: 'required', msg: 'Please select a civil status.' }] },
         { id: 'email',          rules: [

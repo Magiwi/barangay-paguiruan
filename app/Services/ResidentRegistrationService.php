@@ -61,7 +61,9 @@ class ResidentRegistrationService
             'house_no' => ['required', 'string', 'max:255'],
             'purok_id' => ['required', 'integer', 'exists:puroks,id'],
             'sitio_subdivision' => ['nullable', 'string', 'max:255'],
-            'contact_number' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
+            'contact_number' => $assisted
+                ? ['nullable', 'string', 'regex:/^[0-9]{10}$/']
+                : ['required', 'string', 'regex:/^[0-9]{10}$/'],
             'gender' => ['required', 'string', 'in:male,female,other'],
             'birthdate' => ['required', 'date', 'before:today', 'before_or_equal:' . now()->subYears(18)->format('Y-m-d')],
             'civil_status' => ['required', 'string', 'in:single,married,widowed,divorced,separated'],
@@ -132,8 +134,9 @@ class ResidentRegistrationService
                 : ['required', 'file', 'mimes:jpg,jpeg,png', 'max:2048'];
         }
 
+        $contactDigits = $this->normalizePhilippineMobile($request->input('contact_number'));
         $request->merge([
-            'contact_number' => $this->normalizePhilippineMobile($request->input('contact_number')),
+            'contact_number' => $assisted && $contactDigits === '' ? null : $contactDigits,
         ]);
 
         $validator = Validator::make($request->all(), $rules, $this->messages());
@@ -165,7 +168,9 @@ class ResidentRegistrationService
         $validated['purok'] = $purok ? $purok->name : null;
         $validated['street_name'] = 'N/A';
 
-        $validated['contact_number'] = '+63' . $validated['contact_number'];
+        $validated['contact_number'] = filled($validated['contact_number'] ?? null)
+            ? '+63' . $validated['contact_number']
+            : null;
 
         if (empty($validated['suffix'])) {
             $validated['suffix'] = null;
@@ -328,7 +333,7 @@ class ResidentRegistrationService
     /**
      * @return array<string, string>
      */
-    private function normalizePhilippineMobile(mixed $value): string
+    public function normalizePhilippineMobile(mixed $value): string
     {
         $digits = preg_replace('/\D+/', '', (string) $value) ?? '';
 

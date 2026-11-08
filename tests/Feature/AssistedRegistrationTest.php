@@ -94,6 +94,22 @@ class AssistedRegistrationTest extends TestCase
         $this->assertSame('+639171234568', User::where('last_name', 'Prefixed')->firstOrFail()->contact_number);
     }
 
+    public function test_walk_in_registration_can_leave_the_mobile_blank(): void
+    {
+        Storage::fake('public');
+        $admin = $this->createAdminUser();
+        $purok = $this->createAddress();
+
+        $this->actingAs($admin)->post(route('admin.pending-registrations.store'), $this->basePayload($purok, [
+            'last_name' => 'Nophone',
+            'contact_number' => '',
+            'government_id_proof' => null,
+            'id_verified_in_person' => '1',
+        ]))->assertSessionHasNoErrors();
+
+        $this->assertNull(User::where('last_name', 'Nophone')->firstOrFail()->contact_number);
+    }
+
     public function test_assisted_registration_issues_a_one_time_code_and_the_resident_sets_login(): void
     {
         Storage::fake('public');
@@ -151,11 +167,19 @@ class AssistedRegistrationTest extends TestCase
             'email' => 'juan.claimed@example.com',
             'password' => 'ResidentPass1',
             'password_confirmation' => 'ResidentPass1',
+        ])->assertSessionHasErrors('contact_number');
+
+        $this->post(route('account.claim.complete'), [
+            'email' => 'juan.claimed@example.com',
+            'contact_number' => '0917 123 4590',
+            'password' => 'ResidentPass1',
+            'password_confirmation' => 'ResidentPass1',
         ])->assertRedirect(route('resident.government-id.edit'));
 
         $this->assertAuthenticatedAs($created);
         $created->refresh();
         $this->assertSame('juan.claimed@example.com', $created->email);
+        $this->assertSame('+639171234590', $created->contact_number);
         $this->assertFalse($created->hasUnclaimedAccount());
 
         auth()->logout();

@@ -56,9 +56,14 @@ class AccountClaimController extends Controller
             return redirect()->route('account.claim');
         }
 
+        $request->merge([
+            'contact_number' => app(ResidentRegistrationService::class)->normalizePhilippineMobile($request->input('contact_number')),
+        ]);
+
         $validated = $request->validate([
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => ['required', 'string', Password::min(8), 'confirmed'],
+            'contact_number' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
         ], [
             'email.required' => 'Email address is required.',
             'email.email' => 'Please enter a valid email address.',
@@ -66,11 +71,14 @@ class AccountClaimController extends Controller
             'password.required' => 'Password is required.',
             'password.min' => 'The password must be at least 8 characters.',
             'password.confirmed' => 'The password confirmation does not match.',
+            'contact_number.required' => 'Contact number is required.',
+            'contact_number.regex' => 'Enter a valid mobile number (e.g. 917 123 4567).',
         ]);
 
         $user->forceFill([
             'email' => $validated['email'],
             'password' => $validated['password'],
+            'contact_number' => '+63' . $validated['contact_number'],
             'claim_code_hash' => null,
         ])->save();
 
